@@ -13,12 +13,13 @@ import {
 import { useState } from 'react'
 import { ModeToggle } from '@/components/ui/mode-toggle'
 import { Button } from '../ui/button'
+import Link from 'next/link'
 
 export default function NavigationBar() {
   const navItems = [
     {
       name: 'About',
-      link: '/about',
+      link: '/',
     },
     {
       name: 'Blog',
@@ -43,7 +44,9 @@ export default function NavigationBar() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <Button>Login</Button>
+            <Button asChild>
+              <Link href="/login">Login</Link>
+            </Button>
             <ModeToggle />
           </div>
         </NavBody>
