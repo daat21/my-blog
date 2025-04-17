@@ -1,9 +1,9 @@
-import { ThreeDCardDemo } from '@/components/home/ThreeDCardDemo'
+import HeroSection from '@/components/home/HeroSection'
 
 export default function Home() {
   return (
-    <div>
-      <ThreeDCardDemo />
-    </div>
+    <>
+      <HeroSection />
+    </>
   )
 }
