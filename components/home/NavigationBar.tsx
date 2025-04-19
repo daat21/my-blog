@@ -38,7 +38,7 @@ export default function NavigationBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <nav className="relative mt-2 w-full">
+    <nav>
       <Navbar>
         <NavBody>
           <NavbarLogo />
