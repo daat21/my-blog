@@ -4,14 +4,13 @@ import { BackgroundBeamsWithCollision } from '../ui/background-beams-with-collis
 import ColourfulText from '../ui/colourful-text'
 import { FlipWords } from '../ui/flip-words'
 import { TextGenerateEffect } from '../ui/text-generate-effect'
-import { TracingBeam } from '../ui/tracing-beam'
 import { InteractiveHoverButton } from '@/components/magicui/interactive-hover-button'
 
 export default function HeroSection() {
   return (
-    <TracingBeam className="px-0 md:px-4">
-      <BackgroundBeamsWithCollision className="flex h-max flex-col gap-2 pb-10 pl-5 md:gap-4 md:pl-0">
-        <h1 className="mt-20 text-2xl md:mt-40 md:text-5xl">Hello! 👋</h1>
+    <div>
+      <BackgroundBeamsWithCollision className="flex h-max flex-col gap-2 pb-10 md:gap-4">
+        <h1 className="mt-10 text-2xl md:text-5xl">Hello! 👋</h1>
         <h1 className="text-2xl md:text-5xl">
           I&apos;m <FlipWords words={['Daming', 'Damon']} />
           Chen,
@@ -27,6 +26,6 @@ export default function HeroSection() {
           Send Me an Email
         </InteractiveHoverButton>
       </BackgroundBeamsWithCollision>
-    </TracingBeam>
+    </div>
   )
 }

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Github } from 'lucide-react'
 import Link from 'next/link'
+import { ShineBorder } from '@/components/magicui/shine-border'
 
 export function LoginForm({
   className,
@@ -18,7 +19,8 @@ export function LoginForm({
 }: React.ComponentProps<'div'>) {
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card>
+      <Card className="bg-background relative w-full max-w-[350px] overflow-hidden">
+        <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Welcome back</CardTitle>
           <CardDescription>
