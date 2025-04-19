@@ -9,6 +9,7 @@ import {
 } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 import React, { useRef, useState } from 'react'
 
@@ -169,7 +170,7 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
         damping: 50,
       }}
       className={cn(
-        'bg-background fixed inset-x-0 top-0 z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between px-0 py-2 lg:hidden',
+        'relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden',
         visible && 'bg-white/80 dark:bg-neutral-950/80',
         className
       )}
@@ -201,6 +202,17 @@ export const MobileNavMenu = ({
   isOpen,
   onClose,
 }: MobileNavMenuProps) => {
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (isOpen && e.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen, onClose])
+
   return (
     <AnimatePresence>
       {isOpen && (

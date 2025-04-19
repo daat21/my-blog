@@ -38,7 +38,8 @@ export default function NavigationBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <nav className="relative">
+    // <nav className="relative">
+    <nav>
       <Navbar>
         <NavBody>
           <NavbarLogo />
