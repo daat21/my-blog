@@ -8,9 +8,9 @@ import { MyProjects } from './rencently-updates/MyProjects'
 export default function RecentlyUpdated() {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-4">
-        <div className="flex h-[562px] flex-col rounded-lg border p-8">
-          <h2 className="border-0 text-xl md:mb-4 md:text-2xl">
+      <div className="md:flex md:gap-4">
+        <div className="flex-col rounded-lg border p-4 md:flex md:h-[562px] md:p-8">
+          <h2 className="border-0 text-center text-xl md:mb-4 md:text-2xl">
             Recently Updated
           </h2>
           <div className="flex flex-col gap-8">
@@ -19,7 +19,7 @@ export default function RecentlyUpdated() {
             <HorizontalCard />
           </div>
         </div>
-        <div className="flex w-4/9 flex-col gap-4">
+        <div className="mt-4 flex flex-col gap-4 md:mt-0 md:w-4/9">
           <GlobeCard />
           <RecentlyViews />
         </div>
