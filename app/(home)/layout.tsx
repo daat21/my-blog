@@ -10,7 +10,7 @@ export default function HomeLayout({
     <>
       <ScrollProgress />
       <NavigationBar />
-      <div className="my-10 flex max-w-7xl flex-col gap-2 px-6 md:mx-auto md:px-10">
+      <div className="mt-10 flex max-w-7xl flex-col gap-2 px-6 md:mx-auto md:px-10">
         {children}
       </div>
     </>

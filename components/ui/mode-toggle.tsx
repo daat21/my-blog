@@ -11,7 +11,7 @@ export const ModeToggle = ({ className }: { className?: string }) => {
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       className={cn('cursor-pointer', className)}

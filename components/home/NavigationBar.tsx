@@ -38,16 +38,16 @@ export default function NavigationBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <nav>
+    <nav className="relative">
       <Navbar>
         <NavBody>
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
+            <ModeToggle />
             <Button asChild>
               <Link href="/login">Login</Link>
             </Button>
-            <ModeToggle />
           </div>
         </NavBody>
       </Navbar>
