@@ -10,7 +10,10 @@ export default function Tag({
   className?: string
 }) {
   return (
-    <Badge variant="outline" className={cn('px-3 py-1.5 text-sm', className)}>
+    <Badge
+      variant="outline"
+      className={cn('rounded-2xl px-3 py-1.5 text-sm', className)}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"

@@ -4,15 +4,18 @@ import { HorizontalCard } from '../pages/Cards'
 import GlobeCard from './rencently-updates/GlobeCard'
 import { RecentlyViews } from './rencently-updates/RecentlyViews'
 import { MyProjects } from './rencently-updates/MyProjects'
+import Link from 'next/link'
 
 export default function RecentlyUpdated() {
   return (
     <div className="flex flex-col gap-4">
       <div className="md:flex md:gap-4">
-        <div className="flex-col rounded-lg border p-4 md:flex md:h-[562px] md:p-8">
-          <h2 className="border-0 text-center text-xl md:mb-4 md:text-2xl">
-            Recently Updated
-          </h2>
+        <div className="flex-col rounded-lg border p-4 md:flex md:p-8">
+          <Link href="/blogs">
+            <h2 className="cursor-pointer border-0 text-center text-xl md:mb-4 md:text-2xl">
+              Recently Updated
+            </h2>
+          </Link>
           <div className="flex flex-col gap-8">
             <HorizontalCard />
             <HorizontalCard />

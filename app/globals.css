@@ -81,7 +81,13 @@
         rotate(calc((var(--angle) * -1deg) - 360deg));
     }
   }
-}
+  --animate-background-position-spin: background-position-spin 3000ms infinite alternate
+;
+  @keyframes background-position-spin {
+  0% {
+    backgroundPosition: top center;}
+  100% {
+    backgroundPosition: bottom center;}}}
 
 :root {
   --radius: 0.625rem;

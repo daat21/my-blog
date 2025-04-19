@@ -22,20 +22,20 @@ export function HorizontalCard() {
     : '#262626'
 
   return (
-    <Card className="h-[124px] w-full overflow-hidden border-none p-0 shadow-none">
-      <MagicCard className="h-[124px] w-full" gradientColor={gradientColor}>
+    <Card className="w-full overflow-hidden border-none p-0 shadow-none md:h-[100px]">
+      <MagicCard className="w-full md:h-[100px]" gradientColor={gradientColor}>
         <CardContent className="flex gap-2 p-0">
           <Image
             src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
             alt="Title"
-            width={100}
-            height={100}
-            className="h-[124px] w-[124px] rounded-2xl rounded-r-none object-cover p-1"
+            width={140}
+            height={140}
+            className="h-[100px] w-[100px] rounded-2xl rounded-r-none object-cover p-1"
           />
-          <div className="p-1">
-            <h3 className="text-xl font-bold">Title</h3>
+          <div className="my-2 flex flex-col justify-between p-1">
+            <h3 className="text-base font-bold md:text-xl">Title</h3>
             <span className="text-muted-foreground text-sm">Release Date</span>
-            <p className="mt-2 mr-2 text-sm">
+            <p className="mt-2 mr-2 hidden text-sm md:block">
               Overview Lorem ipsum dolor sit amet consectetur adipisicing elit.
               Quisquam, Overview Lorem ipsum dolor sit amet consectetur
               adipisicing elit. Quisquam, quos.
@@ -62,20 +62,20 @@ export function BlogCard() {
     : '#262626'
 
   return (
-    <Card className="w-full overflow-hidden border-none p-0 shadow-none">
-      <MagicCard className="w-full" gradientColor={gradientColor}>
+    <Card className="h-[172px] w-full overflow-hidden border-none p-0 shadow-none">
+      <MagicCard className="h-[172px] w-full" gradientColor={gradientColor}>
         <CardContent className="flex gap-2 p-0">
           <Image
             src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
             alt="Title"
             width={172}
             height={172}
-            className="rounded-2xl rounded-r-none object-cover p-1 md:h-[172px] md:w-[172px]"
+            className="h-[172px] w-[172px] rounded-2xl rounded-r-none object-cover p-1"
           />
-          <div className="my-2 p-1">
+          <div className="my-2 flex flex-col justify-between p-1">
             <h3 className="text-xl font-bold">Title</h3>
             <span className="text-ring text-sm">Release Date</span>
-            <p className="text-muted-foreground mt-2 mr-2 text-sm">
+            <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
               Overview Lorem ipsum dolor sit amet consectetur adipisicing elit.
               Quisquam, Overview Lorem ipsum dolor sit amet consectetur
               adipisicing elit. Quisquam, quos.

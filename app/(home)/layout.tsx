@@ -1,6 +1,6 @@
 import NavigationBar from '@/components/home/NavigationBar'
 import { ScrollProgress } from '@/components/magicui/scroll-progress'
-
+import { Footer } from '@/components/home/Footer'
 export default function HomeLayout({
   children,
 }: {
@@ -10,9 +10,12 @@ export default function HomeLayout({
     <>
       <ScrollProgress />
       <NavigationBar />
-      <div className="mt-20 flex max-w-7xl flex-col gap-2 px-6 md:mx-auto md:px-10">
-        {children}
-      </div>
+      <main>
+        <div className="mt-5 flex min-h-[calc(100vh-190px)] max-w-7xl flex-col gap-2 px-6 md:mx-auto md:mt-20 md:px-10">
+          {children}
+        </div>
+      </main>
+      <Footer />
     </>
   )
 }

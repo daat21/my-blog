@@ -45,7 +45,7 @@ export default function NavigationBar() {
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
             <ModeToggle />
-            <Button asChild>
+            <Button asChild className="rounded-2xl">
               <Link href="/login">Login</Link>
             </Button>
           </div>
@@ -81,7 +81,7 @@ export default function NavigationBar() {
           <div className="flex w-full flex-col gap-4">
             <Button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full"
+              className="w-full rounded-2xl"
               asChild
             >
               <Link href="/login">Login</Link>
