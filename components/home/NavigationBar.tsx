@@ -5,7 +5,6 @@ import {
   NavItems,
   MobileNav,
   NavbarLogo,
-  NavbarButton,
   MobileNavHeader,
   MobileNavToggle,
   MobileNavMenu,
@@ -80,13 +79,13 @@ export default function NavigationBar() {
             </Link>
           ))}
           <div className="flex w-full flex-col gap-4">
-            <NavbarButton
+            <Button
               onClick={() => setIsMobileMenuOpen(false)}
-              variant="primary"
               className="w-full"
+              asChild
             >
-              Login
-            </NavbarButton>
+              <Link href="/login">Login</Link>
+            </Button>
           </div>
         </MobileNavMenu>
       </MobileNav>
