@@ -9,7 +9,7 @@ import { InteractiveHoverButton } from '@/components/magicui/interactive-hover-b
 export default function HeroSection() {
   return (
     <div>
-      <BackgroundBeamsWithCollision className="flex h-max flex-col gap-2 pb-10 md:gap-4">
+      <BackgroundBeamsWithCollision className="flex h-max flex-col gap-2 pb-4 md:gap-4">
         <h1 className="mt-10 text-2xl md:text-5xl">Hello! 👋</h1>
         <h1 className="text-2xl md:text-5xl">
           I&apos;m <FlipWords words={['Daming', 'Damon']} />

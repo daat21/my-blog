@@ -50,6 +50,7 @@ export const CardContainer = ({
       <div
         className={cn(
           'flex items-center justify-center py-20',
+          // 'flex',
           containerClassName
         )}
         style={{

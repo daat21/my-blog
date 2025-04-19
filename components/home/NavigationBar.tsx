@@ -11,7 +11,7 @@ import {
   MobileNavMenu,
 } from '@/components/ui/resizable-navbar'
 import { useState } from 'react'
-import { ModeToggle } from '@/components/ui/mode-toggle'
+import { ModeToggle, ModeToggleMobile } from '@/components/ui/mode-toggle'
 import { Button } from '../ui/button'
 import Link from 'next/link'
 
@@ -55,10 +55,13 @@ export default function NavigationBar() {
       <MobileNav>
         <MobileNavHeader>
           <NavbarLogo />
-          <MobileNavToggle
-            isOpen={isMobileMenuOpen}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          />
+          <div className="flex items-center gap-4">
+            <ModeToggleMobile />
+            <MobileNavToggle
+              isOpen={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            />
+          </div>
         </MobileNavHeader>
 
         <MobileNavMenu

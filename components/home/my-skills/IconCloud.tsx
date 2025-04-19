@@ -1,8 +1,8 @@
 import { OrbitingCircles } from '@/components/magicui/orbiting-circles'
 
-export function OrbitingCirclesDemo() {
+export function IconCloud() {
   return (
-    <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden">
+    <div className="relative flex h-[400px] w-full flex-col items-center justify-center overflow-hidden">
       <OrbitingCircles iconSize={40} radius={140}>
         <Icons.nextjs />
         <Icons.react />
