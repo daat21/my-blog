@@ -3,11 +3,26 @@
 import { MagicCard } from '@/components/magicui/magic-card'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
 
 export function HorizontalCard() {
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const gradientColor = mounted
+    ? theme === 'dark'
+      ? '#262626'
+      : '#D9D9D955'
+    : '#262626'
+
   return (
     <Card className="h-[124px] w-full overflow-hidden border-none p-0 shadow-none">
-      <MagicCard className="h-[124px] w-full">
+      <MagicCard className="h-[124px] w-full" gradientColor={gradientColor}>
         <CardContent className="flex gap-2 p-0">
           <Image
             src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
@@ -32,9 +47,22 @@ export function HorizontalCard() {
 }
 
 export function ProjectCard() {
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const gradientColor = mounted
+    ? theme === 'dark'
+      ? '#262626'
+      : '#D9D9D955'
+    : '#262626'
+
   return (
     <Card className="h-[350px] w-[276px] overflow-hidden border-none p-0 shadow-none">
-      <MagicCard className="h-[350px] w-[276px]">
+      <MagicCard className="h-[350px] w-[276px]" gradientColor={gradientColor}>
         <CardContent className="flex flex-col gap-2 p-0">
           <Image
             src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
