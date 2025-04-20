@@ -1,5 +1,6 @@
 import { Badge } from '../ui/badge'
 import { cn } from '@/lib/utils'
+
 export default function Tag({
   name,
   color,
