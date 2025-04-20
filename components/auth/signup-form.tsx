@@ -1,20 +1,14 @@
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Github } from 'lucide-react'
-import Link from 'next/link'
 import { ShineBorder } from '@/components/magicui/shine-border'
-import { login } from '@/app/(auth)/login/action'
+import { signup } from '@/app/(auth)/action'
 
-export function LoginForm({
+export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
@@ -22,17 +16,21 @@ export function LoginForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className="bg-background relative w-full max-w-[350px] overflow-hidden">
         <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>
-            Login with your Apple or Google account
-          </CardDescription>
+        <CardHeader className="pb-0 text-center">
+          <div className="text-left text-sm">
+            <Link
+              href="/login"
+              className="font-semibold underline underline-offset-4"
+            >
+              {'< '}Back to login
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
-          <form action={login}>
-            <div className="grid gap-6">
+          <form action={signup}>
+            <div className="grid gap-4">
               <div className="flex flex-col gap-4">
-                <Button variant="outline" className="w-full" type="button">
+                <Button variant="outline" className="w-full">
                   <Github />
                   Login with GitHub
                 </Button>
@@ -42,12 +40,11 @@ export function LoginForm({
                   Or continue with
                 </span>
               </div>
-              <div className="grid gap-6">
+              <div className="grid gap-4">
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
-                    name="email"
                     type="email"
                     placeholder="m@example.com"
                     required
@@ -55,30 +52,25 @@ export function LoginForm({
                 </div>
                 <div className="grid gap-3">
                   <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
-                      className="ml-auto text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </a>
+                    <Label htmlFor="username">Username</Label>
                   </div>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                  />
+                  <Input id="username" type="text" required />
+                </div>
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Password</Label>
+                  </div>
+                  <Input id="password" type="password" required />
+                </div>
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                  </div>
+                  <Input id="confirm-password" type="password" required />
                 </div>
                 <Button type="submit" className="w-full">
-                  Login
-                </Button>
-              </div>
-              <div className="text-center text-sm">
-                Don&apos;t have an account?{' '}
-                <Link href="/signup" className="underline underline-offset-4">
                   Sign up
-                </Link>
+                </Button>
               </div>
             </div>
           </form>
