@@ -6,8 +6,10 @@ import Image from 'next/image'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import Tag from '@/components/blogs/Tag'
+import type { Project, Blog } from '@/types'
+import { formatDate } from '@/lib/formatDate'
 
-export function HorizontalCard() {
+export function HorizontalCard({ blog }: { blog: Blog }) {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -26,20 +28,18 @@ export function HorizontalCard() {
       <MagicCard className="w-full md:h-[100px]" gradientColor={gradientColor}>
         <CardContent className="flex gap-2 p-0">
           <Image
-            src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
+            src={blog.cover_image_url}
             alt="Title"
             width={140}
             height={140}
             className="h-[100px] w-[100px] rounded-2xl rounded-r-none object-cover p-1"
           />
           <div className="my-2 flex flex-col justify-between p-1">
-            <h3 className="text-base font-bold md:text-xl">Title</h3>
-            <span className="text-muted-foreground text-sm">Release Date</span>
-            <p className="mt-2 mr-2 hidden text-sm md:block">
-              Overview Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Quisquam, Overview Lorem ipsum dolor sit amet consectetur
-              adipisicing elit. Quisquam, quos.
-            </p>
+            <h3 className="text-base font-bold md:text-xl">{blog.title}</h3>
+            <span className="text-muted-foreground text-sm">
+              {formatDate(blog.published_at)}
+            </span>
+            <p className="mt-2 mr-2 hidden text-sm md:block">{blog.excerpt}</p>
           </div>
         </CardContent>
       </MagicCard>
@@ -47,7 +47,7 @@ export function HorizontalCard() {
   )
 }
 
-export function BlogCard() {
+export function BlogCard({ blog }: { blog: Blog }) {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -66,28 +66,29 @@ export function BlogCard() {
       <MagicCard className="h-[172px] w-full" gradientColor={gradientColor}>
         <CardContent className="flex gap-2 p-0">
           <Image
-            src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
+            src={blog.cover_image_url}
             alt="Title"
             width={172}
             height={172}
             className="h-[172px] w-[172px] rounded-2xl rounded-r-none object-cover p-1"
           />
           <div className="my-2 flex flex-col justify-between p-1">
-            <h3 className="text-xl font-bold">Title</h3>
-            <span className="text-ring text-sm">Release Date</span>
+            <h3 className="text-xl font-bold">{blog.title}</h3>
+            <span className="text-ring text-sm">
+              {formatDate(blog.published_at)}
+            </span>
             <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
-              Overview Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Quisquam, Overview Lorem ipsum dolor sit amet consectetur
-              adipisicing elit. Quisquam, quos.
+              {blog.excerpt}
             </p>
             <span>
-              <Tag name="Next.js" color="#b91c1c" className="border-none" />
-              <Tag
-                name="Tailwind CSS"
-                color="#c2410c"
-                className="border-none"
-              />
-              <Tag name="TypeScript" color="#c27b0c" className="border-none" />
+              {blog.tags?.map(tag => (
+                <Tag
+                  key={tag.id}
+                  name={tag.name}
+                  color={tag.color}
+                  className="border-none"
+                />
+              ))}
             </span>
           </div>
         </CardContent>
@@ -96,7 +97,7 @@ export function BlogCard() {
   )
 }
 
-export function ProjectCard() {
+export function ProjectCard({ project }: { project: Project }) {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -115,17 +116,16 @@ export function ProjectCard() {
       <MagicCard className="h-[350px] w-[276px]" gradientColor={gradientColor}>
         <CardContent className="flex flex-col gap-2 p-0">
           <Image
-            src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
+            src={project.cover_image_url}
             alt="Title"
             width={276}
             height={176}
             className="h-[176px] w-[276px] rounded-2xl rounded-b-none object-cover p-1"
           />
           <div className="p-4">
-            <h3 className="text-xl font-bold">Project Name</h3>
+            <h3 className="text-xl font-bold">{project.name}</h3>
             <p className="text-muted-foreground mt-6 text-sm">
-              A web app that allows users to practice for front-end and Ul
-              interviews.
+              {project.description}
             </p>
           </div>
         </CardContent>

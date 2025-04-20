@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Github } from 'lucide-react'
 import Link from 'next/link'
 import { ShineBorder } from '@/components/magicui/shine-border'
+import { login } from '@/app/(auth)/login/action'
 
 export function LoginForm({
   className,
@@ -28,10 +29,10 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form action={login}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" type="button">
                   <Github />
                   Login with GitHub
                 </Button>
@@ -46,6 +47,7 @@ export function LoginForm({
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="m@example.com"
                     required
@@ -61,7 +63,12 @@ export function LoginForm({
                       Forgot your password?
                     </a>
                   </div>
-                  <Input id="password" type="password" required />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                  />
                 </div>
                 <Button type="submit" className="w-full">
                   Login
