@@ -18,12 +18,16 @@ interface DesktopNavigationProps {
   }[]
   className?: string
   isAuthenticated?: boolean
+  avatarUrl?: string
+  username?: string
 }
 
 export default function DesktopNavigation({
   navItems,
   className,
   isAuthenticated,
+  avatarUrl,
+  username,
 }: DesktopNavigationProps) {
   return (
     <Navbar className={`py-1 ${className || ''}`}>
@@ -33,7 +37,7 @@ export default function DesktopNavigation({
         <div className="flex items-center gap-4">
           <ModeToggle />
           {isAuthenticated ? (
-            <DropdownMenuComponent />
+            <DropdownMenuComponent avatarUrl={avatarUrl} username={username} />
           ) : (
             <Button asChild className="rounded-2xl">
               <Link href="/login">Login</Link>

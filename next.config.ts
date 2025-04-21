@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['xhdmbwafrzxbgyeumhzu.supabase.co'],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
+  },
 }
 
 export default nextConfig

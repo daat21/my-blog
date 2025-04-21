@@ -29,7 +29,22 @@ export default async function NavigationBar() {
     error: userError,
   } = await supabase.auth.getUser()
 
-  console.log(user)
+  let avatarUrl = null
+  let username = null
+
+  if (user && !userError) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('avatar_url, username')
+      .eq('id', user?.id)
+      .single()
+
+    if (!error && data) {
+      avatarUrl = data.avatar_url
+      username = data.username
+    }
+  }
+  // console.log(user)
 
   // let profileData = null
   // if (user && !userError) {
@@ -51,8 +66,9 @@ export default async function NavigationBar() {
       <Suspense fallback={<div>Loading desktop navigation...</div>}>
         <DesktopNavigation
           navItems={navItems}
-          // isAuthenticated={Boolean(user) && !userError}
           isAuthenticated={Boolean(user) && !userError}
+          avatarUrl={avatarUrl}
+          username={username}
         />
       </Suspense>
 
