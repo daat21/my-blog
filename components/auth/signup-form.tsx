@@ -45,6 +45,7 @@ export function SignupForm({
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="m@example.com"
                     required
@@ -52,21 +53,31 @@ export function SignupForm({
                 </div>
                 <div className="grid gap-3">
                   <div className="flex items-center">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="user_name">Username</Label>
                   </div>
-                  <Input id="username" type="text" required />
+                  <Input id="user_name" name="user_name" type="text" required />
                 </div>
                 <div className="grid gap-3">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
                   </div>
-                  <Input id="password" type="password" required />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                  />
                 </div>
                 <div className="grid gap-3">
                   <div className="flex items-center">
                     <Label htmlFor="confirm-password">Confirm Password</Label>
                   </div>
-                  <Input id="confirm-password" type="password" required />
+                  <Input
+                    id="confirm-password"
+                    name="confirm-password"
+                    type="password"
+                    required
+                  />
                 </div>
                 <Button type="submit" className="w-full">
                   Sign up

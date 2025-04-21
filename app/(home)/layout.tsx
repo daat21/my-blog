@@ -1,4 +1,4 @@
-import NavigationBar from '@/components/home/NavigationBar'
+import NavigationBar from '@/components/home/navigation-bar'
 import { ScrollProgress } from '@/components/magicui/scroll-progress'
 import { Footer } from '@/components/home/Footer'
 export default function HomeLayout({

@@ -7,7 +7,7 @@ export default function GlobeCard() {
         <p className="mt-0">📍 Current Location: Adelaide, SA, Australia</p>
         <p className="mt-0">✈️ Lived in Guangdong, China in past</p>
       </div>
-      <Globe className="top-33" />
+      <Globe className="top-20" />
       <div className="pointer-events-none absolute inset-0 h-full" />
     </div>
   )
