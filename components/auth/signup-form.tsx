@@ -14,7 +14,7 @@ export function SignupForm({
 }: React.ComponentProps<'div'>) {
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card className="bg-background relative w-full max-w-[350px] overflow-hidden">
+      <Card className="relative w-full max-w-[350px] overflow-hidden">
         <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
         <CardHeader className="pb-0 text-center">
           <div className="text-left text-sm">
