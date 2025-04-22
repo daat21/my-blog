@@ -27,7 +27,8 @@ export function HorizontalCard({ blog }: { blog: Blog }) {
 
   return (
     <Card className="w-full overflow-hidden border-none p-0 shadow-none md:h-[100px]">
-      <MagicCard className="w-full md:h-[100px]" gradientColor={gradientColor}>
+      {/* <MagicCard className="w-full md:h-[100px]" gradientColor={gradientColor}> */}
+      <MagicCard className="w-full md:h-[100px]">
         <Link href={`/blogs/${blog.slug}`}>
           <CardContent className="flex gap-2 p-0">
             <Image
@@ -73,7 +74,7 @@ export function BlogCard({ blog }: { blog: Blog }) {
     <Card className="h-[140px] w-full overflow-hidden border-none p-0 shadow-none md:h-[172px]">
       <MagicCard
         className="h-[140px] w-full md:h-[172px]"
-        gradientColor={gradientColor}
+        // gradientColor={gradientColor}
       >
         <Link href={`/blogs/${blog.slug}`}>
           <CardContent className="flex gap-2 p-0">
@@ -126,7 +127,8 @@ export function ProjectCard({ project }: { project: Project }) {
 
   return (
     <Card className="h-fit w-[276px] overflow-hidden border-none p-0 shadow-none">
-      <MagicCard className="h-full w-[276px]" gradientColor={gradientColor}>
+      {/* <MagicCard className="h-full w-[276px]" gradientColor={gradientColor}> */}
+      <MagicCard className="h-full w-[276px]">
         <CardContent className="flex flex-col gap-2 p-0">
           <Image
             src={project.cover_image_url}

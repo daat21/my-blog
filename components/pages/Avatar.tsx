@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
 
 export default function AvatarComponent({
   src = 'https://github.com/shadcn.png',
@@ -10,7 +11,7 @@ export default function AvatarComponent({
   className?: string
 }) {
   return (
-    <Avatar className={className}>
+    <Avatar className={cn(className, 'border-2')}>
       <AvatarImage src={src} />
       <AvatarFallback>{fallback}</AvatarFallback>
     </Avatar>
