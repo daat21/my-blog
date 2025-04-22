@@ -6,6 +6,7 @@ import { CodeBlockWrapper } from '@/components/blogs/CodeBlockWrapper'
 import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/formatDate'
 import Tag from '@/components/blogs/Tag'
+import Image from 'next/image'
 
 async function getBlog(slug: string) {
   const supabase = await createClient()
@@ -67,16 +68,23 @@ export default async function BlogPage({
   return (
     <article className="prose dark:prose-invert lg:prose-lg prose-code:bg-muted prose-code:text-red-500 dark:prose-code:text-green-300 mx-auto w-full p-4">
       <h1>{post.title}</h1>
-      {tags.map(tag => (
-        <Tag key={tag.id} name={tag.name} color={tag.color} />
-      ))}
+      <div className="flex flex-wrap gap-2">
+        {tags.map(tag => (
+          <Tag key={tag.id} name={tag.name} color={tag.color} />
+        ))}
+      </div>
       <p className="text-ring text-sm">
         {post.published_at === post.last_modified_at
           ? `Published: ${formatDate(post.published_at)}`
           : `Modified: ${formatDate(post.last_modified_at)}`}
       </p>
       <p className="text-muted-foreground text-base italic">{post.excerpt}</p>
-      <img src={post.cover_image_url} alt={post.title} width={1000} />
+      <Image
+        src={post.cover_image_url}
+        alt={post.title}
+        width={1000}
+        height={1000}
+      />
       <hr />
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
