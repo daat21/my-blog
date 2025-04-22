@@ -10,7 +10,7 @@ export default async function ProjectsPage() {
       <h2 className="border-0 text-2xl font-semibold md:mt-10 md:text-3xl">
         My Projects
       </h2>
-      <div className="mx-auto mt-10 grid max-w-5xl grid-cols-1 justify-items-center gap-4 md:grid-cols-3 md:gap-12">
+      <div className="mx-auto mt-10 grid max-w-5xl grid-cols-1 justify-items-center gap-8 md:grid-cols-3 md:gap-12">
         {projects?.map(project => (
           <ProjectCard key={project.id} project={project} />
         ))}

@@ -16,13 +16,13 @@ export async function RecentlyBlogs() {
   const recentlyBlogs = blogs?.slice(0, 3)
 
   return (
-    <div className="min-h-[486px] w-full flex-col rounded-lg border p-4 md:flex md:p-8">
+    <div className="flex min-h-[486px] w-full flex-col rounded-lg border p-4 md:p-8">
       <Link href="/blogs">
         <h3 className="cursor-pointer text-center text-xl font-semibold md:mb-4 md:text-2xl">
           Recently Updated
         </h3>
       </Link>
-      <div className="flex flex-col gap-8">
+      <div className="mt-8 flex flex-col gap-8 md:mt-0">
         {recentlyBlogs?.map(blog => (
           <HorizontalCard key={blog.id} blog={blog} />
         ))}

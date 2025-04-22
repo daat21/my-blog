@@ -3,6 +3,7 @@ export interface Project {
   name: string
   description: string
   project_url: string
+  github_url: string
   cover_image_url: string
   tech_stack: string[]
   created_at: string
