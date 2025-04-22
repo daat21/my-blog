@@ -24,9 +24,7 @@ export function LoginForm({
         <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>
-            Login with your Apple or Google account
-          </CardDescription>
+          <CardDescription>Login with your Github account</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={login}>
