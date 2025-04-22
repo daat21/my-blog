@@ -21,7 +21,19 @@
 - **Analytics:** Vercel Analytics, Vercel Speed Insights
 - **Deployment:** Vercel
 
-## 3. Project Structure
+## 3. Key Features (Inferred)
+
+- **Blog Platform:** Displaying blog posts, likely fetched from a backend (Supabase) and rendered from Markdown.
+- **User permission classification：** (for content access), implemented using PostgreSQL ENUM Types.
+    - Users are assigned 'normal', 'plus', or 'Admin' levels, allowing them to respectively access different tiers of database content (e.g., articles, comments, messages).
+- **User Authentication:** Login/signup functionality (`app/(auth)/`, `components/auth/`, Supabase dependencies).
+- **Theming:** Light/dark mode support (`next-themes`, `ModeToggle.tsx`).
+- **Responsive Design:** Built with Tailwind CSS, implying responsiveness.
+- **Optimised Images:** Uses Next.js Image component, configured for Supabase remote patterns (`next.config.ts`).
+- **Analytics:** Integrated Vercel Analytics and Speed Insights (`app/layout.tsx`).
+- **Potential 3D/Interactive Elements:** Inclusion of `three`, `@react-three/fiber`, `cobe` suggests possible interactive visuals.
+
+## 4. Project Structure
 
 ```
 my-blog/
@@ -53,16 +65,6 @@ my-blog/
 - **`app/`**: Organises routes using Next.js App Router conventions. Route groups (`(auth)`, `(home)`) are used to structure sections without affecting the URL path.
 - **`components/`**: Contains reusable React components, categorized by feature (`auth`, `blogs`, `home`, etc.) or type (`ui`).
 - **`lib/`**: Includes helper functions, utility modules like date formatting, and Supabase client setup.
-
-## 4. Key Features (Inferred)
-
-- **Blog Platform:** Displaying blog posts, likely fetched from a backend (Supabase) and rendered from Markdown.
-- **User Authentication:** Login/signup functionality (`app/(auth)/`, `components/auth/`, Supabase dependencies).
-- **Theming:** Light/dark mode support (`next-themes`, `ModeToggle.tsx`).
-- **Responsive Design:** Built with Tailwind CSS, implying responsiveness.
-- **Optimised Images:** Uses Next.js Image component, configured for Supabase remote patterns (`next.config.ts`).
-- **Analytics:** Integrated Vercel Analytics and Speed Insights (`app/layout.tsx`).
-- **Potential 3D/Interactive Elements:** Inclusion of `three`, `@react-three/fiber`, `cobe` suggests possible interactive visuals.
 
 ## 5. Components
 
