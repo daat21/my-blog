@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 export default function ContactForm() {
   return (
-    <Card className="bg-background relative w-full overflow-hidden">
+    <Card className="relative w-full overflow-hidden">
       <CardContent>
         <form>
           <div className="grid w-full items-center gap-4">

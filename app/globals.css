@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import 'highlight.js/styles/tokyo-night-dark.css';
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -169,6 +171,9 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/*
   h1 {
     @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl;
   }
@@ -186,7 +191,6 @@
   }
 
   p {
-    /* @apply leading-7 [&:not(:first-child)]:mt-6; */
     @apply leading-7;
   }
 
@@ -237,4 +241,4 @@
   td {
     @apply border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right;
   }
-}
+*/

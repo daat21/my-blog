@@ -29,7 +29,12 @@ export default async function BlogsList() {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col items-center justify-center gap-10">
-      {processedBlogs?.map(blog => <BlogCard key={blog.id} blog={blog} />)}
+      {processedBlogs
+        ?.sort(
+          (a, b) =>
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        )
+        .map(blog => <BlogCard key={blog.id} blog={blog} />)}
     </div>
   )
 }

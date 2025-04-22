@@ -38,7 +38,7 @@ export async function AccountTab() {
   return (
     <TabsContent value="account">
       <form action={uploadAvatar}>
-        <Card className="bg-background">
+        <Card>
           <CardHeader>
             <CardTitle>Account</CardTitle>
             <CardDescription>

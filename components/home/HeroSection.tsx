@@ -10,13 +10,12 @@ export default function HeroSection() {
   return (
     <div>
       <BackgroundBeamsWithCollision className="flex h-max flex-col gap-2 pb-4 md:gap-4">
-        <h1 className="text-2xl md:text-5xl">Hello! 👋</h1>
-        <h1 className="text-2xl md:text-5xl">
+        <h1 className="text-2xl font-extrabold md:text-5xl">
+          Hello! 👋
+          <br />
           I&apos;m <FlipWords words={['Daming', 'Damon']} />
           Chen,
-        </h1>
-        <h1 className="text-2xl md:text-5xl">
-          a <ColourfulText text="Web <Developer />" />. 🧑‍💻
+          <br /> a <ColourfulText text="Web <Developer />" />. 🧑‍💻
         </h1>
         <TextGenerateEffect
           // duration={0.1}

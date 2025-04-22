@@ -6,7 +6,9 @@ import ContactForm from '@/components/contact/ContactForm'
 export default function ContactPage() {
   return (
     <div className="flex flex-col items-center justify-center">
-      <h2 className="border-0 text-2xl md:mt-10 md:text-3xl">Contact Me</h2>
+      <h2 className="border-0 text-2xl font-semibold md:mt-10 md:text-3xl">
+        Contact Me
+      </h2>
       <div className="flex flex-row gap-4 p-4">
         <EmailIcon />
         <GithubIcon />

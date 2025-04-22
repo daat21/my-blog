@@ -16,11 +16,11 @@ export async function RecentlyBlogs() {
   const recentlyBlogs = blogs?.slice(0, 3)
 
   return (
-    <div className="min-h-[486px] flex-col rounded-lg border p-4 md:flex md:p-8">
+    <div className="min-h-[486px] w-full flex-col rounded-lg border p-4 md:flex md:p-8">
       <Link href="/blogs">
-        <h2 className="cursor-pointer border-0 text-center text-xl md:mb-4 md:text-2xl">
+        <h3 className="cursor-pointer text-center text-xl font-semibold md:mb-4 md:text-2xl">
           Recently Updated
-        </h2>
+        </h3>
       </Link>
       <div className="flex flex-col gap-8">
         {recentlyBlogs?.map(blog => (
