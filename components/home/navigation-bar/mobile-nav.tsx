@@ -17,9 +17,13 @@ interface MobileNavigationProps {
     name: string
     link: string
   }[]
+  isAuthenticated: boolean
 }
 
-export default function MobileNavigation({ navItems }: MobileNavigationProps) {
+export default function MobileNavigation({
+  navItems,
+  isAuthenticated,
+}: MobileNavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
@@ -50,13 +54,35 @@ export default function MobileNavigation({ navItems }: MobileNavigationProps) {
           </Link>
         ))}
         <div className="flex w-full flex-col gap-4">
-          <Button
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="w-full rounded-2xl"
-            asChild
-          >
-            <Link href="/login">Login</Link>
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full rounded-2xl"
+                asChild
+              >
+                <Link href="/profiles">Profiles</Link>
+              </Button>
+              <form action="/signout" method="post">
+                <Button
+                  variant="destructive"
+                  type="submit"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full rounded-2xl"
+                >
+                  Logout
+                </Button>
+              </form>
+            </>
+          ) : (
+            <Button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full rounded-2xl"
+              asChild
+            >
+              <Link href="/login">Login</Link>
+            </Button>
+          )}
         </div>
       </MobileNavMenu>
     </MobileNav>

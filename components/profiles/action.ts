@@ -108,6 +108,6 @@ export async function uploadAvatar(formData: FormData): Promise<void> {
   // --- End of deleting old avatars ---
 
   // Clear cache for related pages (important!)
-  revalidatePath('/')
+  revalidatePath('/', 'layout')
   redirect('/profiles')
 }

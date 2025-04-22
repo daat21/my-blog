@@ -73,7 +73,10 @@ export default async function NavigationBar() {
       </Suspense>
 
       <Suspense fallback={<div>Loading mobile navigation...</div>}>
-        <MobileNavigation navItems={navItems} />
+        <MobileNavigation
+          navItems={navItems}
+          isAuthenticated={Boolean(user) && !userError}
+        />
       </Suspense>
     </nav>
   )
