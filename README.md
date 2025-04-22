@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## 1. Overview
 
-## Getting Started
+`my-blog` is a web application built with Next.js 15 and the App Router. It serves as a personal blog platform, featuring blog posts, user authentication, message board, and back-end manage interface. The project utilises modern web development practices, including TypeScript, Tailwind CSS for styling, and Supabase for backend services. 
 
-First, run the development server:
+## 2. Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework:** [Next.js](https://nextjs.org/)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) with [Shadcn UI](https://ui.shadcn.com/)
+- **Component Libraries:**
+    - `motion`: Animation library.
+    - `magicui`: UI components.
+    - `lucide-react`, `@heroicons/react`, `@tabler/icons-react`: Icon libraries.
+    - `next-themes`: Dark mode / theme management.
+    - `class-variance-authority` & `clsx`: For managing component variants and conditional classes.
+    - `@react-three/fiber`, `three`, `cobe`: 3D/WebGL elements.
+- **Markdown:** `react-markdown`, `rehype-highlight`, `remark-gfm`, `highlight.js`: For rendering and styling Markdown content (likely blog posts).
+- **Backend/Authentication:**
+    - `@supabase/ssr`, `@supabase/supabase-js`: Supabase integration for backend-as-a-service (database, auth).
+- **Linting/Formatting:** ESLint, Prettier (`prettier-plugin-tailwindcss`)
+- **Analytics:** Vercel Analytics, Vercel Speed Insights
+- **Deployment:** Vercel
+
+## 3. Project Structure
+
+```
+my-blog/
+├── app/                     # Main application code (App Router)
+│   ├── (auth)/              # Authentication related pages/routes
+│   ├── (home)/              # Main site pages/routes
+│   ├── globals.css          # Global CSS styles
+│   └── layout.tsx           # Root application layout
+├── components/              # Shared UI components
+│   ├── auth/                # Authentication components
+│   ├── blogs/               # Blog-specific components
+│   ├── contact/             # Contact form components
+│   ├── home/                # Components specific to home pages
+│   ├── pages/               # General page-level components
+│   ├── profiles/            # User profile components
+│   ├── project/             # Project display components
+│   ├── ui/                  # Base UI components (Shadcn UI)
+├── lib/                     # Utility functions and helpers
+│   ├── supabase/            # Supabase client/utility setup
+│   └── utils.ts             # General utilities
+├── types/                   # Define types
+├── public/                  # Static assets (images, fonts, etc.)
+├── scripts/                 # Build scripts
+├── middleware.ts            # Next.js middleware
+├── prettier.config.js       # Prettier configuration
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **`app/`**: Organises routes using Next.js App Router conventions. Route groups (`(auth)`, `(home)`) are used to structure sections without affecting the URL path.
+- **`components/`**: Contains reusable React components, categorized by feature (`auth`, `blogs`, `home`, etc.) or type (`ui`).
+- **`lib/`**: Includes helper functions, utility modules like date formatting, and Supabase client setup.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 4. Key Features (Inferred)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Blog Platform:** Displaying blog posts, likely fetched from a backend (Supabase) and rendered from Markdown.
+- **User Authentication:** Login/signup functionality (`app/(auth)/`, `components/auth/`, Supabase dependencies).
+- **Theming:** Light/dark mode support (`next-themes`, `ModeToggle.tsx`).
+- **Responsive Design:** Built with Tailwind CSS, implying responsiveness.
+- **Optimised Images:** Uses Next.js Image component, configured for Supabase remote patterns (`next.config.ts`).
+- **Analytics:** Integrated Vercel Analytics and Speed Insights (`app/layout.tsx`).
+- **Potential 3D/Interactive Elements:** Inclusion of `three`, `@react-three/fiber`, `cobe` suggests possible interactive visuals.
 
-## Learn More
+## 5. Components
 
-To learn more about Next.js, take a look at the following resources:
+- **Organisation:** Components are grouped by feature (`blogs`, `auth`, `home`) or type (`ui`, `magicui`) within the `components/` directory.
+- **Conventions:**
+    - Functional Components with TypeScript (`.tsx`).
+    - PascalCase naming (e.g., `BlogCard.tsx`).
+    - Named exports are common.
+    - Props are clearly typed using TypeScript interfaces or types.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 6. Styling
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Tailwind CSS:** The primary styling method, using utility classes. Configured in `tailwind.config.js` and `postcss.config.mjs`. Tailwind v4 is used.
+- **Global Styles:** Base styles and Tailwind directives are in `app/globals.css`.
+- **Shadcn UI:** Provides pre-built, customisable components styled with Tailwind.
+- **Typography:** `@tailwindcss/typography` plugin likely used for styling Markdown content.
+- **Animations:** Includes custom keyframes (`caret-blink`) in `tailwind.config.js` and uses `motion` library.
 
-## Deploy on Vercel
+## 7. Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `.prettierrc`
+    
+    ```json
+    {
+      "semi": false,
+      "singleQuote": true,
+      "tabWidth": 2,
+      "trailingComma": "es5",
+      "printWidth": 80,
+      "bracketSpacing": true,
+      "arrowParens": "avoid",
+      "jsxSingleQuote": false,
+      "jsxBracketSameLine": false,
+      "plugins": ["prettier-plugin-tailwindcss"]
+    }
+    ```
+    
+- **`tailwind.config.js`:**
+    - Extends the default theme with custom keyframes and animations (`caret-blink`).
+- **`middleware.ts`:** Handles request middleware (specific logic needs inspection).
+- **Environment Variables:** Supabase keys and other secrets should be managed via environment variables (e.g., in `.env.local`). `dotenv` package is used for local script running.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 8. Running the Project
+
+Standard Next.js scripts are available in `package.json`:
+
+- **Development:** `npm run dev`
+- **Build:** `npm run build`
+- **Start Production Server:** `npm run start`
+- **Linting:** `npm run lint`
+
+Ensure necessary environment variables (e.g., Supabase URL and keys) are set up in a `.env.local` file.
+
+## 9. Deployment
+
+Deployment would connect the Git repository to Vercel.
