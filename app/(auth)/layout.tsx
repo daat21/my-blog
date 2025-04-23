@@ -1,6 +1,7 @@
 import { BackgroundLines } from '@/components/ui/background-lines'
 import Link from 'next/link'
 import { GalleryVerticalEnd } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export default function AuthLayout({
   children,
@@ -22,7 +23,11 @@ export default function AuthLayout({
           </div>
           Daming&apos;s Blog
         </Link>
-        {children}
+        <div className={cn('flex flex-col gap-6')}>{children}</div>
+        <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+          By clicking continue, you agree to our{' '}
+          <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+        </div>
       </div>
     </BackgroundLines>
   )
