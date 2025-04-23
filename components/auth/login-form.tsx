@@ -1,4 +1,3 @@
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -14,7 +13,7 @@ import Link from 'next/link'
 import { ShineBorder } from '@/components/magicui/shine-border'
 import { login, signInWithGithub } from '@/app/(auth)/action'
 
-export function LoginForm({ className }: React.ComponentProps<'div'>) {
+export function LoginForm() {
   return (
     <Card className="relative w-full max-w-[350px] overflow-hidden">
       <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
