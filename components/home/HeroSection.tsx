@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { BackgroundBeamsWithCollision } from '../ui/background-beams-with-collision'
 import ColourfulText from '../ui/colourful-text'
 import { FlipWords } from '../ui/flip-words'
@@ -22,7 +23,7 @@ export default function HeroSection() {
           words="I'm a postgraduate student at the University of Adelaide. I'm passionate about coding, photography, and gaming. My goal is to become a full stack developer. I love learning new technologies and building projects that interest me. On this website, I share my journey in tech as well as snippets of my everyday life."
         />
         <InteractiveHoverButton className="mt-2 w-fit items-center gap-2">
-          Send Me an Email
+          <Link href="mailto:chen.daming@icloud.com">Send Me an Email</Link>
         </InteractiveHoverButton>
       </BackgroundBeamsWithCollision>
     </div>
