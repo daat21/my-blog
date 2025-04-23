@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -54,4 +55,27 @@ export async function signup(formData: FormData) {
 
   revalidatePath('/', 'layout')
   redirect('/')
+}
+
+export async function signInWithGithub() {
+  const supabase = await createClient()
+
+  const origin = (await headers()).get('origin')
+  const redirectURL = `${origin}/callback`
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'github',
+    options: {
+      redirectTo: redirectURL,
+    },
+  })
+
+  if (error) {
+    console.error('Github sign in error:', error)
+    redirect('/error')
+  }
+
+  if (data.url) {
+    redirect(data.url)
+  }
 }

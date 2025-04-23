@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Github } from 'lucide-react'
 import Link from 'next/link'
 import { ShineBorder } from '@/components/magicui/shine-border'
-import { login } from '@/app/(auth)/action'
+import { login, signInWithGithub } from '@/app/(auth)/action'
 
 export function LoginForm({
   className,
@@ -30,7 +30,12 @@ export function LoginForm({
           <form action={login}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
-                <Button variant="outline" className="w-full" type="button">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  type="button"
+                  onClick={signInWithGithub}
+                >
                   <Github />
                   Login with GitHub
                 </Button>

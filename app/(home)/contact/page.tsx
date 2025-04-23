@@ -2,7 +2,6 @@ import EmailIcon from '@/components/contact/EmailIcon'
 import GithubIcon from '@/components/contact/GithubIcon'
 import LinkedinIcon from '@/components/contact/LinkedinIcon'
 import ContactForm from '@/components/contact/ContactForm'
-import Link from 'next/link'
 
 export default function ContactPage() {
   return (
