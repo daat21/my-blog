@@ -21,7 +21,7 @@
 - **Analytics:** Vercel Analytics, Vercel Speed Insights
 - **Deployment:** Vercel
 
-## 3. Key Features (Inferred)
+## 3. Key Features
 
 - **Blog Platform:** Displaying blog posts, likely fetched from a backend (Supabase) and rendered from Markdown.
 - **User permission classification：** (for content access), implemented using PostgreSQL ENUM Types.
