@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react'
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
 import { Button } from '@/components/ui/button'
+import { mapleFonts } from '@/public/fonts/MapleFonts'
 
 interface CodeBlockWrapperProps extends React.HTMLAttributes<HTMLPreElement> {}
 
@@ -32,7 +33,7 @@ export function CodeBlockWrapper({
         ref={preRef}
         {...props}
         // className={`hljs bg-muted overflow-x-auto rounded-md border p-4 font-mono text-sm ${props.className || ''}`}
-        className={`hljs rounded-md border p-4 ${props.className || ''}`}
+        className={`hljs rounded-md border p-4 ${mapleFonts.className} ${props.className || ''}`}
       >
         {children}
       </pre>
