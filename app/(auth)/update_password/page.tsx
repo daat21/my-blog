@@ -81,6 +81,9 @@ export default function UpdatePasswordPage() {
                     ))}
                 </div>
               </div>
+              <div className="grid gap-3">
+                <p className="text-sm text-red-500">{state.message}</p>
+              </div>
 
               <Button variant="outline" type="submit" disabled={isPending}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

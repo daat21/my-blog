@@ -57,7 +57,7 @@ export async function login(prevState: LoginState, formData: FormData) {
   if (error) {
     return {
       errors: {
-        email: ['Invalid email or password'],
+        email: [error.message],
       },
       message: 'Invalid fields. Please check your inputs.',
     }
@@ -123,7 +123,7 @@ export async function signup(prevState: State, formData: FormData) {
   if (error) {
     return {
       errors: {
-        email: ['Email already in use'],
+        email: [error.message],
       },
       message: 'Invalid fields. Please check your inputs.',
     }
@@ -190,7 +190,7 @@ export async function resetPassword(
   if (error) {
     return {
       errors: {
-        email: ['Failed to reset password'],
+        email: [error.message],
       },
       message: 'Failed to reset password',
     }
@@ -252,7 +252,7 @@ export async function updatePassword(
   if (error) {
     return {
       errors: {
-        password: ['Failed to update password'],
+        password: [error.message],
       },
       message: 'Failed to update password',
     }
