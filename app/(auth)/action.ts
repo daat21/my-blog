@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getSiteUrl } from '@/lib/getUrl'
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -60,13 +59,10 @@ export async function signup(formData: FormData) {
 export async function signInWithGithub() {
   const supabase = await createClient()
 
-  const siteUrl = await getSiteUrl()
-  const redirectURL = `${siteUrl}/callback`
-
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: redirectURL,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/callback`,
     },
   })
 
