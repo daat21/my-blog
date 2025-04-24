@@ -5,22 +5,32 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Github } from 'lucide-react'
+import { Github, Loader2 } from 'lucide-react'
 import { ShineBorder } from '@/components/magicui/shine-border'
-import { signup, State } from '@/app/(auth)/action'
-import { useState, useActionState } from 'react'
+import { signup, State, signInWithGithub } from '@/app/(auth)/action'
+import { useState, useActionState, useTransition } from 'react'
 
-export function SignupForm({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+export function SignupForm({}: React.ComponentProps<'div'>) {
   const [email, setEmail] = useState('')
   const [user_name, setUser_name] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isPending, startTransition] = useTransition()
 
   const initialState: State = { message: null, errors: {} }
   const [state, formAction] = useActionState(signup, initialState)
+
+  const handleSubmit = (formData: FormData) => {
+    startTransition(() => {
+      formAction(formData)
+    })
+  }
+
+  const handleSignUpWithGithub = () => {
+    startTransition(() => {
+      signInWithGithub()
+    })
+  }
 
   return (
     <Card className="relative w-full max-w-[350px] overflow-hidden">
@@ -36,10 +46,15 @@ export function SignupForm({
         </div>
       </CardHeader>
       <CardContent>
-        <form action={formAction}>
+        <form action={handleSubmit}>
           <div className="grid gap-4">
             <div className="flex flex-col gap-4">
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={isPending}
+                onClick={handleSignUpWithGithub}
+              >
                 <Github />
                 Login with GitHub
               </Button>
@@ -61,6 +76,7 @@ export function SignupForm({
                     aria-describedby="email-error"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
+                    disabled={isPending}
                   />
                 </div>
                 <div id="email-error" aria-live="polite" aria-atomic="true">
@@ -84,6 +100,7 @@ export function SignupForm({
                     aria-describedby="user_name-error"
                     value={user_name}
                     onChange={e => setUser_name(e.target.value)}
+                    disabled={isPending}
                   />
                 </div>
                 <div id="user_name-error" aria-live="polite" aria-atomic="true">
@@ -107,6 +124,7 @@ export function SignupForm({
                     aria-describedby="password-error"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
+                    disabled={isPending}
                   />
                   <div
                     id="password-error"
@@ -134,6 +152,7 @@ export function SignupForm({
                     aria-describedby="confirm-password-error"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
+                    disabled={isPending}
                   />
                   <div
                     id="confirm-password-error"
@@ -155,8 +174,11 @@ export function SignupForm({
                     <p className="text-sm text-red-500">{state.message}</p>
                   )}
                 </div>
-                <Button type="submit" className="w-full">
-                  Sign up
+                <Button type="submit" className="w-full" disabled={isPending}>
+                  {isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isPending ? 'Signing up...' : 'Sign up'}
                 </Button>
               </div>
             </div>

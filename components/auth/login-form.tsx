@@ -10,18 +10,31 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Github } from 'lucide-react'
+import { Github, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { ShineBorder } from '@/components/magicui/shine-border'
 import { login, signInWithGithub, LoginState } from '@/app/(auth)/action'
-import { useState, useActionState } from 'react'
+import { useState, useActionState, useTransition } from 'react'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isPending, startTransition] = useTransition()
 
   const initialState: LoginState = { message: null, errors: {} }
   const [state, formAction] = useActionState(login, initialState)
+
+  const handleSubmit = (formData: FormData) => {
+    startTransition(() => {
+      formAction(formData)
+    })
+  }
+
+  const handleSignInWithGithub = () => {
+    startTransition(() => {
+      signInWithGithub()
+    })
+  }
 
   return (
     <Card className="relative w-full max-w-[350px] overflow-hidden">
@@ -31,14 +44,15 @@ export function LoginForm() {
         <CardDescription>Login with your Github account</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction}>
+        <form action={handleSubmit}>
           <div className="grid gap-6">
             <div className="flex flex-col gap-4">
               <Button
                 variant="outline"
                 className="w-full"
                 type="button"
-                onClick={signInWithGithub}
+                onClick={handleSignInWithGithub}
+                disabled={isPending}
               >
                 <Github />
                 Login with GitHub
@@ -61,6 +75,7 @@ export function LoginForm() {
                     aria-describedby="email-error"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
+                    disabled={isPending}
                   />
                 </div>
                 <div id="email-error" aria-live="polite" aria-atomic="true">
@@ -90,6 +105,7 @@ export function LoginForm() {
                     aria-describedby="password-error"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
+                    disabled={isPending}
                   />
                   <div
                     id="password-error"
@@ -105,8 +121,9 @@ export function LoginForm() {
                   </div>
                 </div>
               </div>
-              <Button type="submit" className="w-full">
-                Login
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isPending ? 'Logging in...' : 'Login'}
               </Button>
             </div>
             <div className="text-center text-sm">
