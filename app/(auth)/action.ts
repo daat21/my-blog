@@ -155,37 +155,107 @@ export async function signInWithGithub() {
   }
 }
 
-export async function resetPassword(formData: FormData) {
+export type ResetPasswordState = {
+  errors?: {
+    email?: string[]
+  }
+  message?: string | null
+}
+
+const resetPasswordSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+})
+
+export async function resetPassword(
+  prevState: ResetPasswordState,
+  formData: FormData
+) {
   const supabase = await createClient()
 
-  const email = formData.get('email') as string
+  const validatedFields = resetPasswordSchema.safeParse({
+    email: formData.get('email'),
+  })
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email)
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Invalid fields. Please check your inputs.',
+    }
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    validatedFields.data.email
+  )
 
   if (error) {
-    console.error('Reset password error:', error)
+    return {
+      errors: {
+        email: ['Failed to reset password'],
+      },
+      message: 'Failed to reset password',
+    }
   }
 
   revalidatePath('/', 'layout')
   redirect('/signup/confirm')
 }
 
-export async function updatePassword(formData: FormData) {
+export type UpdatePasswordState = {
+  errors?: {
+    password?: string[]
+    confirmPassword?: string[]
+  }
+  message?: string | null
+}
+
+const updatePasswordSchema = z.object({
+  password: z
+    .string()
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/, {
+      message:
+        'Password must contain uppercase, lowercase, number, and special character',
+    }),
+  confirmPassword: z.string(),
+})
+export async function updatePassword(
+  prevState: UpdatePasswordState,
+  formData: FormData
+) {
   const supabase = await createClient()
 
-  const password = formData.get('password') as string
-  const confirmPassword = formData.get('confirm-password') as string
+  const validatedFields = updatePasswordSchema.safeParse({
+    password: formData.get('password'),
+    confirmPassword: formData.get('confirm-password'),
+  })
 
-  if (password !== confirmPassword) {
-    redirect('/signup?error=passwords_mismatch')
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Invalid fields. Please check your inputs.',
+    }
+  }
+
+  if (validatedFields.data.password !== validatedFields.data.confirmPassword) {
+    return {
+      errors: {
+        password: ['Passwords do not match'],
+        confirmPassword: ['Passwords do not match'],
+      },
+      message: 'Invalid fields. Please check your inputs.',
+    }
   }
 
   const { error } = await supabase.auth.updateUser({
-    password: password,
+    password: validatedFields.data.password,
   })
 
   if (error) {
-    console.error('Signup error:', error)
+    return {
+      errors: {
+        password: ['Failed to update password'],
+      },
+      message: 'Failed to update password',
+    }
   }
 
   revalidatePath('/', 'layout')
