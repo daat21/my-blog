@@ -66,7 +66,7 @@ export default async function BlogPage({
   const tags = await getBlogTags(post.id)
 
   return (
-    <article className="prose dark:prose-invert lg:prose-lg prose-code:bg-muted prose-code:text-red-500 dark:prose-code:text-green-300 mx-auto w-full p-4">
+    <article className="prose dark:prose-invert lg:prose-lg mx-auto w-full p-4">
       <h1>{post.title}</h1>
       <div className="flex flex-wrap gap-2">
         {tags.map(tag => (
