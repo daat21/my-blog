@@ -6,21 +6,61 @@ import { createClient } from '@/lib/supabase/server'
 import { getSiteUrl } from '@/lib/getUrl'
 import { z } from 'zod'
 
-export async function login(formData: FormData) {
+export type LoginState = {
+  errors?: {
+    email?: string[]
+    password?: string[]
+  }
+  message?: string | null
+}
+
+export type State = {
+  errors?: {
+    email?: string[]
+    user_name?: string[]
+    password?: string[]
+    confirmPassword?: string[]
+  }
+  message?: string | null
+}
+
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  password: z
+    .string()
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/, {
+      message:
+        'Invalid Password (must contain uppercase, lowercase, number, and special character)',
+    }),
+})
+
+export async function login(prevState: LoginState, formData: FormData) {
   const supabase = await createClient()
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+  const validatedFields = loginSchema.safeParse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+  })
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Invalid fields. Please check your inputs.',
+    }
   }
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { error } = await supabase.auth.signInWithPassword({
+    email: validatedFields.data.email,
+    password: validatedFields.data.password,
+  })
 
   if (error) {
-    console.error('Login error:', error)
-    redirect('/error')
+    return {
+      errors: {
+        email: ['Invalid email or password'],
+      },
+      message: 'Invalid fields. Please check your inputs.',
+    }
   }
 
   revalidatePath('/', 'layout')
@@ -36,20 +76,10 @@ const signupSchema = z.object({
     .string()
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/, {
       message:
-        'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+        'Password must contain uppercase, lowercase, number, and special character',
     }),
   confirmPassword: z.string(),
 })
-
-export type State = {
-  errors?: {
-    email?: string[]
-    user_name?: string[]
-    password?: string[]
-    confirmPassword?: string[]
-  }
-  message?: string | null
-}
 
 export async function signup(prevState: State, formData: FormData) {
   const supabase = await createClient()

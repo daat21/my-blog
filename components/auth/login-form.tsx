@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -11,9 +13,16 @@ import { Label } from '@/components/ui/label'
 import { Github } from 'lucide-react'
 import Link from 'next/link'
 import { ShineBorder } from '@/components/magicui/shine-border'
-import { login, signInWithGithub } from '@/app/(auth)/action'
+import { login, signInWithGithub, LoginState } from '@/app/(auth)/action'
+import { useState, useActionState } from 'react'
 
 export function LoginForm() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const initialState: LoginState = { message: null, errors: {} }
+  const [state, formAction] = useActionState(login, initialState)
+
   return (
     <Card className="relative w-full max-w-[350px] overflow-hidden">
       <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
@@ -22,7 +31,7 @@ export function LoginForm() {
         <CardDescription>Login with your Github account</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={login}>
+        <form action={formAction}>
           <div className="grid gap-6">
             <div className="flex flex-col gap-4">
               <Button
@@ -41,15 +50,27 @@ export function LoginForm() {
               </span>
             </div>
             <div className="grid gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
+              <div>
+                <div className="grid gap-3">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    aria-describedby="email-error"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                  />
+                </div>
+                <div id="email-error" aria-live="polite" aria-atomic="true">
+                  {state.errors?.email &&
+                    state.errors.email.map((error: string) => (
+                      <p className="mt-2 text-sm text-red-500" key={error}>
+                        {error}
+                      </p>
+                    ))}
+                </div>
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
@@ -61,7 +82,28 @@ export function LoginForm() {
                     Forgot your password?
                   </Link>
                 </div>
-                <Input id="password" name="password" type="password" required />
+                <div>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    aria-describedby="password-error"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                  />
+                  <div
+                    id="password-error"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {state.errors?.password &&
+                      state.errors.password.map((error: string) => (
+                        <p className="mt-2 text-sm text-red-500" key={error}>
+                          {error}
+                        </p>
+                      ))}
+                  </div>
+                </div>
               </div>
               <Button type="submit" className="w-full">
                 Login

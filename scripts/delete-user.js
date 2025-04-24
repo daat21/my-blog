@@ -1,3 +1,5 @@
+//  node scripts/delete-user.js 1b276f5c-5fce-4985-b660-37c92335f5aa
+
 require('dotenv').config({ path: '.env.local' })
 const { createClient } = require('@supabase/supabase-js')
 
