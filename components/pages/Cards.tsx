@@ -41,7 +41,7 @@ export function HorizontalCard({ blog }: { blog: Blog }) {
             <div className="my-2 flex flex-col justify-between p-1">
               <h3 className="text-base font-medium md:text-lg">{blog.title}</h3>
               <span className="text-ring text-sm">
-                {formatDate(blog.updated_at)}
+                {mounted ? formatDate(blog.updated_at) : ''}
               </span>
               <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
                 {blog.excerpt.length > 80
@@ -88,7 +88,7 @@ export function BlogCard({ blog }: { blog: Blog }) {
             <div className="my-2 flex flex-col justify-between p-1">
               <h3 className="font-medium md:text-xl">{blog.title}</h3>
               <span className="text-ring text-sm">
-                {formatDate(blog.updated_at)}
+                {mounted ? formatDate(blog.updated_at) : ''}
               </span>
               <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
                 {blog.excerpt}

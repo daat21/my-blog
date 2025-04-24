@@ -6,13 +6,12 @@ export const formatDate = (isoDateString: string): string => {
     const diffMinutes = Math.floor(diffMs / (1000 * 60))
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
 
-    // Format the time part (H:MM AM/PM)
-    const timeFormat: Intl.DateTimeFormatOptions = {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-    }
-    const timeString = date.toLocaleTimeString(undefined, timeFormat)
+    // Format time as fixed format (HH:MM AM/PM)
+    const hours = date.getHours()
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    const hour12 = hours % 12 || 12
+    const timeString = `${hour12}:${minutes} ${ampm}`
 
     // If within 5 minutes, show "Just now"
     if (diffMinutes < 5) {
@@ -51,17 +50,27 @@ export const formatDate = (isoDateString: string): string => {
       return `Yesterday at ${timeString}`
     }
 
-    // For other cases, show the full date and time
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-    }
+    // For other cases, use a fixed date format that will be consistent
+    // between server and client
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ]
+    const year = date.getFullYear()
+    const month = months[date.getMonth()]
+    const day = date.getDate()
 
-    return date.toLocaleString(undefined, options)
+    return `${month} ${day}, ${year}, ${timeString}`
   } catch (error) {
     console.error('Error formatting date:', error)
     return isoDateString
@@ -71,12 +80,25 @@ export const formatDate = (isoDateString: string): string => {
 export const formatDateOnly = (isoDateString: string): string => {
   try {
     const date = new Date(isoDateString)
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }
-    return date.toLocaleDateString(undefined, options)
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ]
+    const year = date.getFullYear()
+    const month = months[date.getMonth()]
+    const day = date.getDate()
+
+    return `${month} ${day}, ${year}`
   } catch (error) {
     console.error('Error formatting date:', error)
     return isoDateString
