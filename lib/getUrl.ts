@@ -35,5 +35,5 @@ export async function getSiteUrl() {
 
   return process.env.NODE_ENV === 'development'
     ? 'http://localhost:3000'
-    : 'https://your-production-domain.com'
+    : 'https://damingchen.com'
 }
