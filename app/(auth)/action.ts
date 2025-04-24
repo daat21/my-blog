@@ -57,7 +57,7 @@ export async function login(prevState: LoginState, formData: FormData) {
   if (error) {
     return {
       errors: {
-        email: [error.message],
+        email: ['Invalid email or password'],
       },
       message: 'Invalid fields. Please check your inputs.',
     }
