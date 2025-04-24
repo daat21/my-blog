@@ -1,17 +1,27 @@
+'use client'
+
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Github } from 'lucide-react'
 import { ShineBorder } from '@/components/magicui/shine-border'
-import { signup } from '@/app/(auth)/action'
+import { signup, State } from '@/app/(auth)/action'
+import { useState, useActionState } from 'react'
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
+  const [email, setEmail] = useState('')
+  const [user_name, setUser_name] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+
+  const initialState: State = { message: null, errors: {} }
+  const [state, formAction] = useActionState(signup, initialState)
+
   return (
     <Card className="relative w-full max-w-[350px] overflow-hidden">
       <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
@@ -26,7 +36,7 @@ export function SignupForm({
         </div>
       </CardHeader>
       <CardContent>
-        <form action={signup}>
+        <form action={formAction}>
           <div className="grid gap-4">
             <div className="flex flex-col gap-4">
               <Button variant="outline" className="w-full">
@@ -40,42 +50,115 @@ export function SignupForm({
               </span>
             </div>
             <div className="grid gap-4">
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </div>
-              <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="user_name">Username</Label>
+              <div>
+                <div className="grid gap-3">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    aria-describedby="email-error"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                  />
                 </div>
-                <Input id="user_name" name="user_name" type="text" required />
+                <div id="email-error" aria-live="polite" aria-atomic="true">
+                  {state.errors?.email &&
+                    state.errors.email.map((error: string) => (
+                      <p className="mt-2 text-sm text-red-500" key={error}>
+                        {error}
+                      </p>
+                    ))}
+                </div>
+              </div>
+              <div>
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="user_name">Username</Label>
+                  </div>
+                  <Input
+                    id="user_name"
+                    name="user_name"
+                    type="text"
+                    aria-describedby="user_name-error"
+                    value={user_name}
+                    onChange={e => setUser_name(e.target.value)}
+                  />
+                </div>
+                <div id="user_name-error" aria-live="polite" aria-atomic="true">
+                  {state.errors?.user_name &&
+                    state.errors.user_name.map((error: string) => (
+                      <p className="mt-2 text-sm text-red-500" key={error}>
+                        {error}
+                      </p>
+                    ))}
+                </div>
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                 </div>
-                <Input id="password" name="password" type="password" required />
+                <div>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    aria-describedby="password-error"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                  />
+                  <div
+                    id="password-error"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {state.errors?.password &&
+                      state.errors.password.map((error: string) => (
+                        <p className="mt-2 text-sm text-red-500" key={error}>
+                          {error}
+                        </p>
+                      ))}
+                  </div>
+                </div>
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="confirm-password">Confirm Password</Label>
                 </div>
-                <Input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
-                  required
-                />
+                <div>
+                  <Input
+                    id="confirm-password"
+                    name="confirm-password"
+                    type="password"
+                    aria-describedby="confirm-password-error"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                  />
+                  <div
+                    id="confirm-password-error"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {state.errors?.confirmPassword &&
+                      state.errors.confirmPassword.map((error: string) => (
+                        <p className="mt-2 text-sm text-red-500" key={error}>
+                          {error}
+                        </p>
+                      ))}
+                  </div>
+                </div>
               </div>
-              <Button type="submit" className="w-full">
-                Sign up
-              </Button>
+              <div>
+                <div id="form-error" aria-live="polite" aria-atomic="true">
+                  {state.message && (
+                    <p className="text-sm text-red-500">{state.message}</p>
+                  )}
+                </div>
+                <Button type="submit" className="w-full">
+                  Sign up
+                </Button>
+              </div>
             </div>
           </div>
         </form>

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getSiteUrl } from '@/lib/getUrl'
+import { z } from 'zod'
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -26,19 +27,60 @@ export async function login(formData: FormData) {
   redirect('/')
 }
 
-export async function signup(formData: FormData) {
+const signupSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  user_name: z
+    .string()
+    .min(5, { message: 'Username must be at least 5 characters long' }),
+  password: z
+    .string()
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/, {
+      message:
+        'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+    }),
+  confirmPassword: z.string(),
+})
+
+export type State = {
+  errors?: {
+    email?: string[]
+    user_name?: string[]
+    password?: string[]
+    confirmPassword?: string[]
+  }
+  message?: string | null
+}
+
+export async function signup(prevState: State, formData: FormData) {
   const supabase = await createClient()
 
-  const password = formData.get('password') as string
-  const confirmPassword = formData.get('confirm-password') as string
+  const validatedFields = signupSchema.safeParse({
+    email: formData.get('email'),
+    user_name: formData.get('user_name'),
+    password: formData.get('password'),
+    confirmPassword: formData.get('confirm-password'),
+  })
 
-  if (password !== confirmPassword) {
-    redirect('/signup?error=passwords_mismatch')
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Invalid fields. Please check your inputs.',
+    }
+  }
+
+  if (validatedFields.data.password !== validatedFields.data.confirmPassword) {
+    return {
+      errors: {
+        password: ['Passwords do not match'],
+        confirmPassword: ['Passwords do not match'],
+      },
+      message: 'Invalid fields. Please check your inputs.',
+    }
   }
 
   const data = {
-    email: formData.get('email') as string,
-    password: password,
+    email: validatedFields.data.email,
+    password: validatedFields.data.password,
     options: {
       data: {
         user_name: formData.get('user_name') as string,
@@ -49,8 +91,12 @@ export async function signup(formData: FormData) {
   const { error } = await supabase.auth.signUp(data)
 
   if (error) {
-    console.error('Signup error:', error)
-    redirect('/signup?error=signup_error')
+    return {
+      errors: {
+        email: ['Email already in use'],
+      },
+      message: 'Invalid fields. Please check your inputs.',
+    }
   }
 
   revalidatePath('/', 'layout')
