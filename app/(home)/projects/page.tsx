@@ -1,5 +1,10 @@
 import { ProjectCard } from '@/components/pages/Cards'
 import { createClient } from '@/lib/supabase/server'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Projects',
+}
 
 export default async function ProjectsPage() {
   const supabase = await createClient()

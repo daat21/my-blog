@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AccountTab } from '@/components/profiles/AccountTab'
 import { PasswordTab } from '@/components/profiles/PasswordTab'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Profiles',
+}
 
 export default async function UserPage() {
   // const supabase = await createClient()

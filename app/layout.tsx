@@ -16,8 +16,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Daming's Blog",
-  description: 'Daming is a software engineer',
+  title: {
+    template: "%s | Daming Chen's Blog",
+    default: "Daming Chen's Blog",
+  },
+  description:
+    "I'm a full stack developer.  I share my journey in tech as well as snippets of my everyday life on this website.",
+  metadataBase: new URL('https://damingchen.com'),
 }
 
 export default function RootLayout({
@@ -27,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <meta name="apple-mobile-web-app-title" content="Daming's Blog" />
+      </head>
       <body
         className={`${geistSans.className} ${geistMono.variable} antialiased`}
       >

@@ -2,6 +2,11 @@ import EmailIcon from '@/components/contact/EmailIcon'
 import GithubIcon from '@/components/contact/GithubIcon'
 import LinkedinIcon from '@/components/contact/LinkedinIcon'
 import ContactForm from '@/components/contact/ContactForm'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Contact Me',
+}
 
 export default function ContactPage() {
   return (

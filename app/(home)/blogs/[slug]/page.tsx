@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/formatDate'
 import Tag from '@/components/blogs/Tag'
 import Image from 'next/image'
+import type { Metadata } from 'next'
 
 async function getBlog(slug: string) {
   const supabase = await createClient()
@@ -54,6 +55,31 @@ async function getBlogTags(post_id: number): Promise<Tag[]> {
 
 const customComponents = {
   pre: CodeBlockWrapper,
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string }
+}): Promise<Metadata> {
+  const post = await getBlog(params.slug)
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [
+        {
+          url: post.cover_image_url,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+  }
 }
 
 export default async function BlogPage({
