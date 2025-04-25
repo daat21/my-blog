@@ -181,3 +181,50 @@ export function ProjectsListSkeleton() {
     </>
   )
 }
+
+export function BlogDetailSkeleton() {
+  return (
+    <article className="prose dark:prose-invert lg:prose-lg mx-auto w-full p-4">
+      {/* Title skeleton */}
+      <Skeleton className="h-10 w-3/4 md:h-12" />
+
+      {/* Tags skeleton */}
+      <div className="mt-4">
+        <TagsSkeleton />
+      </div>
+
+      {/* Date skeleton */}
+      <Skeleton className="mt-4 h-5 w-52" />
+
+      {/* Excerpt skeleton */}
+      <Skeleton className="mt-6 h-16 w-full" />
+
+      {/* Cover image skeleton */}
+      <Skeleton className="mt-6 h-[300px] w-full md:h-[400px]" />
+
+      <hr className="my-6" />
+
+      {/* Content skeleton - paragraphs */}
+      <div className="mt-8 space-y-6">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-11/12" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-4 w-full" />
+
+        {/* Heading skeleton */}
+        <Skeleton className="mt-8 h-7 w-2/3" />
+
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-11/12" />
+        <Skeleton className="h-4 w-full" />
+
+        {/* Code block skeleton */}
+        <Skeleton className="h-40 w-full rounded" />
+
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-4 w-full" />
+      </div>
+    </article>
+  )
+}

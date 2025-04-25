@@ -8,6 +8,8 @@ import { formatDate } from '@/lib/formatDate'
 import Tag from '@/components/blogs/Tag'
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
+import { BlogDetailSkeleton } from '@/components/pages/Skeleton'
 
 async function getBlog(slug: string) {
   const supabase = await createClient()
@@ -83,12 +85,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function BlogPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  const { slug } = await params
+async function BlogContent({ slug }: { slug: string }) {
   const post = await getBlog(slug)
   const tags = await getBlogTags(post.id)
 
@@ -121,5 +118,19 @@ export default async function BlogPage({
         {post.content ?? ''}
       </ReactMarkdown>
     </article>
+  )
+}
+
+export default async function BlogPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+
+  return (
+    <Suspense fallback={<BlogDetailSkeleton />}>
+      <BlogContent slug={slug} />
+    </Suspense>
   )
 }
