@@ -39,6 +39,7 @@ export default function ContactForm() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   aria-describedby="name-error"
+                  disabled={isPending}
                 />
               </div>
               <div id="name-error" aria-live="polite" aria-atomic="true">
@@ -61,6 +62,7 @@ export default function ContactForm() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   aria-describedby="email-error"
+                  disabled={isPending}
                 />
               </div>
               <div id="email-error" aria-live="polite" aria-atomic="true">
@@ -83,6 +85,7 @@ export default function ContactForm() {
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   aria-describedby="message-error"
+                  disabled={isPending}
                 />
               </div>
               <div id="message-error" aria-live="polite" aria-atomic="true">
