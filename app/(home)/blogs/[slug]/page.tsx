@@ -60,9 +60,10 @@ const customComponents = {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }): Promise<Metadata> {
-  const post = await getBlog(params.slug)
+  const { slug } = await params
+  const post = await getBlog(slug)
 
   return {
     title: post.title,
