@@ -16,7 +16,6 @@ export default function ContactPage() {
       </h2>
       <div className="flex flex-row gap-4 p-4">
         <EmailIcon />
-
         <GithubIcon />
         <LinkedinIcon />
       </div>

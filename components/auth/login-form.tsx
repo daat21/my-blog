@@ -49,7 +49,7 @@ export function LoginForm() {
             <div className="flex flex-col gap-4">
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full cursor-pointer"
                 type="button"
                 onClick={handleSignInWithGithub}
                 disabled={isPending}
@@ -121,7 +121,11 @@ export function LoginForm() {
                   </div>
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={isPending}>
+              <Button
+                type="submit"
+                className="w-full cursor-pointer"
+                disabled={isPending}
+              >
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isPending ? 'Logging in...' : 'Login'}
               </Button>
