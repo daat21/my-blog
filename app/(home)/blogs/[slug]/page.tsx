@@ -10,6 +10,7 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { BlogDetailSkeleton } from '@/components/pages/Skeleton'
+import { TableOfContents } from '@/components/blogs/TableOfContent'
 
 async function getBlog(slug: string) {
   const supabase = await createClient()
@@ -90,34 +91,99 @@ async function BlogContent({ slug }: { slug: string }) {
   const tags = await getBlogTags(post.id)
 
   return (
-    <article className="prose dark:prose-invert lg:prose-lg mx-auto w-full p-4">
-      <h1>{post.title}</h1>
-      <div className="flex flex-wrap gap-2">
-        {tags.map(tag => (
-          <Tag key={tag.id} name={tag.name} color={tag.color} />
-        ))}
-      </div>
-      <p className="text-ring text-sm">
-        {post.published_at === post.last_modified_at
-          ? `Published: ${formatDate(post.published_at)}`
-          : `Modified: ${formatDate(post.last_modified_at)}`}
-      </p>
-      <p className="text-muted-foreground text-base italic">{post.excerpt}</p>
-      <Image
-        src={post.cover_image_url}
-        alt={post.title}
-        width={1000}
-        height={1000}
-      />
-      <hr />
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
-        components={customComponents}
-      >
-        {post.content ?? ''}
-      </ReactMarkdown>
-    </article>
+    <>
+      <TableOfContents content={post.content ?? ''} />
+      <article className="prose dark:prose-invert lg:prose-lg mx-auto w-full p-4">
+        <h1>{post.title}</h1>
+        <div className="flex flex-wrap gap-2">
+          {tags.map(tag => (
+            <Tag key={tag.id} name={tag.name} color={tag.color} />
+          ))}
+        </div>
+        <p className="text-ring text-sm">
+          {post.published_at === post.last_modified_at
+            ? `Published: ${formatDate(post.published_at)}`
+            : `Modified: ${formatDate(post.last_modified_at)}`}
+        </p>
+        <p className="text-muted-foreground text-base italic">{post.excerpt}</p>
+        <Image
+          src={post.cover_image_url}
+          alt={post.title}
+          width={1000}
+          height={1000}
+        />
+        <hr />
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeHighlight]}
+          components={{
+            ...customComponents,
+            h1: ({ node, ...props }) => (
+              <h1
+                id={props.children
+                  ?.toString()
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-')}
+                {...props}
+              />
+            ),
+            h2: ({ node, ...props }) => (
+              <h2
+                id={props.children
+                  ?.toString()
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-')}
+                {...props}
+              />
+            ),
+            h3: ({ node, ...props }) => (
+              <h3
+                id={props.children
+                  ?.toString()
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-')}
+                {...props}
+              />
+            ),
+            h4: ({ node, ...props }) => (
+              <h4
+                id={props.children
+                  ?.toString()
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-')}
+                {...props}
+              />
+            ),
+            h5: ({ node, ...props }) => (
+              <h5
+                id={props.children
+                  ?.toString()
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-')}
+                {...props}
+              />
+            ),
+            h6: ({ node, ...props }) => (
+              <h6
+                id={props.children
+                  ?.toString()
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-')}
+                {...props}
+              />
+            ),
+          }}
+        >
+          {post.content ?? ''}
+        </ReactMarkdown>
+      </article>
+    </>
   )
 }
 
