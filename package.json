@@ -28,13 +28,19 @@
     "dotenv": "^16.5.0",
     "highlight.js": "^11.11.1",
     "input-otp": "^1.4.2",
+    "katex": "^0.16.25",
     "lucide-react": "^0.488.0",
     "motion": "^12.7.4",
     "next": "15.3.1",
     "next-themes": "^0.4.6",
+    "notion-client": "^7.7.1",
+    "notion-types": "^7.7.1",
+    "notion-utils": "^7.7.1",
+    "prism-themes": "^1.9.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
+    "react-notion-x": "^7.7.1",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.2.0",
@@ -57,5 +63,5 @@
     "tailwindcss": "^4",
     "typescript": "^5.8.3"
   },
-  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
+  "packageManager": "pnpm@10.18.3+sha512.bbd16e6d7286fd7e01f6b3c0b3c932cda2965c06a908328f74663f10a9aea51f1129eea615134bf992831b009eabe167ecb7008b597f40ff9bc75946aadfb08d"
 }
