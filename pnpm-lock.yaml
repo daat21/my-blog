@@ -11,6 +11,9 @@ importers:
       '@heroicons/react':
         specifier: ^2.2.0
         version: 2.2.0(react@19.1.0)
+      '@notionhq/client':
+        specifier: ^5.2.1
+        version: 5.2.1
       '@radix-ui/react-avatar':
         specifier: ^1.1.6
         version: 1.1.6(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -452,6 +455,10 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@notionhq/client@5.2.1':
+    resolution: {integrity: sha512-6h3PQTvzBg5UVyC09Z3ZBc+kBVRAXVuwWGb0okZLJyTwzQX8uYiZOK9JJ8cnmr9vDs5C5dFXxb/d9/X6IUew1A==}
+    engines: {node: '>=18'}
 
   '@radix-ui/primitive@1.1.2':
     resolution: {integrity: sha512-XnbHrrprsNqZKQhStrSwgRUQzoCI1glLzdw79xiZPoofhGICeZRSQ3dIxAKH1gb3OHfNf4d6f+vAv3kil2eggA==}
@@ -3441,6 +3448,8 @@ snapshots:
       fastq: 1.19.1
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@notionhq/client@5.2.1': {}
 
   '@radix-ui/primitive@1.1.2': {}
 

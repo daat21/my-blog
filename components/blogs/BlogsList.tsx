@@ -1,40 +1,16 @@
-import { BlogCard } from '@/components/pages/Cards'
-import { createClient } from '@/lib/supabase/server'
-import { Blog } from '@/types'
+import { BlogFromNotionCard } from '@/components/pages/Cards'
+import { listBlogPosts } from '@/lib/notion/notion-blogs-list'
 
 export default async function BlogsList() {
-  const supabase = await createClient()
-
-  const { data: blogs, error } = await supabase.from('posts').select(`
-      *,
-      post_tags(
-        tag_id,
-        tags:tag_id(*)
-      )
-    `)
-
-  if (error) {
-    console.error(error)
-  }
-
-  const processedBlogs = blogs?.map(blog => {
-    const tags = blog.post_tags?.map((pt: any) => pt.tags) || []
-
-    return {
-      ...blog,
-      tags,
-      post_tags: undefined,
-    }
-  }) as Blog[]
+  const blogs = await listBlogPosts()
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col items-center justify-center gap-10">
-      {processedBlogs
+    <div className="mx-auto flex w-full max-w-5xl flex-col items-stretch justify-center gap-10">
+      {blogs
         ?.sort(
-          (a, b) =>
-            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         )
-        .map(blog => <BlogCard key={blog.id} blog={blog} />)}
+        .map(blog => <BlogFromNotionCard key={blog.id} blog={blog} />)}
     </div>
   )
 }

@@ -31,3 +31,15 @@ export interface Blog {
   updated_at: string
   tags?: Tag[]
 }
+
+export interface BlogsFromNotion {
+  id: string
+  title: string
+  slug: string
+  date: string
+  created_time: string
+  last_edited_time: string
+  tags: { id: string; name: string; color: string }[]
+  description: string
+  cover_image_url: string
+}

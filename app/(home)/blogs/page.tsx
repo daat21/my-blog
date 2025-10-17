@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: 'Blogs',
 }
 
-export default function BlogsPage() {
+export default async function BlogsPage() {
   return (
     <div className="flex flex-col gap-10 pb-10">
       <SearchBar />
