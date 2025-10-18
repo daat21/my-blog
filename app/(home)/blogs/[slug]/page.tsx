@@ -19,9 +19,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }): Promise<Metadata> {
-  const { slug } = params
+  const { slug } = await params
   const pageId = await getPageIdBySlug(slug)
   if (!pageId) return {}
 
@@ -73,9 +73,9 @@ async function NotionArticleContent({
 export default async function Page({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }) {
-  const { slug } = params
+  const { slug } = await params
   const pageId = await getPageIdBySlug(slug)
   if (!pageId) return notFound()
 
