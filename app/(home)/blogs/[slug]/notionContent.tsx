@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { NotionRenderer } from 'react-notion-x'
+import { useTheme } from 'next-themes'
 import type { ExtendedRecordMap, PageBlock } from 'notion-types'
 import { getPageTableOfContents, uuidToId } from 'notion-utils'
 import TagFromNotion from '@/components/blogs/TagFromNotion'
@@ -106,6 +107,8 @@ export default function NotionContent({
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const activeSectionRef = useRef<string | null>(null)
   const tocContainerRef = useRef<HTMLDivElement | null>(null)
+  const { resolvedTheme } = useTheme()
+  const isDarkMode = mounted && resolvedTheme === 'dark'
 
   useEffect(() => {
     setMounted(true)
@@ -326,7 +329,7 @@ export default function NotionContent({
           <NotionRenderer
             recordMap={recordMap}
             fullPage={false}
-            darkMode={false}
+            darkMode={isDarkMode}
             components={{ Code, Collection, Equation, Pdf, Modal }}
           />
         </div>
