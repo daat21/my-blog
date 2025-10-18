@@ -17,15 +17,21 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }): Promise<Metadata> {
+  const { slug } = await params
   return {
-    title: params.slug.replace(/-/g, ' '),
+    title: slug.replace(/-/g, ' '),
   }
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const pageId = await getPageIdBySlug(params.slug)
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const pageId = await getPageIdBySlug(slug)
   if (!pageId) return notFound()
 
   const [recordMap, metadata] = await Promise.all([
