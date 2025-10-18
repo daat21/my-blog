@@ -14,7 +14,7 @@ const GLOBE_CONFIG: COBEOptions = {
   onRender: () => {},
   devicePixelRatio: 2,
   phi: 0,
-  theta: -0.6,
+  theta: -0.15,
   dark: 0,
   diffuse: 0.4,
   mapSamples: 16000,
@@ -23,9 +23,17 @@ const GLOBE_CONFIG: COBEOptions = {
   markerColor: [251 / 255, 100 / 255, 21 / 255],
   glowColor: [1, 1, 1],
   markers: [
-    { location: [-34.92054139335055, 138.6064208165422], size: 0.1 },
+    { location: [-34.92054139335055, 138.6064208165422], size: 0.2 },
     { location: [23.12911, 113.264385], size: 0.1 },
     { location: [-37.81821941814787, 144.97756800311808], size: 0.1 },
+    { location: [29.5551031, 106.2189203], size: 0.1 },
+    { location: [39.9380697, 115.7381274], size: 0.1 },
+    { location: [31.2238418, 120.8174003], size: 0.1 },
+    { location: [34.2595068, 108.6375776], size: 0.1 },
+    { location: [41.2851801, 74.3767505], size: 0.1 },
+    { location: [35.5042987, 138.4508009], size: 0.1 },
+    { location: [1.3146649, 103.514611], size: 0.1 },
+    { location: [-8.4535608, 114.4121989], size: 0.1 },
   ],
 }
 

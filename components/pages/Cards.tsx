@@ -6,10 +6,11 @@ import Image from 'next/image'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import Tag from '@/components/blogs/Tag'
-import type { Project, Blog } from '@/types'
+import type { Project, Blog, BlogsFromNotion } from '@/types'
 import { formatDate } from '@/lib/formatDate'
 import Link from 'next/link'
 import { Button } from '../ui/button'
+import TagFromNotion from '../blogs/TagFromNotion'
 
 export function HorizontalCard({ blog }: { blog: Blog }) {
   const { theme } = useTheme()
@@ -40,13 +41,58 @@ export function HorizontalCard({ blog }: { blog: Blog }) {
             />
             <div className="my-2 flex flex-col justify-between p-1">
               <h3 className="text-base font-medium md:text-lg">{blog.title}</h3>
-              <span className="text-ring text-sm">
+              <span className="text-muted-foreground text-sm">
                 {mounted ? formatDate(blog.updated_at) : ''}
               </span>
               <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
                 {blog.excerpt.length > 80
                   ? `${blog.excerpt.slice(0, 80)}...`
                   : blog.excerpt}
+              </p>
+            </div>
+          </CardContent>
+        </Link>
+      </MagicCard>
+    </Card>
+  )
+}
+
+export function HorizontalCardFromNotion({ blog }: { blog: BlogsFromNotion }) {
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const gradientColor = mounted
+    ? theme === 'dark'
+      ? '#262626'
+      : '#D9D9D955'
+    : '#262626'
+
+  return (
+    <Card className="w-full overflow-hidden border-none p-0 shadow-none md:h-[100px]">
+      {/* <MagicCard className="w-full md:h-[100px]" gradientColor={gradientColor}> */}
+      <MagicCard className="w-full md:h-[100px]">
+        <Link href={`/blogs/${blog.slug}`}>
+          <CardContent className="flex gap-2 p-0">
+            <Image
+              src={blog.cover_image_url}
+              alt="Title"
+              width={140}
+              height={140}
+              className="h-[100px] w-[100px] rounded-2xl rounded-r-none object-cover p-1"
+            />
+            <div className="my-2 flex flex-col justify-between p-1">
+              <h3 className="text-base font-medium md:text-lg">{blog.title}</h3>
+              <span className="text-muted-foreground text-sm">
+                {mounted ? formatDate(blog.date) : ''}
+              </span>
+              <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
+                {blog.description.length > 80
+                  ? `${blog.description.slice(0, 80)}...`
+                  : blog.description}
               </p>
             </div>
           </CardContent>
@@ -87,7 +133,7 @@ export function BlogCard({ blog }: { blog: Blog }) {
             />
             <div className="my-2 flex flex-col justify-between p-1">
               <h3 className="font-medium md:text-xl">{blog.title}</h3>
-              <span className="text-ring text-sm">
+              <span className="text-muted-foreground text-sm">
                 {mounted ? formatDate(blog.updated_at) : ''}
               </span>
               <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
@@ -96,6 +142,61 @@ export function BlogCard({ blog }: { blog: Blog }) {
               <span>
                 {blog.tags?.map(tag => (
                   <Tag
+                    key={tag.id}
+                    name={tag.name}
+                    color={tag.color}
+                    className="border-none"
+                  />
+                ))}
+              </span>
+            </div>
+          </CardContent>
+        </Link>
+      </MagicCard>
+    </Card>
+  )
+}
+
+export function BlogFromNotionCard({ blog }: { blog: BlogsFromNotion }) {
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const gradientColor = mounted
+    ? theme === 'dark'
+      ? '#262626'
+      : '#D9D9D955'
+    : '#262626'
+
+  return (
+    <Card className="h-[140px] w-full overflow-hidden border-none p-0 shadow-none md:h-[172px]">
+      <MagicCard
+        className="h-[140px] w-full md:h-[172px]"
+        // gradientColor={gradientColor}
+      >
+        <Link href={`/blogs/${blog.slug}`}>
+          <CardContent className="flex gap-2 p-0">
+            <Image
+              src={blog.cover_image_url}
+              alt="Title"
+              width={172}
+              height={172}
+              className="h-[140px] w-[100px] rounded-2xl rounded-r-none object-cover p-1 md:h-[172px] md:w-[172px]"
+            />
+            <div className="my-2 flex flex-col justify-between p-1">
+              <h3 className="font-medium md:text-xl">{blog.title}</h3>
+              <span className="text-muted-foreground text-sm">
+                {mounted ? formatDate(blog.date) : ''}
+              </span>
+              <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
+                {blog.description}
+              </p>
+              <span>
+                {blog.tags?.map(tag => (
+                  <TagFromNotion
                     key={tag.id}
                     name={tag.name}
                     color={tag.color}

@@ -1,12 +1,12 @@
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Rubik, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const rubik = Rubik({
+  variable: '--font-rubik',
   subsets: ['latin'],
 })
 
@@ -36,7 +36,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Daming's Blog" />
       </head>
       <body
-        className={`${geistSans.className} ${geistMono.variable} antialiased`}
+        className={`${rubik.className} ${rubik.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"
