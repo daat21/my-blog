@@ -121,6 +121,16 @@
     sans-serif;
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 /* :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
