@@ -271,7 +271,7 @@ export default function NotionContent({
     mounted && last_edited_time ? formatDate(last_edited_time) : null
 
   return (
-    <div className="mx-auto w-full px-4 lg:px-8">
+    <div className="mx-auto w-full px-0 sm:px-4 lg:px-8">
       <div className="xl:flex xl:justify-center xl:gap-20">
         {hasTableOfContents ? (
           <div
