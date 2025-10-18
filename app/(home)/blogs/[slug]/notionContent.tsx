@@ -9,8 +9,52 @@ import TagFromNotion from '@/components/blogs/TagFromNotion'
 import { formatDate, formatDateOnly } from '@/lib/formatDate'
 import type { BlogListItem } from '@/lib/notion/notion-blogs-list'
 
+let prismLanguagesPromise: Promise<unknown[]> | null = null
+
+const ensurePrismLanguages = () => {
+  if (typeof window === 'undefined') return Promise.resolve([])
+  if (!prismLanguagesPromise) {
+    prismLanguagesPromise = Promise.all([
+      import('prismjs/components/prism-bash'),
+      import('prismjs/components/prism-c'),
+      import('prismjs/components/prism-clike'),
+      import('prismjs/components/prism-cpp'),
+      import('prismjs/components/prism-csharp'),
+      import('prismjs/components/prism-dart'),
+      import('prismjs/components/prism-docker'),
+      import('prismjs/components/prism-go'),
+      import('prismjs/components/prism-graphql'),
+      import('prismjs/components/prism-java'),
+      import('prismjs/components/prism-javascript'),
+      import('prismjs/components/prism-jsx'),
+      import('prismjs/components/prism-json'),
+      import('prismjs/components/prism-kotlin'),
+      import('prismjs/components/prism-less'),
+      import('prismjs/components/prism-lua'),
+      import('prismjs/components/prism-makefile'),
+      import('prismjs/components/prism-markdown'),
+      import('prismjs/components/prism-objectivec'),
+      import('prismjs/components/prism-ocaml'),
+      import('prismjs/components/prism-python'),
+      import('prismjs/components/prism-rust'),
+      import('prismjs/components/prism-sass'),
+      import('prismjs/components/prism-scss'),
+      import('prismjs/components/prism-sql'),
+      import('prismjs/components/prism-swift'),
+      import('prismjs/components/prism-tsx'),
+      import('prismjs/components/prism-typescript'),
+      import('prismjs/components/prism-yaml'),
+    ])
+  }
+  return prismLanguagesPromise
+}
+
 const Code = dynamic(
-  () => import('react-notion-x/build/third-party/code').then(m => m.Code),
+  () =>
+    import('react-notion-x/build/third-party/code').then(async m => {
+      await ensurePrismLanguages()
+      return m.Code
+    }),
   { ssr: false }
 )
 const BaseCollection = dynamic(
@@ -40,7 +84,7 @@ const Collection = (props: any) => {
   if (block?.type === 'page' && block?.parent_table === 'collection') {
     return (
       <div className="notion-width-wrapper not-prose">
-        <hr className="my-10 border-border" />
+        <hr className="border-border my-10" />
       </div>
     )
   }

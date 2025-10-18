@@ -2,12 +2,16 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getNotionPageRecordMap } from '@/lib/notion/notion'
 import { getBlogPostMetadata } from '@/lib/notion/getBlogPostMetadata'
-import { getPageIdBySlug, ALL_SLUGS } from '@/lib/notion/notionMapping'
+import {
+  getAllPublishedBlogSlugs,
+  getPageIdBySlug,
+} from '@/lib/notion/notionMapping'
 import NotionContent from './notionContent'
 
 export const revalidate = 60
 export async function generateStaticParams() {
-  return ALL_SLUGS.map(slug => ({ slug }))
+  const slugs = await getAllPublishedBlogSlugs()
+  return slugs.map(slug => ({ slug }))
 }
 
 export async function generateMetadata({
@@ -21,7 +25,7 @@ export async function generateMetadata({
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
-  const pageId = getPageIdBySlug(params.slug)
+  const pageId = await getPageIdBySlug(params.slug)
   if (!pageId) return notFound()
 
   const [recordMap, metadata] = await Promise.all([

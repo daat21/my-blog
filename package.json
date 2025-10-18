@@ -38,6 +38,7 @@
     "notion-types": "^7.7.1",
     "notion-utils": "^7.7.1",
     "prism-themes": "^1.9.0",
+    "prismjs": "1.30.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
