@@ -1,18 +1,9 @@
-import { HorizontalCard } from '@/components/pages/Cards'
+import { HorizontalCardFromNotion } from '@/components/pages/Cards'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { listBlogPosts } from '@/lib/notion/notion-blogs-list'
 
 export async function RecentlyBlogs() {
-  const supabase = await createClient()
-  const { data: blogs, error } = await supabase
-    .from('posts')
-    .select('*')
-    .order('updated_at', { ascending: false })
-
-  if (error) {
-    console.error(error)
-  }
-
+  const blogs = await listBlogPosts()
   const recentlyBlogs = blogs?.slice(0, 3)
 
   return (
@@ -24,7 +15,7 @@ export async function RecentlyBlogs() {
       </Link>
       <div className="mt-8 flex flex-col gap-8 md:mt-0">
         {recentlyBlogs?.map(blog => (
-          <HorizontalCard key={blog.id} blog={blog} />
+          <HorizontalCardFromNotion key={blog.id} blog={blog} />
         ))}
       </div>
     </div>

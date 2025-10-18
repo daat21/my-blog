@@ -57,6 +57,51 @@ export function HorizontalCard({ blog }: { blog: Blog }) {
   )
 }
 
+export function HorizontalCardFromNotion({ blog }: { blog: BlogsFromNotion }) {
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const gradientColor = mounted
+    ? theme === 'dark'
+      ? '#262626'
+      : '#D9D9D955'
+    : '#262626'
+
+  return (
+    <Card className="w-full overflow-hidden border-none p-0 shadow-none md:h-[100px]">
+      {/* <MagicCard className="w-full md:h-[100px]" gradientColor={gradientColor}> */}
+      <MagicCard className="w-full md:h-[100px]">
+        <Link href={`/blogs/${blog.slug}`}>
+          <CardContent className="flex gap-2 p-0">
+            <Image
+              src={blog.cover_image_url}
+              alt="Title"
+              width={140}
+              height={140}
+              className="h-[100px] w-[100px] rounded-2xl rounded-r-none object-cover p-1"
+            />
+            <div className="my-2 flex flex-col justify-between p-1">
+              <h3 className="text-base font-medium md:text-lg">{blog.title}</h3>
+              <span className="text-muted-foreground text-sm">
+                {mounted ? formatDate(blog.date) : ''}
+              </span>
+              <p className="text-muted-foreground mt-2 mr-2 hidden text-sm md:block">
+                {blog.description.length > 80
+                  ? `${blog.description.slice(0, 80)}...`
+                  : blog.description}
+              </p>
+            </div>
+          </CardContent>
+        </Link>
+      </MagicCard>
+    </Card>
+  )
+}
+
 export function BlogCard({ blog }: { blog: Blog }) {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
