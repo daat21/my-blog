@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getNotionPageRecordMap } from '@/lib/notion/notion'
@@ -7,6 +8,7 @@ import {
   getPageIdBySlug,
 } from '@/lib/notion/notionMapping'
 import NotionContent from './notionContent'
+import BlogPostSkeleton from '@/components/blogs/BlogPostSkeleton'
 
 export const revalidate = 60
 export async function generateStaticParams() {
@@ -51,6 +53,23 @@ export async function generateMetadata({
   }
 }
 
+type BlogPostMetadata = NonNullable<
+  Awaited<ReturnType<typeof getBlogPostMetadata>>
+>
+
+type RecordMapPromise = ReturnType<typeof getNotionPageRecordMap>
+
+async function NotionArticleContent({
+  recordMapPromise,
+  metadata,
+}: {
+  recordMapPromise: RecordMapPromise
+  metadata: BlogPostMetadata
+}) {
+  const recordMap = await recordMapPromise
+  return <NotionContent recordMap={recordMap} metadata={metadata} />
+}
+
 export default async function Page({
   params,
 }: {
@@ -60,15 +79,18 @@ export default async function Page({
   const pageId = await getPageIdBySlug(slug)
   if (!pageId) return notFound()
 
-  const [recordMap, metadata] = await Promise.all([
-    getNotionPageRecordMap(pageId),
-    getBlogPostMetadata(pageId),
-  ])
+  const recordMapPromise = getNotionPageRecordMap(pageId)
+  const metadata = await getBlogPostMetadata(pageId)
 
   if (!metadata) return notFound()
   return (
     <main className="mx-auto w-full max-w-screen-xl px-0 py-8 sm:px-4">
-      <NotionContent recordMap={recordMap} metadata={metadata} />
+      <Suspense fallback={<BlogPostSkeleton />}>
+        <NotionArticleContent
+          recordMapPromise={recordMapPromise}
+          metadata={metadata}
+        />
+      </Suspense>
     </main>
   )
 }
