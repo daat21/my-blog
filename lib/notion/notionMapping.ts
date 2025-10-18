@@ -1,5 +1,6 @@
 import 'server-only'
 import { Client } from '@notionhq/client'
+import { cache } from 'react'
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY! })
 const BLOG_DB_ID = process.env.NOTION_BLOG_DATABASE_ID!
@@ -45,25 +46,25 @@ export async function getAllPublishedBlogSlugs(): Promise<string[]> {
   return Array.from(slugs).sort()
 }
 
-export async function getPageIdBySlug(
-  slug: string
-): Promise<string | undefined> {
-  const res = await notion.dataSources
-    .query({
-      data_source_id: BLOG_DB_ID,
-      filter: {
-        and: [
-          { property: 'Published', checkbox: { equals: true } },
-          { property: 'Slug', rich_text: { equals: slug } },
-        ],
-      },
-      page_size: 1,
-      result_type: 'page',
-    })
-    .catch(() => null)
+export const getPageIdBySlug = cache(
+  async (slug: string): Promise<string | undefined> => {
+    const res = await notion.dataSources
+      .query({
+        data_source_id: BLOG_DB_ID,
+        filter: {
+          and: [
+            { property: 'Published', checkbox: { equals: true } },
+            { property: 'Slug', rich_text: { equals: slug } },
+          ],
+        },
+        page_size: 1,
+        result_type: 'page',
+      })
+      .catch(() => null)
 
-  if (!res || res.results.length === 0) return undefined
+    if (!res || res.results.length === 0) return undefined
 
-  const page = res.results[0] as any
-  return page?.id
-}
+    const page = res.results[0] as any
+    return page?.id
+  }
+)
