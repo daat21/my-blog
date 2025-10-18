@@ -150,8 +150,45 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
 }
 
 export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
+  const navRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const root = document.documentElement
+
+    const updateOffsets = () => {
+      if (!navRef.current) return
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+      if (isDesktop) {
+        root.style.setProperty('--scroll-progress-top', '0px')
+        return
+      }
+
+      const height = navRef.current.offsetHeight
+      root.style.setProperty('--scroll-progress-top', `${height}px`)
+    }
+
+    updateOffsets()
+
+    const handleResize = () => updateOffsets()
+    window.addEventListener('resize', handleResize)
+
+    let resizeObserver: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined' && navRef.current) {
+      resizeObserver = new ResizeObserver(() => updateOffsets())
+      resizeObserver.observe(navRef.current)
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      resizeObserver?.disconnect()
+      root.style.removeProperty('--scroll-progress-top')
+    }
+  }, [])
+
   return (
     <motion.div
+      ref={navRef}
       animate={{
         backdropFilter: visible ? 'blur(10px)' : 'none',
         boxShadow: visible
