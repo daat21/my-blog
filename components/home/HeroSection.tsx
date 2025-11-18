@@ -1,11 +1,38 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { BackgroundBeamsWithCollision } from '../ui/background-beams-with-collision'
-import ColourfulText from '../ui/colourful-text'
-import { FlipWords } from '../ui/flip-words'
-import { TextGenerateEffect } from '../ui/text-generate-effect'
-import { InteractiveHoverButton } from '@/components/magicui/interactive-hover-button'
+
+// Dynamically import animation components to reduce initial bundle
+const BackgroundBeamsWithCollision = dynamic(
+  () =>
+    import('../ui/background-beams-with-collision').then(
+      mod => mod.BackgroundBeamsWithCollision
+    ),
+  { ssr: false }
+)
+
+const ColourfulText = dynamic(() => import('../ui/colourful-text'), {
+  ssr: false,
+})
+
+const FlipWords = dynamic(
+  () => import('../ui/flip-words').then(mod => mod.FlipWords),
+  { ssr: false }
+)
+
+const TextGenerateEffect = dynamic(
+  () => import('../ui/text-generate-effect').then(mod => mod.TextGenerateEffect),
+  { ssr: false }
+)
+
+const InteractiveHoverButton = dynamic(
+  () =>
+    import('@/components/magicui/interactive-hover-button').then(
+      mod => mod.InteractiveHoverButton
+    ),
+  { ssr: false }
+)
 
 export default function HeroSection() {
   return (

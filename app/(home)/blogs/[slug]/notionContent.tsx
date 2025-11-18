@@ -14,39 +14,27 @@ import { cn } from '@/lib/utils'
 
 let prismLanguagesPromise: Promise<unknown[]> | null = null
 
+// Load only the most commonly used programming languages to reduce initial bundle size
 const ensurePrismLanguages = () => {
   if (typeof window === 'undefined') return Promise.resolve([])
   if (!prismLanguagesPromise) {
     prismLanguagesPromise = Promise.all([
+      // Core languages
       import('prismjs/components/prism-bash'),
-      import('prismjs/components/prism-c'),
-      import('prismjs/components/prism-clike'),
-      import('prismjs/components/prism-cpp'),
-      import('prismjs/components/prism-csharp'),
-      import('prismjs/components/prism-dart'),
-      import('prismjs/components/prism-docker'),
-      import('prismjs/components/prism-go'),
-      import('prismjs/components/prism-graphql'),
-      import('prismjs/components/prism-java'),
       import('prismjs/components/prism-javascript'),
-      import('prismjs/components/prism-jsx'),
-      import('prismjs/components/prism-json'),
-      import('prismjs/components/prism-kotlin'),
-      import('prismjs/components/prism-less'),
-      import('prismjs/components/prism-lua'),
-      import('prismjs/components/prism-makefile'),
-      import('prismjs/components/prism-markdown'),
-      import('prismjs/components/prism-objectivec'),
-      import('prismjs/components/prism-ocaml'),
-      import('prismjs/components/prism-python'),
-      import('prismjs/components/prism-rust'),
-      import('prismjs/components/prism-sass'),
-      import('prismjs/components/prism-scss'),
-      import('prismjs/components/prism-sql'),
-      import('prismjs/components/prism-swift'),
-      import('prismjs/components/prism-tsx'),
       import('prismjs/components/prism-typescript'),
+      import('prismjs/components/prism-jsx'),
+      import('prismjs/components/prism-tsx'),
+      import('prismjs/components/prism-json'),
+      // Backend languages
+      import('prismjs/components/prism-python'),
+      import('prismjs/components/prism-go'),
+      import('prismjs/components/prism-java'),
+      // Other common languages
+      import('prismjs/components/prism-sql'),
       import('prismjs/components/prism-yaml'),
+      import('prismjs/components/prism-docker'),
+      import('prismjs/components/prism-markdown'),
     ])
   }
   return prismLanguagesPromise
@@ -109,6 +97,21 @@ export default function NotionContent({
   const tocContainerRef = useRef<HTMLDivElement | null>(null)
   const { resolvedTheme } = useTheme()
   const isDarkMode = mounted && resolvedTheme === 'dark'
+
+  // Detect if specific components are needed
+  const hasEquation = useMemo(() => {
+    if (!recordMap?.block) return false
+    return Object.values(recordMap.block).some(
+      block => block.value?.type === 'equation'
+    )
+  }, [recordMap])
+
+  const hasPdf = useMemo(() => {
+    if (!recordMap?.block) return false
+    return Object.values(recordMap.block).some(
+      block => block.value?.type === 'pdf'
+    )
+  }, [recordMap])
 
   useEffect(() => {
     setMounted(true)
@@ -330,7 +333,13 @@ export default function NotionContent({
             recordMap={recordMap}
             fullPage={false}
             darkMode={isDarkMode}
-            components={{ Code, Collection, Equation, Pdf, Modal }}
+            components={{
+              Code,
+              Collection,
+              Modal,
+              ...(hasEquation && { Equation }),
+              ...(hasPdf && { Pdf }),
+            }}
           />
         </div>
         {hasTableOfContents ? (

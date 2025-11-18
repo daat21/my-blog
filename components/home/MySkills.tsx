@@ -1,5 +1,16 @@
+'use client'
+
+import dynamic from 'next/dynamic'
 import { MySkillsDock } from './my-skills/MySkillsDock'
-import { IconCloud } from './my-skills/IconCloud'
+
+// Lazy load IconCloud (heavy 3D canvas component)
+const IconCloud = dynamic(
+  () => import('./my-skills/IconCloud').then(mod => mod.IconCloud),
+  {
+    ssr: false,
+    loading: () => <div className="h-[400px] w-full" />,
+  }
+)
 
 export default function MySkills() {
   return (

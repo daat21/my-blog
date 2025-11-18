@@ -30,7 +30,7 @@ export function HorizontalCard({ blog }: { blog: Blog }) {
     <Card className="w-full overflow-hidden border-none p-0 shadow-none md:h-[100px]">
       {/* <MagicCard className="w-full md:h-[100px]" gradientColor={gradientColor}> */}
       <MagicCard className="w-full md:h-[100px]">
-        <Link href={`/blogs/${blog.slug}`}>
+        <Link href={`/blogs/${blog.slug}`} prefetch={true}>
           <CardContent className="flex gap-2 p-0">
             <Image
               src={blog.cover_image_url}
@@ -75,7 +75,7 @@ export function HorizontalCardFromNotion({ blog }: { blog: BlogsFromNotion }) {
     <Card className="w-full overflow-hidden border-none p-0 shadow-none md:h-[100px]">
       {/* <MagicCard className="w-full md:h-[100px]" gradientColor={gradientColor}> */}
       <MagicCard className="w-full md:h-[100px]">
-        <Link href={`/blogs/${blog.slug}`}>
+        <Link href={`/blogs/${blog.slug}`} prefetch={true}>
           <CardContent className="flex gap-2 p-0">
             <Image
               src={blog.cover_image_url}
@@ -122,7 +122,7 @@ export function BlogCard({ blog }: { blog: Blog }) {
         className="h-[140px] w-full md:h-[172px]"
         // gradientColor={gradientColor}
       >
-        <Link href={`/blogs/${blog.slug}`}>
+        <Link href={`/blogs/${blog.slug}`} prefetch={true}>
           <CardContent className="flex gap-2 p-0">
             <Image
               src={blog.cover_image_url}
@@ -177,7 +177,7 @@ export function BlogFromNotionCard({ blog }: { blog: BlogsFromNotion }) {
         className="h-[140px] w-full md:h-[172px]"
         // gradientColor={gradientColor}
       >
-        <Link href={`/blogs/${blog.slug}`}>
+        <Link href={`/blogs/${blog.slug}`} prefetch={true}>
           <CardContent className="flex gap-2 p-0">
             <Image
               src={blog.cover_image_url}
