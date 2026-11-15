@@ -8,7 +8,7 @@ export const contentType = 'image/png'
 // This route handler is separate from the post page, so it lists its own
 // params; with them, every card is prerendered at build time.
 export async function generateStaticParams() {
-  const posts = await listPosts({ collection: 'writing' })
+  const posts = await listPosts()
   return staticParams(
     'slug',
     posts.map(({ slug }) => slug)
@@ -23,7 +23,7 @@ export default async function OpenGraphImage({
   const [{ slug }, profile, posts] = await Promise.all([
     params,
     getProfile(),
-    listPosts({ collection: 'writing' }),
+    listPosts(),
   ])
   const post = posts.find(candidate => candidate.slug === slug)
   if (!post) return new Response('Not found', { status: 404 })

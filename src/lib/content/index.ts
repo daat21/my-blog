@@ -3,7 +3,6 @@ import { cacheLife, cacheTag } from 'next/cache'
 import { createFileSystemSource } from '@/lib/content/file-system-source'
 import type { PostFilter } from '@/lib/content/source'
 import type {
-  Collection,
   Post,
   PostSummary,
   Profile,
@@ -33,9 +32,9 @@ const source = createFileSystemSource({
 
 // Every read is cached for as long as possible and tagged, so publishing can
 // later invalidate exactly what changed: `posts` covers every list of posts
-// (and the tag counts derived from them), `post:<collection>:<slug>` one post.
+// (and the tag counts derived from them), `post:<slug>` one post.
 
-/** Posts from both collections, or from one, newest first. */
+/** Every post, or those with a tag, newest first. */
 export async function listPosts(filter?: PostFilter): Promise<PostSummary[]> {
   'use cache'
   cacheLife('max')
@@ -44,14 +43,11 @@ export async function listPosts(filter?: PostFilter): Promise<PostSummary[]> {
 }
 
 /** One rendered post, or null if it does not exist or is a hidden draft. */
-export async function getPost(
-  collection: Collection,
-  slug: string
-): Promise<Post | null> {
+export async function getPost(slug: string): Promise<Post | null> {
   'use cache'
   cacheLife('max')
-  cacheTag(`post:${collection}:${slug}`)
-  return await source.getPost(collection, slug)
+  cacheTag(`post:${slug}`)
+  return await source.getPost(slug)
 }
 
 /** Tags of visible posts with their counts, most used first. */

@@ -1,7 +1,7 @@
-import { CollectionPage, collectionMetadata } from '@/features/posts'
+import { WritingListPage, writingMetadata } from '@/features/posts'
 
-export const metadata = collectionMetadata('writing')
+export const metadata = writingMetadata
 
 export default function WritingPage() {
-  return <CollectionPage collection="writing" />
+  return <WritingListPage />
 }

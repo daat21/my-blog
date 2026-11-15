@@ -6,19 +6,16 @@ import {
   listPosts,
   listTags,
   staticParams,
-  type Collection,
 } from '@/lib/content'
 
-import { COLLECTIONS } from './collections'
+import { WRITING_INTRO } from './writing-intro'
 
 /**
- * `generateStaticParams` for `/<collection>/[slug]`: every visible post, or
- * the shared placeholder when there are none (which renders a 404).
+ * `generateStaticParams` for `/writing/[slug]`: every visible post, or the
+ * shared placeholder when there are none (which renders a 404).
  */
-export async function articleStaticParams(
-  collection: Collection
-): Promise<{ slug: string }[]> {
-  const posts = await listPosts({ collection })
+export async function articleStaticParams(): Promise<{ slug: string }[]> {
+  const posts = await listPosts()
   return staticParams(
     'slug',
     posts.map(post => post.slug)
@@ -35,16 +32,10 @@ export async function tagStaticParams(): Promise<{ tag: string }[]> {
 }
 
 /** Page title, description and Open Graph article data for a post. */
-export async function articleMetadata(
-  collection: Collection,
-  slug: string
-): Promise<Metadata> {
-  const [post, profile] = await Promise.all([
-    getPost(collection, slug),
-    getProfile(),
-  ])
+export async function articleMetadata(slug: string): Promise<Metadata> {
+  const [post, profile] = await Promise.all([getPost(slug), getProfile()])
   if (!post) return {}
-  const url = `/${collection}/${post.slug}`
+  const url = `/writing/${post.slug}`
   return {
     title: post.title,
     description: post.description,
@@ -65,21 +56,18 @@ export async function articleMetadata(
   }
 }
 
-/** Metadata for the list of one collection. */
-export function collectionMetadata(collection: Collection): Metadata {
-  const { title, description } = COLLECTIONS[collection]
-  return {
-    title,
-    description,
-    alternates: { canonical: `/${collection}` },
-  }
+/** Metadata for the writing list. */
+export const writingMetadata: Metadata = {
+  title: WRITING_INTRO.title,
+  description: WRITING_INTRO.description,
+  alternates: { canonical: '/writing' },
 }
 
 /** Metadata for the posts with one tag. */
 export function tagMetadata(tag: string): Metadata {
   return {
     title: `Tagged “${tag}”`,
-    description: `Writing and notes tagged “${tag}”.`,
+    description: `Writing tagged “${tag}”.`,
     alternates: { canonical: `/tags/${tag}` },
   }
 }

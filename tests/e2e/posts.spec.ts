@@ -73,27 +73,7 @@ test.describe('post lists', () => {
     await expectCleanPage(page, errors)
   })
 
-  test('notes lists the notes', async ({ page }) => {
-    const errors = trackErrors(page)
-    await page.goto('/notes')
-
-    await expect(
-      page.getByRole('heading', { level: 1, name: 'Notes' })
-    ).toBeVisible()
-    await expect(listedTitles(page)).toHaveText([
-      'A tiny CSS reset',
-      'Git aliases I use daily',
-    ])
-    await expect(
-      page.getByRole('link', { name: 'A tiny CSS reset' })
-    ).toHaveAttribute('href', '/notes/a-tiny-css-reset')
-
-    await expectCleanPage(page, errors)
-  })
-
-  test('a tag page lists posts with the tag from both collections', async ({
-    page,
-  }) => {
+  test('a tag page lists the posts with the tag', async ({ page }) => {
     const errors = trackErrors(page)
     await page.goto('/tags/design')
 
@@ -106,12 +86,8 @@ test.describe('post lists', () => {
     ])
     await expectCleanPage(page, errors)
 
-    await page.goto('/tags/css')
-    await expect(listedTitles(page)).toHaveText(['A tiny CSS reset'])
-    // Lists that mix collections name each post's collection.
-    await expect(
-      page.getByRole('main').getByRole('listitem').first()
-    ).toContainText('note')
+    await page.goto('/tags/habits')
+    await expect(listedTitles(page)).toHaveText(['Keeping a work log'])
   })
 })
 
@@ -280,32 +256,25 @@ test.describe('article', () => {
     )
   })
 
-  test('a note renders with its own breadcrumb and metadata', async ({
-    page,
-  }) => {
+  test('a post carries Open Graph article metadata', async ({ page }) => {
     const errors = trackErrors(page)
-    await page.goto('/notes/a-tiny-css-reset')
+    await page.goto('/writing/keeping-a-work-log')
 
     await expect(
-      page.getByRole('heading', { level: 1, name: 'A tiny CSS reset' })
+      page.getByRole('heading', { level: 1, name: 'Keeping a work log' })
     ).toBeVisible()
-    await expect(
-      page
-        .getByRole('navigation', { name: 'Breadcrumb' })
-        .getByRole('link', { name: 'notes' })
-    ).toHaveAttribute('href', '/notes')
     await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
       'content',
       'article'
     )
     await expect(
       page.locator('meta[property="article:published_time"]')
-    ).toHaveAttribute('content', '2026-10-30')
-    await expect(page.locator('meta[property="article:tag"]')).toHaveAttribute(
-      'content',
-      'css'
-    )
-    await expect(page).toHaveTitle(/A tiny CSS reset/)
+    ).toHaveAttribute('content', '2026-05-04')
+    const tags = page.locator('meta[property="article:tag"]')
+    await expect(tags).toHaveCount(2)
+    await expect(tags.first()).toHaveAttribute('content', 'writing')
+    await expect(tags.last()).toHaveAttribute('content', 'habits')
+    await expect(page).toHaveTitle(/Keeping a work log/)
 
     await expectCleanPage(page, errors)
   })
@@ -314,7 +283,6 @@ test.describe('article', () => {
 test.describe('missing pages', () => {
   for (const path of [
     '/writing/not-a-post',
-    '/notes/not-a-note',
     '/tags/not-a-tag',
     // Drafts are hidden in production builds, and so are their tags.
     '/writing/unfinished-thoughts-on-testing',

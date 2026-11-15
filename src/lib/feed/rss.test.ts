@@ -11,7 +11,7 @@ import {
 const channel: RssChannel = {
   title: 'Avery & Co',
   link: 'https://example.com',
-  description: 'Notes on <the> web.',
+  description: 'Thoughts on <the> web.',
   feedUrl: 'https://example.com/rss.xml',
   language: 'en',
 }
@@ -64,7 +64,7 @@ describe('renderRss', () => {
   it('escapes channel fields and links to itself', () => {
     expect(xml).toContain('<title>Avery &amp; Co</title>')
     expect(xml).toContain(
-      '<description>Notes on &lt;the&gt; web.</description>'
+      '<description>Thoughts on &lt;the&gt; web.</description>'
     )
     expect(xml).toContain('<language>en</language>')
     expect(xml).toContain(

@@ -95,7 +95,7 @@ describe('design tokens only', () => {
       'src/app/(site)/writing/[slug]/opengraph-image.tsx',
       'src/app/icon.tsx',
       'src/app/apple-icon.tsx',
-      'src/app/(site)/notes/icon.tsx',
+      'src/app/(site)/projects/icon.tsx',
       'src/lib/og/palette.ts',
     ])('allows raw colours in %s', async filePath => {
       expect(await violations(filePath, rawColors)).not.toContain(RULE)

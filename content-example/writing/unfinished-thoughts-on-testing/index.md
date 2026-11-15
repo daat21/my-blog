@@ -8,7 +8,7 @@ draft: true
 
 This post is a draft. It is listed in development and on preview deployments, and never in production.
 
-## Notes so far
+## So far
 
 - Test behaviour that could break without anyone noticing.
 - Prefer one clear end-to-end check over many brittle ones.

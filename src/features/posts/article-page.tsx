@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { TableOfContents } from '@/components/layout/table-of-contents'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
-import { getPost, listPosts, type Collection } from '@/lib/content'
+import { getPost, listPosts } from '@/lib/content'
 
 import { ArticleBody } from './article-body'
 import { ArticleFooter } from './article-footer'
@@ -11,20 +11,16 @@ import { findNeighbours } from './neighbours'
 import { PAGE_GUTTER, READING_COLUMN } from './page-gutter'
 
 interface ArticlePageProps {
-  collection: Collection
   slug: string
 }
 
 /**
- * A post or note. Below the full tier the table of contents is a
+ * A post. Below the full tier the table of contents is a
  * collapsible block above the body; from 1280px it is a sticky right rail.
  * Unknown slugs, and drafts where drafts are hidden, are a 404.
  */
-export async function ArticlePage({ collection, slug }: ArticlePageProps) {
-  const [post, posts] = await Promise.all([
-    getPost(collection, slug),
-    listPosts({ collection }),
-  ])
+export async function ArticlePage({ slug }: ArticlePageProps) {
+  const [post, posts] = await Promise.all([getPost(slug), listPosts()])
   if (!post) notFound()
 
   return (
@@ -33,7 +29,7 @@ export async function ArticlePage({ collection, slug }: ArticlePageProps) {
         <article className={READING_COLUMN}>
           <Breadcrumb
             items={[
-              { label: collection, href: `/${collection}` },
+              { label: 'writing', href: '/writing' },
               { label: post.date.slice(0, 4) },
               { label: post.slug },
             ]}

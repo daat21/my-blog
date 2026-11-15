@@ -4,8 +4,6 @@ import { PostRow } from './post-row'
 
 interface PostListProps {
   posts: PostSummary[]
-  /** Name each post's collection, for lists that mix both. */
-  showCollection?: boolean
   /** Shown instead of the list when there are no posts. */
   emptyMessage?: string
 }
@@ -13,7 +11,6 @@ interface PostListProps {
 /** Posts, newest first, one row each. */
 export function PostList({
   posts,
-  showCollection,
   emptyMessage = 'Nothing here yet. Check back soon.',
 }: PostListProps) {
   if (posts.length === 0) {
@@ -27,8 +24,8 @@ export function PostList({
   return (
     <ul className="divide-y divide-border border-y border-border">
       {posts.map(post => (
-        <li key={`${post.collection}/${post.slug}`}>
-          <PostRow post={post} showCollection={showCollection} />
+        <li key={post.slug}>
+          <PostRow post={post} />
         </li>
       ))}
     </ul>

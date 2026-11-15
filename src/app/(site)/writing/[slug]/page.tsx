@@ -16,19 +16,19 @@ interface WritingArticleProps {
 export const ensureStatic = 'navigation'
 
 export function generateStaticParams() {
-  return articleStaticParams('writing')
+  return articleStaticParams()
 }
 
 export async function generateMetadata({
   params,
 }: WritingArticleProps): Promise<Metadata> {
   const { slug } = await params
-  return articleMetadata('writing', slug)
+  return articleMetadata(slug)
 }
 
 export default async function WritingArticlePage({
   params,
 }: WritingArticleProps) {
   const { slug } = await params
-  return <ArticlePage collection="writing" slug={slug} />
+  return <ArticlePage slug={slug} />
 }

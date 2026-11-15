@@ -13,7 +13,7 @@ const CARD =
 const CARD_LABEL = 'font-mono text-meta text-fg-muted'
 const CARD_TITLE = 'text-ui leading-[1.45] font-medium text-fg'
 
-type NeighbourPost = Pick<PostSummary, 'collection' | 'slug' | 'title'>
+type NeighbourPost = Pick<PostSummary, 'slug' | 'title'>
 
 function NeighbourCard({
   post,
@@ -24,7 +24,7 @@ function NeighbourCard({
 }) {
   return (
     <Link
-      href={`/${post.collection}/${post.slug}`}
+      href={`/writing/${post.slug}`}
       rel={direction === 'previous' ? 'prev' : 'next'}
       className={cn(
         CARD,
@@ -53,8 +53,8 @@ interface ArticleFooterProps {
 }
 
 /**
- * Cards for the previous (older) and next (newer) post in the same
- * collection, then a small, unobtrusive link for reporting a mistake.
+ * Cards for the previous (older) and next (newer) post, then a small,
+ * unobtrusive link for reporting a mistake.
  */
 export function ArticleFooter({ neighbours }: ArticleFooterProps) {
   const { previous, next } = neighbours

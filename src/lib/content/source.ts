@@ -1,14 +1,6 @@
-import type {
-  Collection,
-  Post,
-  PostSummary,
-  Profile,
-  Project,
-  TagCount,
-} from './types'
+import type { Post, PostSummary, Profile, Project, TagCount } from './types'
 
 export interface PostFilter {
-  collection?: Collection
   tag?: string
 }
 
@@ -20,7 +12,7 @@ export interface PostFilter {
 export interface ContentSource {
   /** Newest first. */
   listPosts(filter?: PostFilter): Promise<PostSummary[]>
-  getPost(collection: Collection, slug: string): Promise<Post | null>
+  getPost(slug: string): Promise<Post | null>
   /** Most used first. */
   listTags(): Promise<TagCount[]>
   /** Sorted by `order`, then newest first. */

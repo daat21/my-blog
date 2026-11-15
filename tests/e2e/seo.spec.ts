@@ -8,8 +8,6 @@ const PUBLISHED = [
   '/writing/a-tour-of-the-content-format',
   '/writing/designing-for-slow-networks',
   '/writing/keeping-a-work-log',
-  '/notes/a-tiny-css-reset',
-  '/notes/git-aliases-i-use-daily',
 ]
 const DRAFT = '/writing/unfinished-thoughts-on-testing'
 const UNKNOWN = '/this-page-does-not-exist'
@@ -73,7 +71,7 @@ async function feedItems(page: Page, xml: string): Promise<FeedItem[] | null> {
 
 const pathOf = (url: string) => new URL(url).pathname
 
-test('the RSS feed lists published posts and notes, not drafts', async ({
+test('the RSS feed lists published posts, not drafts', async ({
   page,
   request,
 }, testInfo) => {
@@ -116,10 +114,9 @@ test('the sitemap lists sections, published posts and tags', async ({
     expect.arrayContaining([
       '/',
       '/writing',
-      '/notes',
       '/projects',
       ...PUBLISHED,
-      '/tags/css',
+      '/tags/design',
     ])
   )
   expect(paths).not.toContain(DRAFT)
@@ -205,7 +202,7 @@ test('page titles follow the site template', async ({ page }, testInfo) => {
 
   // Every other page either keeps the default or fills in the template.
   const titled = new RegExp(`^(?:.+ · )?${SITE_NAME}$`)
-  for (const path of ['/writing', '/notes', '/projects']) {
+  for (const path of ['/writing', '/projects']) {
     await page.goto(path)
     await expect(page).toHaveTitle(titled)
   }

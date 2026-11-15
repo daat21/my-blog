@@ -62,7 +62,7 @@ const yearLike = z
   .union([text, z.number().int().nonnegative()])
   .transform(value => String(value))
 
-/** Front matter of `writing/<slug>/index.md` and `notes/<slug>/index.md`. */
+/** Front matter of `writing/<slug>/index.md`. */
 export const postFrontMatterSchema = z
   .strictObject({
     title: text,

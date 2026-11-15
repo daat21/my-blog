@@ -2,8 +2,6 @@ import type { Root } from 'hast'
 
 import type { ResolvedImage } from '@/lib/media/types'
 
-export type Collection = 'writing' | 'notes'
-
 export interface Heading {
   depth: 2 | 3
   /** Matches the `id` that rehype-slug gives the heading element. */
@@ -12,7 +10,6 @@ export interface Heading {
 }
 
 export interface PostSummary {
-  collection: Collection
   slug: string
   title: string
   description: string

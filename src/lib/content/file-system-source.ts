@@ -19,7 +19,6 @@ import {
 } from '@/lib/content/schemas'
 import type { ContentSource, PostFilter } from '@/lib/content/source'
 import type {
-  Collection,
   Post,
   PostSummary,
   Profile,
@@ -36,12 +35,11 @@ export interface FileSystemSourceOptions {
   media: MediaResolver
 }
 
-const COLLECTIONS: readonly Collection[] = ['writing', 'notes']
+const WRITING = 'writing'
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const PROFILE_FILE = 'profile.yaml'
 
 interface PostFile {
-  collection: Collection
   slug: string
   /** Path relative to the content directory, for error messages. */
   file: string
@@ -53,10 +51,6 @@ interface PostFile {
 /** Checks that a folder or file name is a lowercase kebab-case slug. */
 export function isSlug(value: string): boolean {
   return SLUG.test(value)
-}
-
-function isCollection(value: string): value is Collection {
-  return (COLLECTIONS as readonly string[]).includes(value)
 }
 
 function isNotFound(error: unknown): boolean {
@@ -73,11 +67,7 @@ function compareText(a: string, b: string): number {
 }
 
 function newestFirst(a: PostSummary, b: PostSummary): number {
-  return (
-    compareText(b.date, a.date) ||
-    compareText(a.collection, b.collection) ||
-    compareText(a.slug, b.slug)
-  )
+  return compareText(b.date, a.date) || compareText(a.slug, b.slug)
 }
 
 /** The latest four-digit year in a free-form `year`, such as `2023–2024`. */
@@ -103,7 +93,7 @@ function slugError(where: string, name: string): ContentError {
 /**
  * Reads content from a directory laid out like the content repository:
  *
- * - `writing/<slug>/index.md` and `notes/<slug>/index.md`: posts
+ * - `writing/<slug>/index.md`: one post per folder
  * - `projects/<slug>.md`: one project per file; only the front matter is
  *   used, the body is ignored
  * - `profile.yaml`
@@ -158,30 +148,27 @@ export function createFileSystemSource(
     }
   }
 
-  async function readPost(
-    collection: Collection,
-    slug: string
-  ): Promise<PostFile | undefined> {
-    const file = `${collection}/${slug}/index.md`
+  async function readPost(slug: string): Promise<PostFile | undefined> {
+    const file = `${WRITING}/${slug}/index.md`
     const source = await readText(file)
     if (source === undefined) return undefined
     const { data, body } = splitFrontMatter(source, file)
     const meta = validate(postFrontMatterSchema, data, file)
-    return { collection, slug, file, meta, body }
+    return { slug, file, meta, body }
   }
 
-  async function readCollection(collection: Collection): Promise<PostFile[]> {
-    const entries = await listFolder(collection)
+  async function readPosts(): Promise<PostFile[]> {
+    const entries = await listFolder(WRITING)
     return Promise.all(
       entries.map(async entry => {
-        const where = `${collection}/${entry.name}`
+        const where = `${WRITING}/${entry.name}`
         if (!entry.isDirectory()) {
           throw new ContentError(
-            `${where}: Expected a folder holding index.md, e.g. ${collection}/my-post/index.md`
+            `${where}: Expected a folder holding index.md, e.g. ${WRITING}/my-post/index.md`
           )
         }
         if (!isSlug(entry.name)) throw slugError(where, entry.name)
-        const post = await readPost(collection, entry.name)
+        const post = await readPost(entry.name)
         if (!post) throw new ContentError(`${where}: Missing index.md`)
         return post
       })
@@ -196,34 +183,23 @@ export function createFileSystemSource(
     post: PostFile,
     readingMinutes = readingMinutesOf(post.body)
   ): PostSummary {
-    return {
-      collection: post.collection,
-      slug: post.slug,
-      ...post.meta,
-      readingMinutes,
-    }
+    return { slug: post.slug, ...post.meta, readingMinutes }
   }
 
   async function listPosts(filter: PostFilter = {}): Promise<PostSummary[]> {
-    const collections = filter.collection ? [filter.collection] : COLLECTIONS
     const tag = filter.tag === undefined ? undefined : normalizeTag(filter.tag)
-    const files = await Promise.all(collections.map(readCollection))
-    return files
-      .flat()
+    return (await readPosts())
       .filter(isVisible)
       .filter(post => tag === undefined || post.meta.tags.includes(tag))
       .map(post => summarize(post))
       .sort(newestFirst)
   }
 
-  async function getPost(
-    collection: Collection,
-    slug: string
-  ): Promise<Post | null> {
-    // Both may come from a URL, so anything unexpected is simply not found.
-    if (!isCollection(collection) || !isSlug(slug)) return null
+  async function getPost(slug: string): Promise<Post | null> {
+    // It may come from a URL, so anything unexpected is simply not found.
+    if (!isSlug(slug)) return null
     await ensureContentDir()
-    const post = await readPost(collection, slug)
+    const post = await readPost(slug)
     if (!post || !isVisible(post)) return null
     const rendered = await renderMarkdown(post.body, { file: post.file, media })
     return {

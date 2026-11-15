@@ -10,7 +10,7 @@ interface TagPostsPageProps {
   tag: string
 }
 
-/** Posts and notes with one tag, newest first. Unknown tags are a 404. */
+/** Posts with one tag, newest first. Unknown tags are a 404. */
 export async function TagPostsPage({ tag }: TagPostsPageProps) {
   const posts = await listPosts({ tag })
   if (posts.length === 0) notFound()
@@ -29,7 +29,7 @@ export async function TagPostsPage({ tag }: TagPostsPageProps) {
           }
           description={`${count} tagged “${tag}”, newest first.`}
         />
-        <PostList posts={posts} showCollection />
+        <PostList posts={posts} />
       </div>
     </div>
   )

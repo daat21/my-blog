@@ -66,7 +66,7 @@ describe('ArticleBody', () => {
 
   it('marks external links noopener noreferrer, and only those', async () => {
     const html = await renderArticle(
-      '[out](https://example.com) and [in](/notes/x) and [here](#top)'
+      '[out](https://example.com) and [in](/writing/x) and [here](#top)'
     )
     const links = openingTags(html, 'a')
     expect(links).toHaveLength(3)

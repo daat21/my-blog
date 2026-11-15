@@ -198,7 +198,7 @@ describe('buildMedia', () => {
     )
     await writeSource('broken.png', 'not an image')
     await writeSource('clip.mp4', 'not a video')
-    await writeSource('notes.txt', 'hello')
+    await writeSource('readme.txt', 'hello')
     await writeSource('fine.png', await png(10, 10))
 
     const error = await build().then(
@@ -215,7 +215,7 @@ describe('buildMedia', () => {
     expect(message).toContain('media/broken.png: ')
     expect(message).toContain('media/clip.mp4: Malformed MP4')
     expect(message).toContain(
-      'media/notes.txt: Unsupported file type. Supported types: .png, .jpg, .jpeg, .webp, .mp4.'
+      'media/readme.txt: Unsupported file type. Supported types: .png, .jpg, .jpeg, .webp, .mp4.'
     )
     expect(message).not.toContain('fine.png')
     await expect(stat(manifestPath)).rejects.toThrow(/ENOENT/)

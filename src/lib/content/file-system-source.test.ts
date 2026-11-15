@@ -135,27 +135,26 @@ describe('createFileSystemSource: posts', () => {
       tags: ['secret', 'css'],
       draft: true,
     }),
-    'notes/middle/index.md': post({ date: '2026-06-01', tags: ['css'] }),
-    'notes/same-day-b/index.md': post({ date: '2026-03-03' }),
-    'notes/same-day-a/index.md': post({ date: '2026-03-03' }),
+    'writing/middle/index.md': post({ date: '2026-06-01', tags: ['css'] }),
+    'writing/same-day-b/index.md': post({ date: '2026-03-03' }),
+    'writing/same-day-a/index.md': post({ date: '2026-03-03' }),
     'writing/.DS_Store': '',
   }
 
-  it('lists visible posts from both collections, newest first', async () => {
+  it('lists visible posts newest first, by slug on the same day', async () => {
     const posts = await (await source(files)).listPosts()
-    expect(posts.map(p => `${p.collection}/${p.slug}`)).toEqual([
-      'writing/newest',
-      'notes/middle',
-      'notes/same-day-a',
-      'notes/same-day-b',
-      'writing/older',
+    expect(posts.map(p => p.slug)).toEqual([
+      'newest',
+      'middle',
+      'same-day-a',
+      'same-day-b',
+      'older',
     ])
   })
 
   it('returns summaries with normalised tags and a reading time', async () => {
     const [newest] = await (await source(files)).listPosts()
     expect(newest).toEqual({
-      collection: 'writing',
       slug: 'newest',
       title: 'A post',
       description: 'A description.',
@@ -166,32 +165,28 @@ describe('createFileSystemSource: posts', () => {
     })
   })
 
-  it('filters by collection and by tag', async () => {
+  it('filters by tag', async () => {
     const content = await source(files)
-    expect(
-      (await content.listPosts({ collection: 'notes' })).map(p => p.slug)
-    ).toEqual(['middle', 'same-day-a', 'same-day-b'])
     expect(
       (await content.listPosts({ tag: 'Next.js' })).map(p => p.slug)
     ).toEqual(['newest', 'older'])
-    expect(
-      (await content.listPosts({ collection: 'writing', tag: 'css' })).map(
-        p => p.slug
-      )
-    ).toEqual(['older'])
+    expect((await content.listPosts({ tag: 'css' })).map(p => p.slug)).toEqual([
+      'middle',
+      'older',
+    ])
   })
 
   it('includes drafts only when showDrafts is on', async () => {
     const hidden = await source(files)
     expect((await hidden.listPosts()).map(p => p.slug)).not.toContain('secret')
-    expect(await hidden.getPost('writing', 'secret')).toBeNull()
+    expect(await hidden.getPost('secret')).toBeNull()
 
     const shown = await source(files, true)
     expect((await shown.listPosts())[0]).toMatchObject({
       slug: 'secret',
       draft: true,
     })
-    expect(await shown.getPost('writing', 'secret')).toMatchObject({
+    expect(await shown.getPost('secret')).toMatchObject({
       slug: 'secret',
     })
   })
@@ -208,25 +203,23 @@ describe('createFileSystemSource: posts', () => {
     ])
   })
 
-  it('returns an empty list when a collection folder is missing', async () => {
-    const content = await source({
-      'writing/only/index.md': post({ date: '2026-01-01' }),
-    })
-    expect(await content.listPosts({ collection: 'notes' })).toEqual([])
+  it('returns an empty list without a writing folder', async () => {
+    const content = await source({ 'profile.yaml': PROFILE })
+    expect(await content.listPosts()).toEqual([])
+    expect(await content.listTags()).toEqual([])
   })
 })
 
 describe('createFileSystemSource: getPost', () => {
   it('renders the body with headings and reading time', async () => {
     const content = await source({
-      'notes/hello/index.md': post({
+      'writing/hello/index.md': post({
         date: '2026-02-02',
         body: '## First part\n\nText.\n\n### Detail\n\nMore text.',
       }),
     })
-    const note = await content.getPost('notes', 'hello')
-    expect(note).toMatchObject({
-      collection: 'notes',
+    const hello = await content.getPost('hello')
+    expect(hello).toMatchObject({
       slug: 'hello',
       readingMinutes: 1,
       headings: [
@@ -234,20 +227,17 @@ describe('createFileSystemSource: getPost', () => {
         { depth: 3, id: 'detail', text: 'Detail' },
       ],
     })
-    expect(note?.body.type).toBe('root')
+    expect(hello?.body.type).toBe('root')
   })
 
-  it('returns null for unknown or malformed slugs and collections', async () => {
+  it('returns null for unknown or malformed slugs', async () => {
     const content = await source({
       'writing/real/index.md': post({ date: '2026-02-02' }),
       'secret.md': post({ date: '2026-02-02' }),
     })
-    expect(await content.getPost('writing', 'missing')).toBeNull()
-    expect(await content.getPost('writing', '../secret')).toBeNull()
-    expect(await content.getPost('writing', 'Real')).toBeNull()
-    expect(await content.getPost('notes', 'real')).toBeNull()
-    // @ts-expect-error: guards against a collection taken from a URL
-    expect(await content.getPost('projects', 'real')).toBeNull()
+    expect(await content.getPost('missing')).toBeNull()
+    expect(await content.getPost('../secret')).toBeNull()
+    expect(await content.getPost('Real')).toBeNull()
   })
 
   it('reports Markdown errors with the line in the file', async () => {
@@ -258,7 +248,7 @@ describe('createFileSystemSource: getPost', () => {
     const line = file.split('\n').indexOf('![](media:a.png)') + 1
     expect(line).toBeGreaterThan(3)
     const content = await source({ 'writing/broken/index.md': file })
-    await expect(content.getPost('writing', 'broken')).rejects.toThrow(
+    await expect(content.getPost('broken')).rejects.toThrow(
       `writing/broken/index.md:${line}:1: Image media:a.png has no alt text`
     )
   })
@@ -295,12 +285,12 @@ describe('createFileSystemSource: validation', () => {
     }
   )
 
-  it('rejects stray files in a collection', async () => {
+  it('rejects stray files in the writing folder', async () => {
     const content = await source({
-      'notes/stray.md': post({ date: '2026-01-01' }),
+      'writing/stray.md': post({ date: '2026-01-01' }),
     })
     await expect(content.listPosts()).rejects.toThrow(
-      'notes/stray.md: Expected a folder holding index.md'
+      'writing/stray.md: Expected a folder holding index.md'
     )
   })
 
@@ -399,8 +389,8 @@ describe('createFileSystemSource: projects', () => {
       'projects/My Project.md: "My Project" is not a valid slug'
     )
     await expect(
-      (await source({ 'projects/notes.txt': 'x' })).listProjects()
-    ).rejects.toThrow('projects/notes.txt: Expected a Markdown file')
+      (await source({ 'projects/readme.txt': 'x' })).listProjects()
+    ).rejects.toThrow('projects/readme.txt: Expected a Markdown file')
   })
 
   it('returns an empty list without a projects folder', async () => {

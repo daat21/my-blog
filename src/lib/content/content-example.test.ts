@@ -52,12 +52,10 @@ function elements(node: Nodes): Element[] {
 describe('content-example', () => {
   it('lists the published posts newest first, without the draft', async () => {
     const posts = await published.listPosts()
-    expect(posts.map(post => `${post.collection}/${post.slug}`)).toEqual([
-      'writing/a-tour-of-the-content-format',
-      'notes/a-tiny-css-reset',
-      'writing/designing-for-slow-networks',
-      'notes/git-aliases-i-use-daily',
-      'writing/keeping-a-work-log',
+    expect(posts.map(post => post.slug)).toEqual([
+      'a-tour-of-the-content-format',
+      'designing-for-slow-networks',
+      'keeping-a-work-log',
     ])
   })
 
@@ -70,16 +68,13 @@ describe('content-example', () => {
 
   it('renders every post', async () => {
     for (const summary of await withDrafts.listPosts()) {
-      const post = await withDrafts.getPost(summary.collection, summary.slug)
+      const post = await withDrafts.getPost(summary.slug)
       expect(post?.body.children.length).toBeGreaterThan(0)
     }
   })
 
   it('has a post that exercises every Markdown feature', async () => {
-    const post = await published.getPost(
-      'writing',
-      'a-tour-of-the-content-format'
-    )
+    const post = await published.getPost('a-tour-of-the-content-format')
     if (!post) throw new Error('Feature tour not found')
     const all = elements(post.body)
     const tags = new Set(all.map(element => element.tagName))
@@ -111,12 +106,9 @@ describe('content-example', () => {
     expect(await published.listTags()).toEqual([
       { tag: 'design', count: 2 },
       { tag: 'writing', count: 2 },
-      { tag: 'css', count: 1 },
-      { tag: 'git', count: 1 },
       { tag: 'habits', count: 1 },
       { tag: 'markdown', count: 1 },
       { tag: 'performance', count: 1 },
-      { tag: 'tools', count: 1 },
     ])
   })
 

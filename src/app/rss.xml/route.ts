@@ -25,7 +25,7 @@ export async function GET(): Promise<Response> {
     },
     posts.map(post => ({
       title: post.title,
-      link: `${env.siteUrl}/${post.collection}/${post.slug}`,
+      link: `${env.siteUrl}/writing/${post.slug}`,
       description: post.description,
       date: post.date,
       categories: post.tags,
