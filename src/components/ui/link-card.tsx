@@ -6,21 +6,15 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 const linkCardVariants = cva(
-  'flex flex-col gap-1 rounded-md border px-4.5 py-4 transition-colors duration-150',
+  'flex flex-col gap-1 rounded-md border border-border px-4.5 py-4 transition-colors duration-150 hover:border-border-strong',
   {
     variants: {
-      variant: {
-        solid: 'border-border hover:border-border-strong',
-        dashed:
-          'justify-center border-dashed border-border-strong hover:border-fg-muted',
-      },
       align: {
         start: '',
         end: 'sm:items-end sm:text-right',
       },
     },
     defaultVariants: {
-      variant: 'solid',
       align: 'start',
     },
   }
@@ -44,7 +38,6 @@ export function LinkCard<T extends string>({
   label,
   title,
   rel,
-  variant,
   align,
   className,
 }: LinkCardProps<T>) {
@@ -52,7 +45,7 @@ export function LinkCard<T extends string>({
     <Link
       href={href}
       rel={rel}
-      className={cn(linkCardVariants({ variant, align }), className)}
+      className={cn(linkCardVariants({ align }), className)}
     >
       <span className="font-mono text-meta text-fg-muted">{label}</span>
       <span className="text-ui leading-[1.45] font-medium text-fg">

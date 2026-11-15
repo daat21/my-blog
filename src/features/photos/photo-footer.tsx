@@ -1,4 +1,3 @@
-import { LinkCard } from '@/components/ui/link-card'
 import { NeighbourCard } from '@/components/ui/neighbour-card'
 import type { PhotoSummary } from '@/lib/content'
 import type { Neighbours } from '@/lib/utils'
@@ -10,14 +9,17 @@ interface PhotoFooterProps {
 }
 
 /**
- * Cards for the previous (older) and next (newer) photo, and one back to
- * the gallery. Two cards share a row; a third, or a lone one, takes the
- * full width.
+ * Cards for the previous (older) and next (newer) photo. The way back to
+ * the gallery is the breadcrumb at the top of the page.
  */
 export function PhotoFooter({ neighbours }: PhotoFooterProps) {
   const { previous, next } = neighbours
+  if (!previous && !next) return null
   return (
-    <footer className="mt-14 grid gap-3 border-t border-border pt-6 sm:grid-cols-2">
+    <nav
+      aria-label="More photos"
+      className="mt-14 grid gap-3 border-t border-border pt-6 sm:grid-cols-2"
+    >
       {previous && (
         <NeighbourCard
           href={`/photos/${previous.slug}`}
@@ -26,19 +28,14 @@ export function PhotoFooter({ neighbours }: PhotoFooterProps) {
         />
       )}
       {next && (
-        <NeighbourCard
-          href={`/photos/${next.slug}`}
-          title={next.title}
-          direction="next"
-        />
+        <div className="sm:col-start-2">
+          <NeighbourCard
+            href={`/photos/${next.slug}`}
+            title={next.title}
+            direction="next"
+          />
+        </div>
       )}
-      <LinkCard
-        href="/photos"
-        variant="dashed"
-        className="sm:odd:col-span-2"
-        label="back to the gallery"
-        title="All photos"
-      />
-    </footer>
+    </nav>
   )
 }

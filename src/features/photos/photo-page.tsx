@@ -5,6 +5,8 @@ import {
   READING_COLUMN,
   WIDE_COLUMN,
 } from '@/components/layout/page-gutter'
+import { SiteFooter } from '@/components/layout/site-footer'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { MediaImage } from '@/components/ui/media-image'
 import { ArticleBody } from '@/features/posts'
 import { getPhoto, listPhotos } from '@/lib/content'
@@ -33,37 +35,44 @@ export async function PhotoPage({ slug }: PhotoPageProps) {
 
   return (
     <div className={PAGE_GUTTER}>
-      <article className={WIDE_COLUMN}>
-        {/* Sized from the photo's dimensions, so nothing moves as it loads;
+      <div className={WIDE_COLUMN}>
+        <Breadcrumb
+          items={[{ label: 'photos', href: '/photos' }, { label: photo.slug }]}
+          className={`${READING_COLUMN} mb-6`}
+        />
+        <article>
+          {/* Sized from the photo's dimensions, so nothing moves as it loads;
             the dominant colour fills the box until then. */}
-        <div
-          className="relative mx-auto overflow-hidden rounded-md bg-sunken"
-          style={{
-            width: `min(100%, ${cappedWidth(image)}dvh)`,
-            aspectRatio: `${image.width} / ${image.height}`,
-            backgroundColor: image.color,
-          }}
-        >
-          <MediaImage
-            image={image}
-            alt={photo.alt}
-            sizes={photoSizes(image)}
-            loading="eager"
-            fetchPriority="high"
-            className="absolute inset-0 size-full object-contain"
-          />
-        </div>
-        <div className={READING_COLUMN}>
-          <header className="mt-8 mb-10 flex flex-col gap-3.5 md:mt-10">
-            <h1 className="text-h1 font-semibold tracking-[-0.022em] text-balance text-fg">
-              {photo.title}
-            </h1>
-            <PhotoMeta photo={photo} />
-          </header>
-          {photo.story && <ArticleBody body={photo.story} />}
-          <PhotoFooter neighbours={findNeighbours(photos, photo.slug)} />
-        </div>
-      </article>
+          <div
+            className="relative mx-auto overflow-hidden rounded-md bg-sunken"
+            style={{
+              width: `min(100%, ${cappedWidth(image)}dvh)`,
+              aspectRatio: `${image.width} / ${image.height}`,
+              backgroundColor: image.color,
+            }}
+          >
+            <MediaImage
+              image={image}
+              alt={photo.alt}
+              sizes={photoSizes(image)}
+              loading="eager"
+              fetchPriority="high"
+              className="absolute inset-0 size-full object-contain"
+            />
+          </div>
+          <div className={READING_COLUMN}>
+            <header className="mt-8 mb-10 flex flex-col gap-3.5 md:mt-10">
+              <h1 className="text-h1 font-semibold tracking-[-0.022em] text-balance text-fg">
+                {photo.title}
+              </h1>
+              <PhotoMeta photo={photo} />
+            </header>
+            {photo.story && <ArticleBody body={photo.story} />}
+            <PhotoFooter neighbours={findNeighbours(photos, photo.slug)} />
+          </div>
+        </article>
+        <SiteFooter className={READING_COLUMN} />
+      </div>
     </div>
   )
 }

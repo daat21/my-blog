@@ -226,7 +226,11 @@ test.describe('photo page', () => {
       main.getByRole('link', { name: /previous Tide pool/ })
     ).toBeVisible()
 
-    await main.getByRole('link', { name: /All photos/ }).click()
+    // The way back to the gallery is the breadcrumb.
+    await main
+      .getByRole('navigation', { name: 'Breadcrumb' })
+      .getByRole('link', { name: 'photos' })
+      .click()
     await expect(page).toHaveURL('/photos')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Photos')
   })
