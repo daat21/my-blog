@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   typedRoutes: true,
   poweredByHeader: false,
+  // Dev server only: allow testing from a phone or tablet on the local network
+  // or a Tailscale tailnet. Without this, the dev server blocks its scripts for
+  // any hostname other than localhost and the page never becomes interactive.
+  allowedDevOrigins: ['192.168.*.*', '10.*.*.*', '100.*.*.*', '*.local'],
   headers() {
     return Promise.resolve([
       {
