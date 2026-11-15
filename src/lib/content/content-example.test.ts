@@ -1,7 +1,8 @@
-import { stat } from 'node:fs/promises'
+import { readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 
 import type { Element, Nodes } from 'hast'
+import sharp from 'sharp'
 import { describe, expect, it } from 'vitest'
 
 import { createFileSystemSource } from '@/lib/content/file-system-source'
@@ -110,6 +111,60 @@ describe('content-example', () => {
       { tag: 'markdown', count: 1 },
       { tag: 'performance', count: 1 },
     ])
+  })
+
+  it('lists the published photos newest first, without the draft', async () => {
+    const photos = await published.listPhotos()
+    expect(photos.map(photo => photo.slug)).toEqual([
+      'low-sun',
+      'tide-pool',
+      'birch-stand',
+      'city-haze',
+      'window-light',
+    ])
+  })
+
+  it('has one draft photo, shown only with drafts on', async () => {
+    const drafts = (await withDrafts.listPhotos()).filter(photo => photo.draft)
+    expect(drafts.map(photo => photo.slug)).toEqual(['night-ferry'])
+  })
+
+  it('has photos with every detail, with none, and one with a story', async () => {
+    const photos = await Promise.all(
+      (await withDrafts.listPhotos()).map(({ slug }) =>
+        withDrafts.getPhoto(slug)
+      )
+    )
+    const details = ['location', 'camera', 'lens', 'exposure'] as const
+    const counts = photos.map(
+      photo => details.filter(key => photo?.[key] !== undefined).length
+    )
+    expect(counts).toContain(4)
+    expect(counts).toContain(0)
+
+    const told = photos.filter(photo => photo?.story)
+    expect(told.map(photo => photo?.slug)).toEqual(['low-sun'])
+    expect(told[0]?.description).toBe(
+      'We reached the end of the west pier just as the light began to go.'
+    )
+  })
+
+  it('keeps the sample photos small, in four aspect ratios', async () => {
+    const folder = path.join(contentDir, 'media', 'photos')
+    const files = (await readdir(folder)).map(name => path.join(folder, name))
+    const sizes = await Promise.all(
+      files.map(async file => (await stat(file)).size)
+    )
+    for (const size of sizes) expect(size).toBeLessThan(120 * 1024)
+    expect(sizes.reduce((sum, size) => sum + size, 0)).toBeLessThan(600 * 1024)
+
+    const ratios = await Promise.all(
+      files.map(async file => {
+        const { width, height } = await sharp(file).metadata()
+        return (width / height).toFixed(2)
+      })
+    )
+    expect(new Set(ratios)).toEqual(new Set(['1.50', '0.67', '1.00', '1.78']))
   })
 
   it('lists four projects, the featured one with an image first', async () => {
