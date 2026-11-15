@@ -19,8 +19,6 @@ links:
     href: https://code.example.com/avery
   - label: Social
     href: https://social.example.com/@avery
-  - label: RSS
-    href: /rss.xml
 stack:
   - group: Languages
     items: [TypeScript, HTML, CSS, SQL]

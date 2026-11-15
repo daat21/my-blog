@@ -4,6 +4,7 @@ import type { TagCount } from '@/lib/content/types'
 
 import { MobileNav } from './mobile-nav'
 import { SidebarContent, type SidebarProfile } from './sidebar-content'
+import { SiteFooter } from './site-footer'
 
 interface SiteShellProps {
   profile: SidebarProfile
@@ -36,9 +37,12 @@ export function SiteShell({ profile, topics, children }: SiteShellProps) {
         >
           {sidebar}
         </aside>
-        <main id="main" className="min-w-0 flex-1">
-          {children}
-        </main>
+        <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter name={profile.name} />
+        </div>
       </div>
     </>
   )
