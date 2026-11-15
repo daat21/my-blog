@@ -1,4 +1,5 @@
 import { PAGE_GUTTER, WIDE_COLUMN } from '@/components/layout/page-gutter'
+import { SiteFooter } from '@/components/layout/site-footer'
 import { PageHeader } from '@/components/ui/page-header'
 import { listPhotos } from '@/lib/content'
 
@@ -18,6 +19,7 @@ export async function GalleryPage() {
           className="max-w-172.5"
         />
         <PhotoGrid photos={photos} />
+        <SiteFooter />
       </div>
     </div>
   )

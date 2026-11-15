@@ -1,8 +1,9 @@
 /**
  * Padding around a page's content, matching the article mockup: 16px on
- * phones growing to 72px on desktops, 96px below the content.
+ * phones growing to 72px on desktops. The page's SiteFooter, rendered at the
+ * end of its column, provides the space below the content.
  */
-export const PAGE_GUTTER = 'px-4 pt-8 pb-24 md:px-10 md:pt-10 lg:px-14 xl:px-18'
+export const PAGE_GUTTER = 'px-4 pt-8 pb-10 md:px-10 md:pt-10 lg:px-14 xl:px-18'
 
 /** The reading column: about 70 characters of body text. */
 export const READING_COLUMN = 'mx-auto max-w-172.5'

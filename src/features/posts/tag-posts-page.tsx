@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 
 import { PAGE_GUTTER, READING_COLUMN } from '@/components/layout/page-gutter'
+import { SiteFooter } from '@/components/layout/site-footer'
 import { PageHeader } from '@/components/ui/page-header'
 import { listPosts } from '@/lib/content'
 
@@ -30,6 +31,7 @@ export async function TagPostsPage({ tag }: TagPostsPageProps) {
           description={`${count} tagged “${tag}”, newest first.`}
         />
         <PostList posts={posts} />
+        <SiteFooter />
       </div>
     </div>
   )
