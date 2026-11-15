@@ -20,3 +20,7 @@ pnpm dev
 | `pnpm build` | Create a production build |
 | `pnpm start` | Serve the production build |
 | `pnpm typecheck` | Type-check the project |
+
+## License
+
+The source code is released under the [MIT License](LICENSE). Articles, images and other site content are not part of this repository and are not covered by this license.
