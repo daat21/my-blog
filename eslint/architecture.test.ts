@@ -86,6 +86,40 @@ describe('design tokens only', () => {
       RULE
     )
   })
+
+  describe('in generated images', () => {
+    const rawColors = `const a = '#fbfaf8'\nconst b = \`rgb(0 0 0 / \${x})\`\n`
+
+    it.each([
+      'src/app/opengraph-image.tsx',
+      'src/app/(site)/writing/[slug]/opengraph-image.tsx',
+      'src/app/icon.tsx',
+      'src/app/apple-icon.tsx',
+      'src/app/(site)/notes/icon.tsx',
+      'src/lib/og/palette.ts',
+    ])('allows raw colours in %s', async filePath => {
+      expect(await violations(filePath, rawColors)).not.toContain(RULE)
+    })
+
+    it.each([
+      'src/app/page.tsx',
+      'src/app/layout.tsx',
+      'src/app/not-found.tsx',
+      'src/app/(site)/writing/[slug]/page.tsx',
+      'src/app/opengraph-image-card.tsx',
+      'src/components/ui/icon.tsx',
+      'src/lib/og/card.tsx',
+      'src/lib/palette.ts',
+    ])('still rejects raw colours in %s', async filePath => {
+      expect(await violations(filePath, rawColors)).toContain(RULE)
+    })
+
+    it('still rejects the default palette', async () => {
+      expect(
+        await violations('src/app/icon.tsx', `const c = 'bg-gray-100'`)
+      ).toContain(RULE)
+    })
+  })
 })
 
 describe('environment access', () => {

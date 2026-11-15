@@ -74,6 +74,28 @@ const DEFAULT_PALETTE = String.raw`\b(?:bg|text|border(?:-[trblxyse])?|ring|ring
 const COLOR_MESSAGE =
   'Use design tokens (for example bg-surface or text-fg-muted) instead of raw colours or the default Tailwind palette.'
 
+/** @param {string} pattern */
+const colorSelectors = pattern => [
+  { selector: `Literal[value=/${pattern}/]`, message: COLOR_MESSAGE },
+  {
+    selector: `TemplateElement[value.raw=/${pattern}/]`,
+    message: COLOR_MESSAGE,
+  },
+]
+
+/**
+ * Generated images (Open Graph cards and icons) are rendered outside the
+ * page, so they cannot read the CSS colour variables. These files, and the
+ * palette module that mirrors the tokens for them, may use raw colours; the
+ * default Tailwind palette stays banned everywhere.
+ */
+const GENERATED_IMAGE_FILES = [
+  'src/app/**/opengraph-image.tsx',
+  'src/app/**/icon.tsx',
+  'src/app/**/apple-icon.tsx',
+  'src/lib/og/palette.ts',
+]
+
 const SOURCE = ['src/**/*.{ts,tsx}']
 
 /**
@@ -90,20 +112,15 @@ export const architecture = [
       'local/filename-kebab-case': 'error',
       'no-restricted-syntax': [
         'error',
-        { selector: `Literal[value=/${RAW_COLOR}/]`, message: COLOR_MESSAGE },
-        {
-          selector: `TemplateElement[value.raw=/${RAW_COLOR}/]`,
-          message: COLOR_MESSAGE,
-        },
-        {
-          selector: `Literal[value=/${DEFAULT_PALETTE}/]`,
-          message: COLOR_MESSAGE,
-        },
-        {
-          selector: `TemplateElement[value.raw=/${DEFAULT_PALETTE}/]`,
-          message: COLOR_MESSAGE,
-        },
+        ...colorSelectors(RAW_COLOR),
+        ...colorSelectors(DEFAULT_PALETTE),
       ],
+    },
+  },
+  {
+    files: GENERATED_IMAGE_FILES,
+    rules: {
+      'no-restricted-syntax': ['error', ...colorSelectors(DEFAULT_PALETTE)],
     },
   },
   {
