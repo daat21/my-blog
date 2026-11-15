@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test'
 
-const PORT = 3000
+/** Override with E2E_PORT to run several suites side by side. */
+const PORT = Number(process.env.E2E_PORT ?? 3000)
 const isCI = Boolean(process.env.CI)
 
 /** The four reference viewports every page is checked at. */
@@ -38,7 +39,9 @@ export default defineConfig({
   webServer: {
     // CI builds in an earlier step; locally, build first so the test runs
     // against production output.
-    command: isCI ? 'pnpm start' : 'pnpm build && pnpm start',
+    command: isCI
+      ? `pnpm start --port ${PORT}`
+      : `pnpm build && pnpm start --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !isCI,
     timeout: 180_000,

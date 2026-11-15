@@ -31,7 +31,12 @@ function detectSiteUrl(): string {
 /** Validated environment. The only module that reads `process.env`. */
 export const env = {
   /** Absolute path of the content directory. */
-  contentDir: path.resolve(process.cwd(), parsed.CONTENT_DIR),
+  // Content is read at build time only (pages are prerendered), so the server
+  // output does not need it traced. Revisit when content is read per request.
+  contentDir: path.resolve(
+    /*turbopackIgnore: true*/ process.cwd(),
+    parsed.CONTENT_DIR
+  ),
   /** Public URL of the site, without a trailing slash. */
   siteUrl: detectSiteUrl().replace(/\/$/, ''),
   /** Drafts show in development and preview deployments, never in production. */
