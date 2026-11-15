@@ -116,9 +116,15 @@ test.describe('post lists', () => {
 })
 
 test.describe('article', () => {
-  test.use({ permissions: ['clipboard-read', 'clipboard-write'] })
+  // Clipboard permissions exist only in Chromium; other engines still show
+  // the "copied" status, which is what the copy test checks there.
+  test.beforeEach(async ({ context, browserName }) => {
+    if (browserName === 'chromium') {
+      await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    }
+  })
 
-  test('renders every content feature', async ({ page }) => {
+  test('renders every content feature', async ({ page, browserName }) => {
     const errors = trackErrors(page)
     await page.goto(TOUR)
     const main = page.getByRole('main')
@@ -169,8 +175,12 @@ test.describe('article', () => {
     await expect(titled.locator('pre .line')).toHaveCount(4)
     await titled.getByRole('button', { name: 'Copy code' }).click()
     await expect(titled.getByRole('status')).toHaveText('Copied to clipboard')
-    const copied = await page.evaluate(() => navigator.clipboard.readText())
-    expect(copied).toBe('.prose {\n  max-width: 65ch;\n  line-height: 1.7;\n}')
+    if (browserName === 'chromium') {
+      const copied = await page.evaluate(() => navigator.clipboard.readText())
+      expect(copied).toBe(
+        '.prose {\n  max-width: 65ch;\n  line-height: 1.7;\n}'
+      )
+    }
     await expect(main.getByRole('button', { name: 'Copy code' })).toHaveCount(3)
 
     // Callouts.

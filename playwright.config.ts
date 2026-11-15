@@ -24,18 +24,38 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
   },
-  projects: VIEWPORTS.flatMap(viewport =>
-    COLOR_SCHEMES.map(colorScheme => ({
-      name: `${viewport.name}-${colorScheme}`,
+  projects: [
+    ...VIEWPORTS.flatMap(viewport =>
+      COLOR_SCHEMES.map(colorScheme => ({
+        name: `${viewport.name}-${colorScheme}`,
+        use: {
+          browserName: 'chromium' as const,
+          viewport: { width: viewport.width, height: viewport.height },
+          isMobile: viewport.touch,
+          hasTouch: viewport.touch,
+          colorScheme,
+        },
+      }))
+    ),
+    // A second engine catches behaviour that differs from Chromium, such as
+    // dialog exit transitions. Two representative combinations keep it fast.
+    {
+      name: 'firefox-phone-light',
       use: {
-        browserName: 'chromium' as const,
-        viewport: { width: viewport.width, height: viewport.height },
-        isMobile: viewport.touch,
-        hasTouch: viewport.touch,
-        colorScheme,
+        browserName: 'firefox' as const,
+        viewport: { width: 390, height: 844 },
+        colorScheme: 'light' as const,
       },
-    }))
-  ),
+    },
+    {
+      name: 'firefox-desktop-dark',
+      use: {
+        browserName: 'firefox' as const,
+        viewport: { width: 1440, height: 900 },
+        colorScheme: 'dark' as const,
+      },
+    },
+  ],
   webServer: {
     // CI builds in an earlier step; locally, build first so the test runs
     // against production output.

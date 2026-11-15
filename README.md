@@ -31,7 +31,7 @@ Tests:
 | `pnpm test`     | Unit tests (Vitest)                                                                                                  |
 | `pnpm test:e2e` | End-to-end smoke tests (Playwright) at phone, tablet and desktop sizes in both colour schemes; builds the site first |
 
-Run `pnpm exec playwright install chromium` once before the first end-to-end run.
+Run `pnpm exec playwright install chromium firefox` once before the first end-to-end run. Every page is tested in Chromium at four sizes and both colour schemes, with Firefox spot checks on a phone and a desktop.
 
 Content and media:
 
