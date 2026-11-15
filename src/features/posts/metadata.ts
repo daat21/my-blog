@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 
 import { getPost, listPosts, type Collection } from '@/lib/content'
 
+import { COLLECTIONS } from './collections'
+
 /**
  * With Cache Components a dynamic route must prerender at least one path.
  * When there is nothing to list, this stand-in is prerendered instead, and
@@ -39,5 +41,15 @@ export async function articleMetadata(
       modifiedTime: post.updated,
       tags: post.tags,
     },
+  }
+}
+
+/** Metadata for the list of one collection. */
+export function collectionMetadata(collection: Collection): Metadata {
+  const { title, description } = COLLECTIONS[collection]
+  return {
+    title,
+    description,
+    alternates: { canonical: `/${collection}` },
   }
 }
