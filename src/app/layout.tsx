@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 
 import { ThemeScript } from '@/components/layout/theme-script'
+import { getProfile } from '@/lib/content'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
 
@@ -19,11 +20,19 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
 })
 
-export const metadata: Metadata = {
-  metadataBase: new URL(env.siteUrl),
-  title: 'Daming Chen',
-  description:
-    'Personal site and blog of Daming Chen, a web developer in Adelaide.',
+export async function generateMetadata(): Promise<Metadata> {
+  const { name, bio } = await getProfile()
+
+  return {
+    metadataBase: new URL(env.siteUrl),
+    title: { template: `%s · ${name}`, default: name },
+    description: bio,
+    openGraph: { siteName: name, locale: 'en', type: 'website' },
+    twitter: { card: 'summary_large_image' },
+    alternates: {
+      types: { 'application/rss+xml': [{ url: '/rss.xml', title: name }] },
+    },
+  }
 }
 
 export const viewport: Viewport = {
