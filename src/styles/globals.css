@@ -22,6 +22,8 @@
   --accent: #1d5c45;
   --accent-tint: #e3ece6;
   --on-accent: #fbfaf8;
+  /* Dims the page behind modal sheets; always darker than the page. */
+  --scrim: rgb(27 26 24 / 0.4);
 }
 
 /* Dark palette: chosen explicitly, or by the system when nothing is chosen
@@ -41,6 +43,7 @@
   --accent: #7db596;
   --accent-tint: #1e2a23;
   --on-accent: #161513;
+  --scrim: rgb(0 0 0 / 0.6);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -59,6 +62,7 @@
     --accent: #7db596;
     --accent-tint: #1e2a23;
     --on-accent: #161513;
+    --scrim: rgb(0 0 0 / 0.6);
   }
 }
 
@@ -244,7 +248,7 @@
   }
 
   .menu-sheet::backdrop {
-    background-color: color-mix(in oklab, var(--fg) 40%, transparent);
+    background-color: var(--scrim, rgb(0 0 0 / 0.5));
     opacity: 0;
     transition:
       opacity 250ms ease-out,
@@ -254,6 +258,17 @@
 
   .menu-sheet[open]::backdrop {
     opacity: 1;
+  }
+
+  /* Set by the menu while it slides out; it closes once the slide ends.
+     Driving the exit from script makes it work in every browser, not only
+     in those that keep a closing dialog in the top layer. */
+  .menu-sheet[open][data-closing] {
+    translate: -100% 0;
+  }
+
+  .menu-sheet[open][data-closing]::backdrop {
+    opacity: 0;
   }
 
   @starting-style {

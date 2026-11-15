@@ -41,6 +41,36 @@ test.describe('mobile menu', () => {
   })
 })
 
+test('menu backdrop darkens the page', async ({ page }) => {
+  test.skip(!hasMenu(page), 'The persistent sidebar replaces the menu')
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Open menu' }).click()
+  await expect(page.getByRole('dialog', { name: 'Site menu' })).toBeVisible()
+
+  // Composite the backdrop colour over the page background and compare
+  // luminance: the result must be darker in both colour schemes.
+  const { plain, dimmed } = await page.evaluate(() => {
+    const channels = (colour: string) =>
+      (colour.match(/[\d.]+/g) ?? []).map(Number)
+    const luminance = (r = 0, g = 0, b = 0) =>
+      0.2126 * r + 0.7152 * g + 0.0722 * b
+    const [r = 0, g = 0, b = 0] = channels(
+      getComputedStyle(document.body).backgroundColor
+    )
+    const dialog = document.querySelector('dialog') ?? document.body
+    const [sr = 0, sg = 0, sb = 0, alpha = 1] = channels(
+      getComputedStyle(dialog, '::backdrop').backgroundColor
+    )
+    const over = (top: number, under: number) =>
+      top * alpha + under * (1 - alpha)
+    return {
+      plain: luminance(r, g, b),
+      dimmed: luminance(over(sr, r), over(sg, g), over(sb, b)),
+    }
+  })
+  expect(dimmed).toBeLessThan(plain)
+})
+
 test('sidebar footer keeps links and the theme toggle on one line', async ({
   page,
 }) => {

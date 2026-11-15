@@ -2,25 +2,43 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  Suspense,
-  useEffect,
-  useRef,
-  type ReactNode,
-  type RefObject,
-} from 'react'
+import { Suspense, useCallback, useEffect, useRef, type ReactNode } from 'react'
 
-/** Closes the dialog whenever the URL changes. Reads the URL, so it sits
- * in its own <Suspense> boundary and renders nothing. */
-function CloseOnNavigate({
-  dialogRef,
-}: {
-  dialogRef: RefObject<HTMLDialogElement | null>
-}) {
+/** Longest the slide-out may take before the dialog closes regardless. */
+const CLOSE_FALLBACK_MS = 400
+
+/**
+ * Slides the sheet out (see `.menu-sheet[data-closing]`), then closes the
+ * dialog. Closes at once when motion is reduced or the sheet isn't open.
+ */
+function closeWithSlide(dialog: HTMLDialogElement | null) {
+  if (!dialog?.open || 'closing' in dialog.dataset) return
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    dialog.close()
+    return
+  }
+
+  const finish = () => {
+    clearTimeout(timer)
+    dialog.removeEventListener('transitionend', onEnd)
+    delete dialog.dataset.closing
+    dialog.close()
+  }
+  const onEnd = (event: TransitionEvent) => {
+    if (event.target === dialog && event.propertyName === 'translate') finish()
+  }
+  const timer = setTimeout(finish, CLOSE_FALLBACK_MS)
+  dialog.addEventListener('transitionend', onEnd)
+  dialog.dataset.closing = ''
+}
+
+/** Closes the menu whenever the URL changes. Reads the URL, so it sits in
+ * its own <Suspense> boundary and renders nothing. */
+function CloseOnNavigate({ onNavigate }: { onNavigate: () => void }) {
   const pathname = usePathname()
   useEffect(() => {
-    dialogRef.current?.close()
-  }, [pathname, dialogRef])
+    onNavigate()
+  }, [pathname, onNavigate])
   return null
 }
 
@@ -37,11 +55,15 @@ interface MobileNavProps {
  */
 export function MobileNav({ name, children }: MobileNavProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  // Stable identity, so CloseOnNavigate's effect runs only on URL changes.
+  const closeMenu = useCallback(() => {
+    closeWithSlide(dialogRef.current)
+  }, [])
 
   return (
     <>
       <Suspense fallback={null}>
-        <CloseOnNavigate dialogRef={dialogRef} />
+        <CloseOnNavigate onNavigate={closeMenu} />
       </Suspense>
       <header className="sticky top-0 z-30 flex min-h-14 items-center justify-between border-b border-border bg-canvas px-4 pt-[env(safe-area-inset-top)] lg:hidden">
         <Link
@@ -76,7 +98,12 @@ export function MobileNav({ name, children }: MobileNavProps) {
         aria-label="Site menu"
         onClick={event => {
           // A click on the backdrop lands on the dialog element itself.
-          if (event.target === event.currentTarget) event.currentTarget.close()
+          if (event.target === event.currentTarget) closeMenu()
+        }}
+        onCancel={event => {
+          // Escape: slide out instead of vanishing.
+          event.preventDefault()
+          closeMenu()
         }}
         className="menu-sheet m-0 h-dvh max-h-none w-full max-w-none bg-surface text-fg-body open:flex open:flex-col sm:max-w-sm sm:border-r sm:border-border lg:hidden"
       >
@@ -85,7 +112,7 @@ export function MobileNav({ name, children }: MobileNavProps) {
           <button
             type="button"
             aria-label="Close menu"
-            onClick={() => dialogRef.current?.close()}
+            onClick={closeMenu}
             className="inline-flex size-11 items-center justify-center rounded-md text-fg transition-colors duration-150 hover:bg-sunken"
           >
             <svg
