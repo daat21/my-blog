@@ -31,6 +31,29 @@ export interface Post extends PostSummary {
   headings: Heading[]
 }
 
+export interface PhotoSummary {
+  slug: string
+  title: string
+  /** ISO date, `YYYY-MM-DD`. */
+  date: string
+  image: ResolvedImage
+  /** What the photograph shows, for people who cannot see it. */
+  alt: string
+  location?: string
+  camera?: string
+  lens?: string
+  /** Free-form, e.g. `ƒ/2.8 · 1/250 s · ISO 200`. */
+  exposure?: string
+  draft: boolean
+}
+
+export interface Photo extends PhotoSummary {
+  /** The optional story told below the photograph, as a HAST tree. */
+  story?: Root
+  /** The story's first sentence, or the alt text when there is no story. */
+  description: string
+}
+
 export interface TagCount {
   tag: string
   count: number

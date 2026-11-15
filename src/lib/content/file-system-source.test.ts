@@ -76,6 +76,38 @@ function post({ title = 'A post', date, tags = [], draft, body }: PostOptions) {
   ].join('\n')
 }
 
+interface PhotoOptions {
+  title?: string
+  date: string
+  image?: string
+  draft?: boolean
+  /** Extra front matter lines, e.g. `location: Exampleton`. */
+  fields?: string[]
+  body?: string
+}
+
+function photo({
+  title = 'A photo',
+  date,
+  image = 'media:photos/a.jpg',
+  draft,
+  fields = [],
+  body = '',
+}: PhotoOptions) {
+  return [
+    '---',
+    `title: ${title}`,
+    `date: ${date}`,
+    `image: ${image}`,
+    'alt: Soft light over still water.',
+    ...fields,
+    ...(draft === undefined ? [] : [`draft: ${String(draft)}`]),
+    '---',
+    '',
+    body,
+  ].join('\n')
+}
+
 function project(fields: Record<string, string | number | boolean>) {
   const lines = Object.entries(fields).map(
     ([key, value]) =>
@@ -311,6 +343,151 @@ describe('createFileSystemSource: validation', () => {
       /^Content directory .* not found$/
     )
     await expect(content.getProfile()).rejects.toThrow(/not found$/)
+  })
+})
+
+describe('createFileSystemSource: photos', () => {
+  const files = {
+    'photos/older/index.md': photo({ date: '2026-01-10' }),
+    'photos/newest/index.md': photo({
+      title: 'Newest',
+      date: '2026-11-15',
+      image: 'media:photos/newest.jpg',
+      fields: [
+        'location: Exampleton',
+        'camera: Example R1',
+        'lens: 35 mm ƒ/2',
+        "exposure: 'ƒ/2.8 · 1/250 s · ISO 200'",
+      ],
+    }),
+    'photos/same-day-b/index.md': photo({ date: '2026-06-01' }),
+    'photos/same-day-a/index.md': photo({ date: '2026-06-01' }),
+    'photos/secret/index.md': photo({ date: '2026-12-01', draft: true }),
+    'photos/.DS_Store': '',
+  }
+
+  it('lists visible photos newest first, by slug on the same day', async () => {
+    const photos = await (await source(files)).listPhotos()
+    expect(photos.map(p => p.slug)).toEqual([
+      'newest',
+      'same-day-a',
+      'same-day-b',
+      'older',
+    ])
+  })
+
+  it('returns summaries with the image resolved', async () => {
+    const [newest] = await (await source(files)).listPhotos()
+    expect(newest).toEqual({
+      slug: 'newest',
+      title: 'Newest',
+      date: '2026-11-15',
+      image: {
+        kind: 'image',
+        width: 1200,
+        height: 750,
+        src: '/_media/photos/newest.jpg.webp',
+        sources: [
+          {
+            type: 'image/webp',
+            srcSet: '/_media/photos/newest.jpg.webp 1200w',
+          },
+        ],
+      },
+      alt: 'Soft light over still water.',
+      location: 'Exampleton',
+      camera: 'Example R1',
+      lens: '35 mm ƒ/2',
+      exposure: 'ƒ/2.8 · 1/250 s · ISO 200',
+      draft: false,
+    })
+  })
+
+  it('includes drafts only when showDrafts is on', async () => {
+    const hidden = await source(files)
+    expect((await hidden.listPhotos()).map(p => p.slug)).not.toContain('secret')
+    expect(await hidden.getPhoto('secret')).toBeNull()
+
+    const shown = await source(files, true)
+    expect((await shown.listPhotos())[0]).toMatchObject({
+      slug: 'secret',
+      draft: true,
+    })
+    expect(await shown.getPhoto('secret')).toMatchObject({ slug: 'secret' })
+  })
+
+  it('describes a photo without a story by its alt text', async () => {
+    const older = await (await source(files)).getPhoto('older')
+    expect(older).toMatchObject({
+      slug: 'older',
+      description: 'Soft light over still water.',
+    })
+    expect(older).not.toHaveProperty('story')
+  })
+
+  it('renders the story and describes the photo by its first sentence', async () => {
+    const content = await source({
+      'photos/told/index.md': photo({
+        date: '2026-02-02',
+        body: 'We waited an hour for the fog. It never lifted.\n',
+      }),
+    })
+    const told = await content.getPhoto('told')
+    expect(told).toMatchObject({
+      slug: 'told',
+      description: 'We waited an hour for the fog.',
+    })
+    expect(told?.story?.type).toBe('root')
+    expect(told?.story?.children.length).toBeGreaterThan(0)
+  })
+
+  it('returns null for unknown or malformed slugs', async () => {
+    const content = await source(files)
+    expect(await content.getPhoto('missing')).toBeNull()
+    expect(await content.getPhoto('../older')).toBeNull()
+    expect(await content.getPhoto('Older')).toBeNull()
+  })
+
+  it('returns an empty list without a photos folder', async () => {
+    expect(
+      await (await source({ 'profile.yaml': PROFILE })).listPhotos()
+    ).toEqual([])
+  })
+
+  it('names the file and the field for invalid front matter', async () => {
+    const content = await source({
+      'photos/bad/index.md': photo({ date: '2026-02-30' }),
+    })
+    await expect(content.listPhotos()).rejects.toThrow(
+      'photos/bad/index.md: date: Invalid date, expected YYYY-MM-DD'
+    )
+  })
+
+  it('names the file and field when the image cannot be resolved', async () => {
+    const content = await source({
+      'photos/lost/index.md': photo({
+        date: '2026-02-02',
+        image: 'media:missing/lost.jpg',
+      }),
+    })
+    await expect(content.listPhotos()).rejects.toThrow(
+      'photos/lost/index.md: image: Cannot resolve media:missing/lost.jpg'
+    )
+  })
+
+  it('rejects non-kebab-case folders and stray files', async () => {
+    await expect(
+      (
+        await source({
+          'photos/Low_Sun/index.md': photo({ date: '2026-01-01' }),
+        })
+      ).listPhotos()
+    ).rejects.toThrow('photos/Low_Sun: "Low_Sun" is not a valid slug')
+    await expect(
+      (await source({ 'photos/stray.jpg': 'x' })).listPhotos()
+    ).rejects.toThrow(
+      'photos/stray.jpg: Expected a folder holding index.md, e.g. photos/my-photo/index.md'
+    )
   })
 })
 

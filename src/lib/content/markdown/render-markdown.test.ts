@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { ContentError } from '@/lib/content/content-error'
 import {
+  firstSentenceOf,
   readingMinutesOf,
   renderMarkdown,
 } from '@/lib/content/markdown/render-markdown'
@@ -438,6 +439,33 @@ describe('renderMarkdown: reading time', () => {
     const code = Array.from({ length: 60 }, () => 'call();').join('\n')
     expect(readingMinutesOf(`${words}\n\n![${words}](media:a.png)\n`)).toBe(1)
     expect(readingMinutesOf(`${words}\n\n\`\`\`js\n${code}\n\`\`\`\n`)).toBe(2)
+  })
+})
+
+describe('firstSentenceOf', () => {
+  it('returns the first sentence of the first paragraph', () => {
+    expect(firstSentenceOf('We left before dawn. The tide was out.')).toBe(
+      'We left before dawn.'
+    )
+  })
+
+  it('returns plain text, with lines joined', () => {
+    expect(
+      firstSentenceOf('A *very* quiet\n[harbour](https://example.com)? Yes.')
+    ).toBe('A very quiet harbour?')
+  })
+
+  it('skips headings and paragraphs without text', () => {
+    expect(
+      firstSentenceOf(
+        '## Before\n\n![A boat](media:a.png)\n\nThe light came last. Then wind.'
+      )
+    ).toBe('The light came last.')
+  })
+
+  it('is undefined without a paragraph of text', () => {
+    expect(firstSentenceOf('')).toBeUndefined()
+    expect(firstSentenceOf('## Only a heading')).toBeUndefined()
   })
 })
 

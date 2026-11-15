@@ -3,6 +3,8 @@ import { cacheLife, cacheTag } from 'next/cache'
 import { createFileSystemSource } from '@/lib/content/file-system-source'
 import type { PostFilter } from '@/lib/content/source'
 import type {
+  Photo,
+  PhotoSummary,
   Post,
   PostSummary,
   Profile,
@@ -32,7 +34,8 @@ const source = createFileSystemSource({
 
 // Every read is cached for as long as possible and tagged, so publishing can
 // later invalidate exactly what changed: `posts` covers every list of posts
-// (and the tag counts derived from them), `post:<slug>` one post.
+// (and the tag counts derived from them), `post:<slug>` one post, `photos`
+// the list of photos and `photo:<slug>` one photo.
 
 /** Every post, or those with a tag, newest first. */
 export async function listPosts(filter?: PostFilter): Promise<PostSummary[]> {
@@ -56,6 +59,22 @@ export async function listTags(): Promise<TagCount[]> {
   cacheLife('max')
   cacheTag('tags', 'posts')
   return await source.listTags()
+}
+
+/** Every visible photo, newest first. */
+export async function listPhotos(): Promise<PhotoSummary[]> {
+  'use cache'
+  cacheLife('max')
+  cacheTag('photos')
+  return await source.listPhotos()
+}
+
+/** One photo and its story, or null if missing or a hidden draft. */
+export async function getPhoto(slug: string): Promise<Photo | null> {
+  'use cache'
+  cacheLife('max')
+  cacheTag(`photo:${slug}`)
+  return await source.getPhoto(slug)
 }
 
 /** All projects, sorted by `order` and then newest first. */

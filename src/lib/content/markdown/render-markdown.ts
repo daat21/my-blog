@@ -12,6 +12,7 @@ import { ContentError, messageOf } from '@/lib/content/content-error'
 import type { Heading } from '@/lib/content/types'
 
 import type { MarkdownContext } from './context'
+import { firstSentence } from './first-sentence'
 import { collectHeadings } from './headings'
 import { countReadingMinutes } from './reading-time'
 import { rehypeCodeBlocks } from './rehype-code-blocks'
@@ -57,6 +58,11 @@ const markdown = unified()
 /** Estimates the reading time of a Markdown body without rendering it. */
 export function readingMinutesOf(source: string): number {
   return countReadingMinutes(markdown.parse(source))
+}
+
+/** The first sentence of a Markdown body, as plain text, if it has one. */
+export function firstSentenceOf(source: string): string | undefined {
+  return firstSentence(markdown.parse(source))
 }
 
 /**

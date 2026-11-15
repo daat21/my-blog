@@ -79,6 +79,29 @@ export const postFrontMatterSchema = z
 
 export type PostFrontMatter = z.output<typeof postFrontMatterSchema>
 
+/** Front matter of `photos/<slug>/index.md`: one photograph per folder. */
+export const photoFrontMatterSchema = z.strictObject({
+  title: text,
+  date: isoDate,
+  image: mediaRef,
+  alt: z
+    .string({
+      error: issue =>
+        issue.input === undefined
+          ? 'Required: describe what the photo shows'
+          : undefined,
+    })
+    .trim()
+    .min(1, { error: 'Must not be empty' }),
+  location: text.optional(),
+  camera: text.optional(),
+  lens: text.optional(),
+  exposure: text.optional(),
+  draft: z.boolean().default(false),
+})
+
+export type PhotoFrontMatter = z.output<typeof photoFrontMatterSchema>
+
 /** Front matter of `projects/<slug>.md`. */
 export const projectFrontMatterSchema = z.strictObject({
   title: text,

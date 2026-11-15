@@ -2,23 +2,30 @@ import type { Dirent } from 'node:fs'
 import { readdir, readFile, stat } from 'node:fs/promises'
 import path from 'node:path'
 
+import type { ZodType } from 'zod'
+
 import { ContentError } from '@/lib/content/content-error'
 import { parseYamlIn, splitFrontMatter } from '@/lib/content/front-matter'
 import {
+  firstSentenceOf,
   readingMinutesOf,
   renderMarkdown,
 } from '@/lib/content/markdown/render-markdown'
 import { resolveImage } from '@/lib/content/resolve-media'
 import {
   normalizeTag,
+  photoFrontMatterSchema,
   postFrontMatterSchema,
   profileSchema,
   projectFrontMatterSchema,
   validate,
+  type PhotoFrontMatter,
   type PostFrontMatter,
 } from '@/lib/content/schemas'
 import type { ContentSource, PostFilter } from '@/lib/content/source'
 import type {
+  Photo,
+  PhotoSummary,
   Post,
   PostSummary,
   Profile,
@@ -30,20 +37,40 @@ import type { MediaResolver } from '@/lib/media/types'
 export interface FileSystemSourceOptions {
   /** Absolute path of the content directory. */
   contentDir: string
-  /** Whether posts with `draft: true` are listed and served. */
+  /** Whether posts and photos with `draft: true` are listed and served. */
   showDrafts: boolean
   media: MediaResolver
 }
 
-const WRITING = 'writing'
+/** A folder of `<slug>/index.md` entries and their front-matter schema. */
+interface EntryFolder<Meta> {
+  name: string
+  /** A slug for the example in error messages. */
+  example: string
+  schema: ZodType<Meta>
+}
+
+const WRITING: EntryFolder<PostFrontMatter> = {
+  name: 'writing',
+  example: 'my-post',
+  schema: postFrontMatterSchema,
+}
+
+const PHOTOS: EntryFolder<PhotoFrontMatter> = {
+  name: 'photos',
+  example: 'my-photo',
+  schema: photoFrontMatterSchema,
+}
+
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const PROFILE_FILE = 'profile.yaml'
 
-interface PostFile {
+/** One `<folder>/<slug>/index.md`, with its front matter validated. */
+interface Entry<Meta> {
   slug: string
   /** Path relative to the content directory, for error messages. */
   file: string
-  meta: PostFrontMatter
+  meta: Meta
   /** The Markdown body, with line numbers matching the file. */
   body: string
 }
@@ -66,7 +93,12 @@ function compareText(a: string, b: string): number {
   return a < b ? -1 : 1
 }
 
-function newestFirst(a: PostSummary, b: PostSummary): number {
+interface Dated {
+  slug: string
+  date: string
+}
+
+function newestFirst(a: Dated, b: Dated): number {
   return compareText(b.date, a.date) || compareText(a.slug, b.slug)
 }
 
@@ -94,6 +126,8 @@ function slugError(where: string, name: string): ContentError {
  * Reads content from a directory laid out like the content repository:
  *
  * - `writing/<slug>/index.md`: one post per folder
+ * - `photos/<slug>/index.md`: one photograph per folder, with an optional
+ *   story as the body
  * - `projects/<slug>.md`: one project per file; only the front matter is
  *   used, the body is ignored
  * - `profile.yaml`
@@ -148,39 +182,44 @@ export function createFileSystemSource(
     }
   }
 
-  async function readPost(slug: string): Promise<PostFile | undefined> {
-    const file = `${WRITING}/${slug}/index.md`
+  async function readEntry<Meta>(
+    folder: EntryFolder<Meta>,
+    slug: string
+  ): Promise<Entry<Meta> | undefined> {
+    const file = `${folder.name}/${slug}/index.md`
     const source = await readText(file)
     if (source === undefined) return undefined
     const { data, body } = splitFrontMatter(source, file)
-    const meta = validate(postFrontMatterSchema, data, file)
+    const meta = validate(folder.schema, data, file)
     return { slug, file, meta, body }
   }
 
-  async function readPosts(): Promise<PostFile[]> {
-    const entries = await listFolder(WRITING)
+  async function readEntries<Meta>(
+    folder: EntryFolder<Meta>
+  ): Promise<Entry<Meta>[]> {
+    const entries = await listFolder(folder.name)
     return Promise.all(
       entries.map(async entry => {
-        const where = `${WRITING}/${entry.name}`
+        const where = `${folder.name}/${entry.name}`
         if (!entry.isDirectory()) {
           throw new ContentError(
-            `${where}: Expected a folder holding index.md, e.g. ${WRITING}/my-post/index.md`
+            `${where}: Expected a folder holding index.md, e.g. ${folder.name}/${folder.example}/index.md`
           )
         }
         if (!isSlug(entry.name)) throw slugError(where, entry.name)
-        const post = await readPost(entry.name)
-        if (!post) throw new ContentError(`${where}: Missing index.md`)
-        return post
+        const read = await readEntry(folder, entry.name)
+        if (!read) throw new ContentError(`${where}: Missing index.md`)
+        return read
       })
     )
   }
 
-  function isVisible(post: PostFile): boolean {
-    return showDrafts || !post.meta.draft
+  function isVisible(entry: Entry<{ draft: boolean }>): boolean {
+    return showDrafts || !entry.meta.draft
   }
 
   function summarize(
-    post: PostFile,
+    post: Entry<PostFrontMatter>,
     readingMinutes = readingMinutesOf(post.body)
   ): PostSummary {
     return { slug: post.slug, ...post.meta, readingMinutes }
@@ -188,7 +227,7 @@ export function createFileSystemSource(
 
   async function listPosts(filter: PostFilter = {}): Promise<PostSummary[]> {
     const tag = filter.tag === undefined ? undefined : normalizeTag(filter.tag)
-    return (await readPosts())
+    return (await readEntries(WRITING))
       .filter(isVisible)
       .filter(post => tag === undefined || post.meta.tags.includes(tag))
       .map(post => summarize(post))
@@ -199,7 +238,7 @@ export function createFileSystemSource(
     // It may come from a URL, so anything unexpected is simply not found.
     if (!isSlug(slug)) return null
     await ensureContentDir()
-    const post = await readPost(slug)
+    const post = await readEntry(WRITING, slug)
     if (!post || !isVisible(post)) return null
     const rendered = await renderMarkdown(post.body, { file: post.file, media })
     return {
@@ -217,6 +256,44 @@ export function createFileSystemSource(
     return [...counts]
       .map(([tag, count]) => ({ tag, count }))
       .sort((a, b) => b.count - a.count || compareText(a.tag, b.tag))
+  }
+
+  async function summarizePhoto({
+    slug,
+    file,
+    meta,
+  }: Entry<PhotoFrontMatter>): Promise<PhotoSummary> {
+    const { image, ...rest } = meta
+    return {
+      slug,
+      ...rest,
+      image: await resolveImage(media, image, `${file}: image`),
+    }
+  }
+
+  async function listPhotos(): Promise<PhotoSummary[]> {
+    const entries = (await readEntries(PHOTOS)).filter(isVisible)
+    const photos = await Promise.all(entries.map(summarizePhoto))
+    return photos.sort(newestFirst)
+  }
+
+  async function getPhoto(slug: string): Promise<Photo | null> {
+    // It may come from a URL, so anything unexpected is simply not found.
+    if (!isSlug(slug)) return null
+    await ensureContentDir()
+    const entry = await readEntry(PHOTOS, slug)
+    if (!entry || !isVisible(entry)) return null
+    const photo = await summarizePhoto(entry)
+    if (entry.body.trim() === '') return { ...photo, description: photo.alt }
+    const { body: story } = await renderMarkdown(entry.body, {
+      file: entry.file,
+      media,
+    })
+    return {
+      ...photo,
+      story,
+      description: firstSentenceOf(entry.body) ?? photo.alt,
+    }
   }
 
   async function readProject(entry: Dirent): Promise<Project> {
@@ -265,5 +342,13 @@ export function createFileSystemSource(
     )
   }
 
-  return { listPosts, getPost, listTags, listProjects, getProfile }
+  return {
+    listPosts,
+    getPost,
+    listTags,
+    listPhotos,
+    getPhoto,
+    listProjects,
+    getProfile,
+  }
 }

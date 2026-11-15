@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { ContentError } from '@/lib/content/content-error'
 import {
   normalizeTag,
+  photoFrontMatterSchema,
   postFrontMatterSchema,
   profileSchema,
   projectFrontMatterSchema,
@@ -137,6 +138,74 @@ describe('postFrontMatterSchema', () => {
       validate(postFrontMatterSchema, { ...validPost, draft: 'yes' }, FILE)
     )
     expect(error.message).toMatch(/^writing\/foo\/index\.md: draft: /)
+  })
+})
+
+describe('photoFrontMatterSchema', () => {
+  const PHOTO = 'photos/low-sun/index.md'
+  const validPhoto = {
+    title: 'Low sun',
+    date: '2026-11-08',
+    image: 'media:photos/low-sun.jpg',
+    alt: 'A pale sun low over a violet sea.',
+  }
+
+  it('applies defaults and leaves the optional fields out', () => {
+    expect(validate(photoFrontMatterSchema, validPhoto, PHOTO)).toEqual({
+      ...validPhoto,
+      draft: false,
+    })
+  })
+
+  it('accepts every optional field', () => {
+    const photo = {
+      ...validPhoto,
+      location: 'Exampleton, west pier',
+      camera: 'Example R1',
+      lens: '35 mm ƒ/2',
+      exposure: 'ƒ/2.8 · 1/250 s · ISO 200',
+      draft: true,
+    }
+    expect(validate(photoFrontMatterSchema, photo, PHOTO)).toEqual(photo)
+  })
+
+  it('asks for alt text when it is missing', () => {
+    const error = errorOf(() =>
+      validate(photoFrontMatterSchema, { ...validPhoto, alt: undefined }, PHOTO)
+    )
+    expect(error.message).toBe(
+      'photos/low-sun/index.md: alt: Required: describe what the photo shows'
+    )
+  })
+
+  it.each([
+    ['alt', '   ', 'alt: Must not be empty'],
+    ['title', '', 'title: Must not be empty'],
+    ['image', 'photos/low-sun.jpg', 'image: Expected a media reference'],
+    ['image', 'https://example.com/a.jpg', 'image: Expected a media reference'],
+    ['date', '8 Nov 2026', 'date: Invalid date, expected YYYY-MM-DD'],
+    ['camera', '', 'camera: Must not be empty'],
+    ['exposure', 2.8, 'exposure: '],
+    ['draft', 'no', 'draft: '],
+  ])('names the file and the field for an invalid %s', (field, value, msg) => {
+    const error = errorOf(() =>
+      validate(photoFrontMatterSchema, { ...validPhoto, [field]: value }, PHOTO)
+    )
+    expect(error.message).toContain(`photos/low-sun/index.md: ${msg}`)
+  })
+
+  it('rejects unknown fields, each on its own line', () => {
+    const error = errorOf(() =>
+      validate(
+        photoFrontMatterSchema,
+        { ...validPhoto, caption: 'Hi', iso: 200 },
+        PHOTO
+      )
+    )
+    expect(error.message.split('\n')).toEqual([
+      'photos/low-sun/index.md: caption: Unknown field',
+      'photos/low-sun/index.md: iso: Unknown field',
+    ])
   })
 })
 
