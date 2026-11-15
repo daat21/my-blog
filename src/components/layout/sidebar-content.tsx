@@ -80,8 +80,9 @@ export function SidebarContent({ profile, topics }: SidebarContentProps) {
         </div>
       )}
 
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-5 pl-2">
-        <ul className="flex flex-wrap gap-x-3 text-sm text-fg-body xl:gap-x-4">
+      {/* One row: profile links on the left, the theme toggle on the right. */}
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-5 pl-2">
+        <ul className="flex min-w-0 flex-nowrap gap-x-3 text-sm whitespace-nowrap text-fg-body xl:gap-x-4">
           {profile.links.map(link => (
             <li key={link.href}>
               <a
@@ -92,14 +93,6 @@ export function SidebarContent({ profile, topics }: SidebarContentProps) {
               </a>
             </li>
           ))}
-          <li>
-            <a
-              href="/rss.xml"
-              className="flex min-h-11 items-center transition-colors duration-150 hover:text-fg"
-            >
-              RSS
-            </a>
-          </li>
         </ul>
         <ThemeToggle />
       </div>
