@@ -4,8 +4,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "pnpm media:build && next dev",
+    "build": "pnpm media:build && next build",
     "start": "next start",
     "media:build": "node scripts/media/build-media.mts",
     "media:gif2mp4": "node scripts/media/gif-to-mp4.mts",
