@@ -1,0 +1,6 @@
+saveExact: true
+engineStrict: true
+
+allowBuilds:
+  sharp: false
+  unrs-resolver: false

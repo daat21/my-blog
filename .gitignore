@@ -1,0 +1,22 @@
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env files
+.env*
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.pem
+.pnpm-debug.log*
