@@ -33,6 +33,16 @@ Tests:
 
 Run `pnpm exec playwright install chromium` once before the first end-to-end run.
 
+Content and media:
+
+| Command                       | Purpose                                                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm media:build`            | Pre-optimise images (AVIF and WebP at several widths) and copy videos into `public/_media`; runs before `dev` and `build` |
+| `pnpm media:gif2mp4 <in.gif>` | Convert an animated GIF into a web-friendly MP4 (needs `ffmpeg`)                                                          |
+| `pnpm content:sync`           | Fetch the private content repository; runs before `build` and does nothing without credentials                            |
+
+Content is read from `CONTENT_DIR`, which defaults to the bundled sample content in `content-example/`.
+
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/). Git hooks format and lint staged files before each commit, check the commit message, and run the checks and unit tests before each push. CI runs everything, including the end-to-end tests, on every push.
 
 ## License
