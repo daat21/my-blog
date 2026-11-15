@@ -1,14 +1,16 @@
 import type { MetadataRoute } from 'next'
 
-import { listPosts } from '@/lib/content'
+import { listPhotos, listPosts } from '@/lib/content'
 import { env } from '@/lib/env'
 
-const SECTIONS = ['/', '/writing', '/projects'] as const
+const SECTIONS = ['/', '/writing', '/photos', '/projects'] as const
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Previews list drafts too; the sitemap only ever names published posts
-  // and the tags they use.
-  const posts = (await listPosts()).filter(post => !post.draft)
+  // and photos, and the tags the posts use.
+  const [allPosts, allPhotos] = await Promise.all([listPosts(), listPhotos()])
+  const posts = allPosts.filter(post => !post.draft)
+  const photos = allPhotos.filter(photo => !photo.draft)
   const tags = [...new Set(posts.flatMap(post => post.tags))].sort()
 
   return [
@@ -16,6 +18,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...posts.map(post => ({
       url: `${env.siteUrl}/writing/${post.slug}`,
       lastModified: post.updated ?? post.date,
+    })),
+    ...photos.map(photo => ({
+      url: `${env.siteUrl}/photos/${photo.slug}`,
+      lastModified: photo.date,
     })),
     ...tags.map(tag => ({ url: `${env.siteUrl}/tags/${tag}` })),
   ]

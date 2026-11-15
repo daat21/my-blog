@@ -19,6 +19,8 @@ interface MediaImageProps {
   /** How wide the image is laid out, so the browser picks a variant. */
   sizes: string
   loading?: 'lazy' | 'eager'
+  /** `high` for the image that is the main content of the page. */
+  fetchPriority?: 'high' | 'low' | 'auto'
   /** Classes for the <img>. */
   className?: string
 }
@@ -29,6 +31,7 @@ export function MediaImage({
   alt,
   sizes,
   loading = 'lazy',
+  fetchPriority,
   className,
 }: MediaImageProps) {
   return (
@@ -47,6 +50,7 @@ export function MediaImage({
         width={image.width}
         height={image.height}
         loading={loading}
+        fetchPriority={fetchPriority}
         decoding="async"
         className={className}
       />

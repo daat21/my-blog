@@ -6,3 +6,6 @@ export const PAGE_GUTTER = 'px-4 pt-8 pb-24 md:px-10 md:pt-10 lg:px-14 xl:px-18'
 
 /** The reading column: about 70 characters of body text. */
 export const READING_COLUMN = 'mx-auto max-w-172.5'
+
+/** A column for photographs: 1100px at most, wider than the reading column. */
+export const WIDE_COLUMN = 'mx-auto max-w-275'

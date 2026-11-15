@@ -10,6 +10,14 @@ const PUBLISHED = [
   '/writing/keeping-a-work-log',
 ]
 const DRAFT = '/writing/unfinished-thoughts-on-testing'
+const PUBLISHED_PHOTOS = [
+  '/photos/low-sun',
+  '/photos/tide-pool',
+  '/photos/birch-stand',
+  '/photos/city-haze',
+  '/photos/window-light',
+]
+const DRAFT_PHOTO = '/photos/night-ferry'
 const UNKNOWN = '/this-page-does-not-exist'
 
 /** Skips checks whose result is the same at every viewport and in both themes. */
@@ -71,7 +79,7 @@ async function feedItems(page: Page, xml: string): Promise<FeedItem[] | null> {
 
 const pathOf = (url: string) => new URL(url).pathname
 
-test('the RSS feed lists published posts, not drafts', async ({
+test('the RSS feed lists published posts, not drafts or photos', async ({
   page,
   request,
 }, testInfo) => {
@@ -87,6 +95,7 @@ test('the RSS feed lists published posts, not drafts', async ({
   const paths = (items ?? []).map(item => pathOf(item.link))
   expect(paths).toEqual(expect.arrayContaining(PUBLISHED))
   expect(paths).not.toContain(DRAFT)
+  expect(paths.filter(path => !path.startsWith('/writing/'))).toEqual([])
 
   const tour = items?.find(
     item => item.title === 'A tour of the content format'
@@ -99,7 +108,7 @@ test('the RSS feed lists published posts, not drafts', async ({
   expect(tour?.description).not.toBe('')
 })
 
-test('the sitemap lists sections, published posts and tags', async ({
+test('the sitemap lists sections, published posts and photos, and tags', async ({
   page,
   request,
 }, testInfo) => {
@@ -114,12 +123,15 @@ test('the sitemap lists sections, published posts and tags', async ({
     expect.arrayContaining([
       '/',
       '/writing',
+      '/photos',
       '/projects',
       ...PUBLISHED,
+      ...PUBLISHED_PHOTOS,
       '/tags/design',
     ])
   )
   expect(paths).not.toContain(DRAFT)
+  expect(paths).not.toContain(DRAFT_PHOTO)
 })
 
 test('robots.txt disallows everything outside production', async ({
@@ -202,7 +214,7 @@ test('page titles follow the site template', async ({ page }, testInfo) => {
 
   // Every other page either keeps the default or fills in the template.
   const titled = new RegExp(`^(?:.+ · )?${SITE_NAME}$`)
-  for (const path of ['/writing', '/projects']) {
+  for (const path of ['/writing', '/photos', '/photos/low-sun', '/projects']) {
     await page.goto(path)
     await expect(page).toHaveTitle(titled)
   }
