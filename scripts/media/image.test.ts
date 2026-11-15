@@ -61,7 +61,9 @@ async function inode(file: string): Promise<number> {
 
 describe('planImageWidths', () => {
   it.each([
-    [2400, [640, 960, 1440]],
+    [3000, [640, 960, 1440, 2048]],
+    [2048, [640, 960, 1440, 2048]],
+    [1600, [640, 960, 1440, 1600]],
     [1440, [640, 960, 1440]],
     [1000, [640, 960, 1000]],
     [960, [640, 960]],
@@ -76,22 +78,24 @@ describe('planImageWidths', () => {
 describe('processImage', () => {
   it('writes AVIF and WebP variants at each target width', async () => {
     const source = await createImage('2026/post/home.png', {
-      width: 1600,
-      height: 800,
+      width: 2400,
+      height: 1200,
     })
 
     const { entry, outputs, skipped } = await processImage(source, target)
 
     expect(skipped).toBe(false)
-    expect(entry).toMatchObject({ kind: 'image', width: 1600, height: 800 })
+    expect(entry).toMatchObject({ kind: 'image', width: 2400, height: 1200 })
     expect(entry.hash).toMatch(/^[0-9a-f]{12}$/)
     expect(entry.variants.map(v => `${v.format} ${v.width}`)).toEqual([
       'avif 640',
       'avif 960',
       'avif 1440',
+      'avif 2048',
       'webp 640',
       'webp 960',
       'webp 1440',
+      'webp 2048',
     ])
 
     for (const variant of entry.variants) {

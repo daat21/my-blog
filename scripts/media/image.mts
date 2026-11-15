@@ -14,8 +14,11 @@ import {
 import type { MediaSource, OutputTarget, ProcessedMedia } from './files.mts'
 import type { ImageEntry, ImageFormat, ImageVariant } from './manifest.mts'
 
-/** Target widths in CSS pixels, narrowest first. */
-export const IMAGE_WIDTHS = [640, 960, 1440] as const
+/**
+ * Target widths in pixels, narrowest first. The widest keeps photographs
+ * sharp when they fill a large screen.
+ */
+export const IMAGE_WIDTHS = [640, 960, 1440, 2048] as const
 
 /** Output formats, best first. */
 const FORMATS = ['avif', 'webp'] as const satisfies ImageFormat[]

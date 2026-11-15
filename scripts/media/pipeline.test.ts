@@ -124,8 +124,9 @@ describe('buildMedia', () => {
       ),
       ...video.sources.map(source => source.src),
     ]
+    // Four widths in two formats for the 1600 px image, and the clip.
     const generated = await listFiles(outputDir)
-    expect(generated).toHaveLength(7)
+    expect(generated).toHaveLength(9)
     for (const url of urls) {
       expect(generated).toContain(url?.replace('/_media/', ''))
     }
