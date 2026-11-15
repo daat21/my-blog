@@ -14,12 +14,17 @@ pnpm install
 pnpm dev
 ```
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Start the development server |
-| `pnpm build` | Create a production build |
-| `pnpm start` | Serve the production build |
-| `pnpm typecheck` | Type-check the project |
+| Command          | Purpose                                             |
+| ---------------- | --------------------------------------------------- |
+| `pnpm dev`       | Start the development server                        |
+| `pnpm build`     | Create a production build                           |
+| `pnpm start`     | Serve the production build                          |
+| `pnpm typecheck` | Type-check the project                              |
+| `pnpm lint`      | Lint, including architecture and design-token rules |
+| `pnpm format`    | Format all files with Prettier                      |
+| `pnpm check`     | Format check, lint and type-check together          |
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/); a Git hook checks them, and formats and lints staged files before each commit.
 
 ## License
 
