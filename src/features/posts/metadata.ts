@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { getPost, listPosts, type Collection } from '@/lib/content'
+import { getPost, listPosts, listTags, type Collection } from '@/lib/content'
 
 import { COLLECTIONS } from './collections'
 
@@ -18,6 +18,13 @@ export async function articleStaticParams(
   const posts = await listPosts({ collection })
   const slugs = posts.length > 0 ? posts.map(post => post.slug) : [NOTHING_YET]
   return slugs.map(slug => ({ slug }))
+}
+
+/** `generateStaticParams` for `/tags/[tag]`: every tag of a visible post. */
+export async function tagStaticParams(): Promise<{ tag: string }[]> {
+  const tags = await listTags()
+  const names = tags.length > 0 ? tags.map(({ tag }) => tag) : [NOTHING_YET]
+  return names.map(tag => ({ tag }))
 }
 
 /** Page title, description and Open Graph article data for a post. */
@@ -51,5 +58,14 @@ export function collectionMetadata(collection: Collection): Metadata {
     title,
     description,
     alternates: { canonical: `/${collection}` },
+  }
+}
+
+/** Metadata for the posts with one tag. */
+export function tagMetadata(tag: string): Metadata {
+  return {
+    title: `Tagged “${tag}”`,
+    description: `Writing and notes tagged “${tag}”.`,
+    alternates: { canonical: `/tags/${tag}` },
   }
 }

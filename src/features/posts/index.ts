@@ -7,6 +7,9 @@ export {
   articleMetadata,
   articleStaticParams,
   collectionMetadata,
+  tagMetadata,
+  tagStaticParams,
 } from './metadata'
 export { PostList } from './post-list'
 export { PostRow } from './post-row'
+export { TagPostsPage } from './tag-posts-page'
