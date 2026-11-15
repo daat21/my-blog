@@ -15,6 +15,7 @@ import { getMediaResolver, type MediaResolver } from '@/lib/media'
 
 export type * from '@/lib/content/types'
 export type { ContentSource, PostFilter } from '@/lib/content/source'
+export { PLACEHOLDER_PARAM, staticParams } from '@/lib/content/static-params'
 
 let mediaResolver: MediaResolver | undefined
 

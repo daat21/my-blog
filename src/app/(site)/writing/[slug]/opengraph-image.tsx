@@ -1,4 +1,4 @@
-import { getProfile, listPosts } from '@/lib/content'
+import { getProfile, listPosts, staticParams } from '@/lib/content'
 import { OG_IMAGE_SIZE, renderPostCard } from '@/lib/og/cards'
 
 export const alt = 'Title card with the post’s title and date'
@@ -9,7 +9,10 @@ export const contentType = 'image/png'
 // params; with them, every card is prerendered at build time.
 export async function generateStaticParams() {
   const posts = await listPosts({ collection: 'writing' })
-  return posts.map(({ slug }) => ({ slug }))
+  return staticParams(
+    'slug',
+    posts.map(({ slug }) => slug)
+  )
 }
 
 export default async function OpenGraphImage({
