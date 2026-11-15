@@ -46,6 +46,17 @@ const httpUrl = z.url({
   error: 'Expected an http(s) URL',
 })
 
+const externalLink = z.url({ protocol: /^(https?|mailto)$/ })
+const SITE_PATH = /^\/(?!\/)\S*$/
+
+/** An http(s) or mailto: URL, or a path on this site such as `/rss.xml`. */
+const linkHref = z
+  .string()
+  .refine(
+    value => SITE_PATH.test(value) || externalLink.safeParse(value).success,
+    { error: 'Expected an http(s) or mailto: URL, or a path starting with /' }
+  )
+
 /** YAML reads `2024` as a number; these fields are free-form strings. */
 const yearLike = z
   .union([text, z.number().int().nonnegative()])
@@ -98,10 +109,7 @@ export const profileSchema: z.ZodType<Profile> = z.strictObject({
   links: z.array(
     z.strictObject({
       label: text,
-      href: z.url({
-        protocol: /^(https?|mailto)$/,
-        error: 'Expected an http(s) or mailto: URL',
-      }),
+      href: linkHref,
     })
   ),
   stack: z.array(

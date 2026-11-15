@@ -219,21 +219,28 @@ describe('profileSchema', () => {
     expect(profile.experience[0]?.start).toBe('2024')
   })
 
-  it('names nested fields with their index', () => {
-    const error = errorOf(() =>
-      validate(
-        profileSchema,
-        {
-          ...validProfile,
-          links: [{ label: 'Bad', href: 'javascript:alert(1)' }],
-        },
-        FILE_NAME
-      )
-    )
-    expect(error.message).toBe(
-      'profile.yaml: links[0].href: Expected an http(s) or mailto: URL'
-    )
+  it('accepts site-relative link paths', () => {
+    const links = [{ label: 'RSS', href: '/rss.xml' }]
+    expect(
+      validate(profileSchema, { ...validProfile, links }, FILE_NAME).links
+    ).toEqual(links)
   })
+
+  it.each(['javascript:alert(1)', '//evil.example', 'rss.xml', '/a b'])(
+    'names nested fields with their index for the link %j',
+    href => {
+      const error = errorOf(() =>
+        validate(
+          profileSchema,
+          { ...validProfile, links: [{ label: 'Bad', href }] },
+          FILE_NAME
+        )
+      )
+      expect(error.message).toBe(
+        'profile.yaml: links[0].href: Expected an http(s) or mailto: URL, or a path starting with /'
+      )
+    }
+  )
 
   it('reports a missing section', () => {
     const error = errorOf(() =>
