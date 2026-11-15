@@ -24,7 +24,16 @@ pnpm dev
 | `pnpm format`    | Format all files with Prettier                      |
 | `pnpm check`     | Format check, lint and type-check together          |
 
-Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/); a Git hook checks them, and formats and lints staged files before each commit.
+Tests:
+
+| Command         | Purpose                                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test`     | Unit tests (Vitest)                                                                                                  |
+| `pnpm test:e2e` | End-to-end smoke tests (Playwright) at phone, tablet and desktop sizes in both colour schemes; builds the site first |
+
+Run `pnpm exec playwright install chromium` once before the first end-to-end run.
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/). Git hooks format and lint staged files before each commit, check the commit message, and run the checks and unit tests before each push. CI runs everything, including the end-to-end tests, on every push.
 
 ## License
 
