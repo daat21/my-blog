@@ -18,6 +18,8 @@ export interface ImageEntry {
   /** Intrinsic size of the original, after EXIF orientation. */
   width: number
   height: number
+  /** The most common colour, `#rrggbb`, to show while the image loads. */
+  color: string
   /** AVIF first, then WebP; narrowest first within each format. */
   variants: ImageVariant[]
 }

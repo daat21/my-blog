@@ -10,12 +10,16 @@ import type { MediaRef } from '@/lib/media/types'
 
 const BASE = '/_media/2026/post'
 
+// eslint-disable-next-line no-restricted-syntax -- Manifest data, not styles.
+const COLOR = '#c87828'
+
 /** Variants listed out of order, to check that the resolver sorts them. */
 const home = {
   kind: 'image',
   hash: 'aaaaaaaaaaaa',
   width: 2400,
   height: 1600,
+  color: COLOR,
   variants: [960, 1440, 640].flatMap(width =>
     (['webp', 'avif'] as const).map(format => ({
       format,
@@ -101,6 +105,7 @@ describe('createLocalMediaResolver', () => {
         },
       ],
       src: `${BASE}/home.aaaaaaaaaaaa.960.webp`,
+      color: COLOR,
     })
   })
 
@@ -115,6 +120,14 @@ describe('createLocalMediaResolver', () => {
       height: 600,
       src: `${BASE}/small.bbbbbbbbbbbb.800.webp`,
     })
+  })
+
+  it('leaves out the colour when the manifest has none', async () => {
+    await writeManifest(MANIFEST)
+    const resolver = createLocalMediaResolver({ manifestPath })
+
+    const resolved = await resolver.resolve('media:2026/post/small.jpg')
+    expect(resolved).not.toHaveProperty('color')
   })
 
   it('resolves a video', async () => {

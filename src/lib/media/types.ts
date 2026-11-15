@@ -15,6 +15,8 @@ export interface ResolvedImage {
   sources: ImageSource[]
   /** Fallback for `<img src>`. */
   src: string
+  /** The most common colour as `#rrggbb`, to show while the image loads. */
+  color?: string
 }
 
 export interface VideoSource {

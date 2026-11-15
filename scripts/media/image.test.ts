@@ -85,7 +85,12 @@ describe('processImage', () => {
     const { entry, outputs, skipped } = await processImage(source, target)
 
     expect(skipped).toBe(false)
-    expect(entry).toMatchObject({ kind: 'image', width: 2400, height: 1200 })
+    expect(entry).toMatchObject({
+      kind: 'image',
+      width: 2400,
+      height: 1200,
+      color: '#c87828',
+    })
     expect(entry.hash).toMatch(/^[0-9a-f]{12}$/)
     expect(entry.variants.map(v => `${v.format} ${v.width}`)).toEqual([
       'avif 640',
@@ -142,6 +147,36 @@ describe('processImage', () => {
       'avif 300',
       'webp 300',
     ])
+  })
+
+  it('records the most common colour, not the average', async () => {
+    const file = path.join(root, 'media', 'two-tone.png')
+    await mkdir(path.dirname(file), { recursive: true })
+    const stripe = await sharp({
+      create: {
+        width: 100,
+        height: 300,
+        channels: 3,
+        background: { r: 230, g: 30, b: 30 },
+      },
+    })
+      .png()
+      .toBuffer()
+    await sharp({
+      create: {
+        width: 300,
+        height: 300,
+        channels: 3,
+        background: { r: 20, g: 40, b: 200 },
+      },
+    })
+      .composite([{ input: stripe, left: 0, top: 0 }])
+      .toFile(file)
+
+    const { entry } = await processImage({ key: 'two-tone.png', file }, target)
+
+    // sharp names the centre of the most common bin of 16 levels a channel.
+    expect(entry.color).toBe('#1828c8')
   })
 
   it('uses the displayed size of a JPEG rotated by its EXIF orientation', async () => {

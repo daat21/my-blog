@@ -112,7 +112,12 @@ describe('buildMedia', () => {
     const resolver = createLocalMediaResolver({ manifestPath })
     const image = await resolver.resolve(`media:${HOME}`)
     const video = await resolver.resolve(`media:${CLIP}`)
-    expect(image).toMatchObject({ kind: 'image', width: 1600, height: 900 })
+    expect(image).toMatchObject({
+      kind: 'image',
+      width: 1600,
+      height: 900,
+      color: '#c80808',
+    })
     expect(video).toMatchObject({ kind: 'video', width: 48, height: 32 })
 
     // Every URL the resolver hands out points at a generated file.

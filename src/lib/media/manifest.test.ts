@@ -26,6 +26,9 @@ function manifest(items: Record<string, unknown>): unknown {
   return { version: 1, items }
 }
 
+// eslint-disable-next-line no-restricted-syntax -- Manifest data, not styles.
+const [COLOR, UPPERCASE_COLOR, SHORT_COLOR] = ['#c87828', '#C87828', '#c87']
+
 describe('parseMediaManifest', () => {
   it('accepts images and videos', () => {
     const parsed = parseMediaManifest(
@@ -34,6 +37,14 @@ describe('parseMediaManifest', () => {
     )
     expect(parsed.items['a/home.png']).toEqual(image)
     expect(parsed.items['a/clip.mp4']).toEqual(video)
+  })
+
+  it('accepts an image with its dominant colour', () => {
+    const parsed = parseMediaManifest(
+      manifest({ 'a/home.png': { ...image, color: COLOR } }),
+      'manifest.json'
+    )
+    expect(parsed.items['a/home.png']).toMatchObject({ color: COLOR })
   })
 
   it('accepts an empty manifest', () => {
@@ -49,6 +60,15 @@ describe('parseMediaManifest', () => {
       manifest({ 'a.png': { ...image, variants: image.variants.slice(0, 1) } }),
     ],
     ['a fractional width', manifest({ 'a.png': { ...image, width: 10.5 } })],
+    ['a named colour', manifest({ 'a.png': { ...image, color: 'red' } })],
+    [
+      'an uppercase colour',
+      manifest({ 'a.png': { ...image, color: UPPERCASE_COLOR } }),
+    ],
+    [
+      'a three-digit colour',
+      manifest({ 'a.png': { ...image, color: SHORT_COLOR } }),
+    ],
     ['a zero height', manifest({ 'a.mp4': { ...video, height: 0 } })],
     ['an unknown video type', manifest({ 'a.mp4': { ...video, type: 'x' } })],
     ['an uppercase hash', manifest({ 'a.mp4': { ...video, hash: 'ABC' } })],

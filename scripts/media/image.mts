@@ -47,6 +47,20 @@ interface Job extends ImageVariant {
   name: string
 }
 
+function toHex(channel: number): string {
+  return channel.toString(16).padStart(2, '0')
+}
+
+/**
+ * Returns the most common colour of an image as `#rrggbb`. It is read from
+ * a small variant that is already on disk, so an unchanged image costs a
+ * quick decode instead of decoding the original on every build.
+ */
+async function dominantColor(file: string): Promise<string> {
+  const { dominant } = await sharp(file).stats()
+  return `#${toHex(dominant.r)}${toHex(dominant.g)}${toHex(dominant.b)}`
+}
+
 async function encode(
   image: Sharp,
   job: Job,
@@ -64,8 +78,9 @@ async function encode(
 }
 
 /**
- * Generates AVIF and WebP variants of a PNG, JPEG or WebP image. Variants
- * that already exist for the same content hash are not encoded again.
+ * Generates AVIF and WebP variants of a PNG, JPEG or WebP image, and finds
+ * its dominant colour. Variants that already exist for the same content
+ * hash are not encoded again.
  */
 export async function processImage(
   source: MediaSource,
@@ -92,12 +107,18 @@ export async function processImage(
     await Promise.all(missing.map(job => encode(image, job, target)))
   }
 
+  // Jobs are narrowest first within each format.
+  const smallest = jobs.find(job => job.format === 'webp')
+  if (!smallest) throw new Error('No WebP variant was planned.')
+  const color = await dominantColor(path.join(target.dir, smallest.name))
+
   return {
     entry: {
       kind: 'image',
       hash,
       width,
       height,
+      color,
       variants: jobs.map(({ format, width, src }) => ({ format, width, src })),
     },
     outputs: jobs.map(job => job.name),

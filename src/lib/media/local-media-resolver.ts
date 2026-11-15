@@ -97,6 +97,7 @@ function toResolvedImage(
     height: entry.height,
     sources,
     src: fallback.src,
+    ...(entry.color !== undefined && { color: entry.color }),
   }
 }
 

@@ -13,6 +13,10 @@ const dimension = z.int().positive()
 
 const hash = z.string().regex(/^[0-9a-f]+$/, 'must be a lowercase hex string')
 
+const color = z
+  .string()
+  .regex(/^#[0-9a-f]{6}$/, 'must be a colour in lowercase #rrggbb form')
+
 const imageVariantSchema = z.object({
   format: z.enum(['avif', 'webp']),
   width: dimension,
@@ -25,6 +29,8 @@ const imageEntrySchema = z.object({
   /** Intrinsic size of the original, after EXIF orientation. */
   width: dimension,
   height: dimension,
+  /** The most common colour, shown while the image loads. */
+  color: color.optional(),
   variants: z
     .array(imageVariantSchema)
     .refine(
