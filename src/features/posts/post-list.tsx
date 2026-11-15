@@ -1,3 +1,4 @@
+import { EmptyState } from '@/components/ui/empty-state'
 import type { PostSummary } from '@/lib/content'
 
 import { PostRow } from './post-row'
@@ -14,11 +15,7 @@ export function PostList({
   emptyMessage = 'Nothing here yet. Check back soon.',
 }: PostListProps) {
   if (posts.length === 0) {
-    return (
-      <p className="rounded-lg border border-dashed border-border-strong px-6 py-10 text-center text-sm text-fg-muted">
-        {emptyMessage}
-      </p>
-    )
+    return <EmptyState>{emptyMessage}</EmptyState>
   }
 
   return (

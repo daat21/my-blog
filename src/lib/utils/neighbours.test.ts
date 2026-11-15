@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { findNeighbours } from './neighbours'
 
-// Newest first, as listPosts returns them.
+// Newest first, as the content lists return them.
 const posts = [{ slug: 'newest' }, { slug: 'middle' }, { slug: 'oldest' }]
 
 describe('findNeighbours', () => {

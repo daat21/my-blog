@@ -1,14 +1,14 @@
 import { notFound } from 'next/navigation'
 
+import { PAGE_GUTTER, READING_COLUMN } from '@/components/layout/page-gutter'
 import { TableOfContents } from '@/components/layout/table-of-contents'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { getPost, listPosts } from '@/lib/content'
+import { findNeighbours } from '@/lib/utils'
 
 import { ArticleBody } from './article-body'
 import { ArticleFooter } from './article-footer'
 import { ArticleHeader } from './article-header'
-import { findNeighbours } from './neighbours'
-import { PAGE_GUTTER, READING_COLUMN } from './page-gutter'
 
 interface ArticlePageProps {
   slug: string

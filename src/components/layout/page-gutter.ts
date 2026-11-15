@@ -1,6 +1,6 @@
 /**
- * Padding around a page's reading column, matching the article mockup:
- * 16px on phones growing to 72px on desktops, 96px below the content.
+ * Padding around a page's content, matching the article mockup: 16px on
+ * phones growing to 72px on desktops, 96px below the content.
  */
 export const PAGE_GUTTER = 'px-4 pt-8 pb-24 md:px-10 md:pt-10 lg:px-14 xl:px-18'
 

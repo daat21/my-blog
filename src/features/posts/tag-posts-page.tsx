@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 
+import { PAGE_GUTTER, READING_COLUMN } from '@/components/layout/page-gutter'
+import { PageHeader } from '@/components/ui/page-header'
 import { listPosts } from '@/lib/content'
 
-import { ListHeader } from './list-header'
-import { PAGE_GUTTER, READING_COLUMN } from './page-gutter'
 import { PostList } from './post-list'
 
 interface TagPostsPageProps {
@@ -20,7 +20,7 @@ export async function TagPostsPage({ tag }: TagPostsPageProps) {
   return (
     <div className={PAGE_GUTTER}>
       <div className={READING_COLUMN}>
-        <ListHeader
+        <PageHeader
           title={
             <>
               <span className="font-normal text-fg-muted">#</span>
