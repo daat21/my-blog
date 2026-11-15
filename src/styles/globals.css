@@ -218,3 +218,47 @@
     }
   }
 }
+
+/* ------------------------------------------------------------------------ */
+/* Mobile menu sheet (< 1024px): slides in from the left and out again,     */
+/* while its backdrop fades. Reduced motion turns both off (see base).      */
+/* ------------------------------------------------------------------------ */
+
+@layer components {
+  .menu-sheet {
+    translate: -100% 0;
+    transition:
+      translate 250ms cubic-bezier(0.2, 0, 0, 1),
+      display 250ms allow-discrete,
+      overlay 250ms allow-discrete;
+  }
+
+  .menu-sheet[open] {
+    translate: 0 0;
+  }
+
+  @starting-style {
+    .menu-sheet[open] {
+      translate: -100% 0;
+    }
+  }
+
+  .menu-sheet::backdrop {
+    background-color: color-mix(in oklab, var(--fg) 40%, transparent);
+    opacity: 0;
+    transition:
+      opacity 250ms ease-out,
+      display 250ms allow-discrete,
+      overlay 250ms allow-discrete;
+  }
+
+  .menu-sheet[open]::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .menu-sheet[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}

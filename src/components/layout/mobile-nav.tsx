@@ -78,9 +78,10 @@ export function MobileNav({ name, children }: MobileNavProps) {
           // A click on the backdrop lands on the dialog element itself.
           if (event.target === event.currentTarget) event.currentTarget.close()
         }}
-        className="m-0 h-dvh max-h-none w-full max-w-none bg-surface text-fg-body opacity-100 transition-opacity duration-150 backdrop:bg-fg/40 open:flex open:flex-col sm:max-w-sm lg:hidden starting:open:opacity-0"
+        className="menu-sheet m-0 h-dvh max-h-none w-full max-w-none bg-surface text-fg-body open:flex open:flex-col sm:max-w-sm sm:border-r sm:border-border lg:hidden"
       >
-        <div className="flex justify-end px-3 pt-3">
+        {/* Positioned above the sheet content so nothing can cover it. */}
+        <div className="absolute top-3 right-3 z-10">
           <button
             type="button"
             aria-label="Close menu"
@@ -100,7 +101,7 @@ export function MobileNav({ name, children }: MobileNavProps) {
             </svg>
           </button>
         </div>
-        <div className="-mt-8 flex-1">{children}</div>
+        <div className="flex-1">{children}</div>
       </dialog>
     </>
   )
