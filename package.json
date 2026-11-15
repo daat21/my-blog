@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "media:build": "node scripts/media/build-media.mts",
+    "media:gif2mp4": "node scripts/media/gif-to-mp4.mts",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
