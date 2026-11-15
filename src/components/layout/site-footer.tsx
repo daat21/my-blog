@@ -1,7 +1,12 @@
+import { cacheLife } from 'next/cache'
+
 /** Resolved when the page is prerendered, and refreshed by every build. */
 // eslint-disable-next-line @typescript-eslint/require-await -- 'use cache' functions must be async even when they await nothing.
 async function copyrightYear(): Promise<number> {
   'use cache'
+  // Without an explicit lifetime this would default to 15 minutes and make
+  // every page revalidate that often.
+  cacheLife('max')
   return new Date().getFullYear()
 }
 

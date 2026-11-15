@@ -52,11 +52,12 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
-      - name: Lint
-        run: pnpm lint
-
+      # Typecheck first: it generates the route types that lint relies on.
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
 
       - name: Unit tests
         run: pnpm test

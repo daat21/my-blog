@@ -14,7 +14,7 @@
     "lint:fix": "eslint . --fix",
     "format": "git ls-files -z --cached --others --exclude-standard | xargs -0 prettier --write --ignore-unknown",
     "format:check": "git ls-files -z --cached --others --exclude-standard | xargs -0 prettier --check --ignore-unknown",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck",
+    "check": "pnpm format:check && pnpm typecheck && pnpm lint",
     "prepare": "husky",
     "test": "vitest run",
     "test:watch": "vitest",
