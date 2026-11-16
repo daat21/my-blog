@@ -7,6 +7,7 @@ import { MediaImage } from '@/components/ui/media-image'
 import { PageHeader } from '@/components/ui/page-header'
 import { SeparatedList } from '@/components/ui/separated-list'
 import { listAlbums } from '@/lib/content'
+import { formatCount } from '@/lib/utils'
 
 import { AlbumMeta } from './album-meta'
 import { PHOTOS_INTRO } from './photos-intro'
@@ -43,8 +44,11 @@ export async function GalleryPage() {
                 <span className="ml-auto font-mono text-meta text-fg-muted">
                   <SeparatedList
                     items={[
-                      `${entries.length} albums`,
-                      `${entries.reduce((sum, album) => sum + album.count, 0)} photos`,
+                      formatCount(entries.length, 'album'),
+                      formatCount(
+                        entries.reduce((sum, album) => sum + album.count, 0),
+                        'photo'
+                      ),
                     ]}
                   />
                 </span>

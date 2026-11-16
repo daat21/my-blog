@@ -1,5 +1,6 @@
 import { SeparatedList } from '@/components/ui/separated-list'
 import type { AlbumSummary } from '@/lib/content'
+import { formatCount } from '@/lib/utils'
 
 /** Shared dates, place and visible-photo count for an album. */
 export function AlbumMeta({ album }: { album: AlbumSummary }) {
@@ -17,7 +18,7 @@ export function AlbumMeta({ album }: { album: AlbumSummary }) {
             )}
           </span>,
           ...(album.location ? [album.location] : []),
-          `${album.count} ${album.count === 1 ? 'photo' : 'photos'}`,
+          formatCount(album.count, 'photo'),
         ]}
       />
     </p>
