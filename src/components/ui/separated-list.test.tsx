@@ -18,7 +18,7 @@ describe('SeparatedList', () => {
     expect(html.match(/whitespace-nowrap/g)).toHaveLength(3)
     expect(html.match(/data-separator=""/g)).toHaveLength(2)
     expect(html).toContain(
-      '<span data-separated-value="">Tailwind CSS</span> <span aria-hidden="true" class="ml-2.5" data-separator="">·</span></span> '
+      '<span data-separated-value="">Tailwind CSS</span> <span aria-hidden="true" data-separator="">·</span></span> '
     )
     expect(html).toContain(
       '<span data-separated-value="">TypeScript</span></span></span>'
@@ -26,6 +26,22 @@ describe('SeparatedList', () => {
     expect(html.replace(/<[^>]*>/g, '')).toBe(
       'Next.js · Tailwind CSS · TypeScript'
     )
+  })
+
+  it('uses ordinary spaces instead of margin or gap spacing', () => {
+    for (const separator of ['·', '→'] as const) {
+      const html = renderToStaticMarkup(
+        <SeparatedList
+          separator={separator}
+          items={['First item', 'Next item']}
+        />
+      )
+      expect(html.replace(/<[^>]*>/g, '')).toBe(
+        `First item ${separator} Next item`
+      )
+      expect(html).toContain('class="inline-block whitespace-nowrap"')
+      expect(html).not.toMatch(/(?:gap-|m[lr]-|flex|&nbsp;|\u00a0)/)
+    }
   })
 
   it('does not add a separator to a single item', () => {
@@ -47,7 +63,7 @@ describe('SeparatedList', () => {
     )
     expect(html).toContain('<time dateTime="2026-11-12">2026-11-12</time>')
     expect(html).toContain('contents')
-    expect(html).not.toContain('inline-flex flex-wrap')
+    expect(html).not.toContain('class="inline"')
   })
 
   it('attaches an optional trailing dot before external content', () => {

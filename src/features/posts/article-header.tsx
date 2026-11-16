@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import { SeparatedList } from '@/components/ui/separated-list'
 import { Tag } from '@/components/ui/tag'
 import type { PostSummary } from '@/lib/content'
@@ -17,7 +19,7 @@ export function ArticleHeader({ post }: ArticleHeaderProps) {
         {post.title}
       </h1>
       <p className="text-lead text-fg-muted">{post.description}</p>
-      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 pt-1.5 font-mono text-meta text-fg-muted">
+      <div className="pt-1.5 font-mono text-meta text-fg-muted">
         <SeparatedList
           className="contents"
           trailingSeparator={post.tags.length > 0}
@@ -35,8 +37,11 @@ export function ArticleHeader({ post }: ArticleHeaderProps) {
             `${post.readingMinutes} min read`,
           ]}
         />{' '}
-        {post.tags.map(tag => (
-          <Tag key={tag} tag={tag} />
+        {post.tags.map((tag, index) => (
+          <Fragment key={tag}>
+            {index > 0 && ' '}
+            <Tag tag={tag} />
+          </Fragment>
         ))}
       </div>
     </header>

@@ -33,7 +33,7 @@ export function ExperienceProjects({ projects }: ExperienceProjectsProps) {
             <p className="text-ui text-fg">
               <span className="block font-medium">{project.title}</span>{' '}
               <SeparatedList
-                className="flex text-fg-muted"
+                className="block text-fg-muted"
                 separator="→"
                 items={project.role.split('→').map(step => step.trim())}
               />

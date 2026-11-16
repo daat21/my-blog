@@ -79,6 +79,47 @@ for (const path of [
         })
       )
     expect(violations, 'no line box may begin with a separator').toEqual([])
+
+    const spacingViolations = await page
+      .locator('[data-separator]')
+      .evaluateAll(separators =>
+        separators.flatMap(separator => {
+          const item = separator.closest('[data-separated-item]')
+          const value = item?.querySelector('[data-separated-value]')
+          if (!item || !value || separator.getClientRects().length === 0)
+            return []
+
+          // Measure a normal space in the same font, independently of list layout.
+          const probe = document.createElement('span')
+          probe.textContent = ' '
+          probe.style.whiteSpace = 'pre'
+          probe.style.position = 'absolute'
+          item.append(probe)
+          const spaceWidth = probe.getBoundingClientRect().width
+          probe.remove()
+
+          const dot = separator.getBoundingClientRect()
+          const before = value.getBoundingClientRect()
+          const gaps = [dot.left - before.right]
+          const list = item.closest('[data-separated-list]')
+          const next =
+            item.nextElementSibling?.querySelector('[data-separated-value]') ??
+            list?.nextElementSibling
+          if (next) {
+            const after = next.getBoundingClientRect()
+            if (dot.top < after.bottom && dot.bottom > after.top) {
+              gaps.push(after.left - dot.right)
+            }
+          }
+          return gaps.every(gap => Math.abs(gap - spaceWidth) <= 0.25)
+            ? []
+            : [{ text: item.textContent, spaceWidth, gaps }]
+        })
+      )
+    expect(
+      spacingViolations,
+      'separators have exactly one normal space on each side'
+    ).toEqual([])
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth

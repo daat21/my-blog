@@ -18,17 +18,11 @@ export function SeparatedList({
   trailingSeparator = false,
 }: SeparatedListProps) {
   return (
-    <span
-      className={cn(
-        'inline-flex flex-wrap items-center gap-x-2.5 gap-y-1',
-        className
-      )}
-      data-separated-list=""
-    >
+    <span className={cn('inline', className)} data-separated-list="">
       {items.map((item, index) => (
         <Fragment key={index}>
           <span
-            className="inline-flex items-center whitespace-nowrap"
+            className="inline-block whitespace-nowrap"
             data-separated-item=""
           >
             <span data-separated-value="">{item}</span>
@@ -37,7 +31,6 @@ export function SeparatedList({
                 {' '}
                 <span
                   aria-hidden={separator === '·' ? true : undefined}
-                  className="ml-2.5"
                   data-separator=""
                 >
                   {separator}
