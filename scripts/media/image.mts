@@ -12,25 +12,18 @@ import {
   writeFileAtomic,
 } from './files.mts'
 import type { MediaSource, OutputTarget, ProcessedMedia } from './files.mts'
-import type { ImageEntry, ImageFormat, ImageVariant } from './manifest.mts'
+import type { ImageEntry, ImageVariant } from './manifest.mts'
+import {
+  IMAGE_ENCODERS as ENCODERS,
+  IMAGE_FORMATS as FORMATS,
+  IMAGE_WIDTHS,
+  MEDIA_RECIPE,
+} from './recipe.mts'
 
-/**
- * Target widths in pixels, narrowest first. The widest keeps photographs
- * sharp when they fill a large screen.
- */
-export const IMAGE_WIDTHS = [640, 960, 1440, 2048] as const
+export { IMAGE_WIDTHS } from './recipe.mts'
 
-/** Output formats, best first. */
-const FORMATS = ['avif', 'webp'] as const satisfies ImageFormat[]
-
-const ENCODERS = {
-  avif: { quality: 50, effort: 4 },
-  webp: { quality: 75, effort: 4 },
-} as const satisfies Record<ImageFormat, { quality: number; effort: number }>
-
-// Hashed together with the source bytes, so that changing a setting gives
-// every image new file names instead of serving stale cached variants.
-const RECIPE = JSON.stringify({ widths: IMAGE_WIDTHS, encoders: ENCODERS })
+// Settings and codec changes must also invalidate immutable public URLs.
+const RECIPE = JSON.stringify(MEDIA_RECIPE)
 
 /**
  * Returns the widths to generate for an image `originalWidth` pixels wide:

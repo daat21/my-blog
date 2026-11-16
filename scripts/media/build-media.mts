@@ -6,6 +6,7 @@
 
 import path from 'node:path'
 
+import { MEDIA_CACHE_DIR } from './cache.mts'
 import { isNotFound } from './files.mts'
 import { buildMedia } from './pipeline.mts'
 
@@ -40,14 +41,15 @@ try {
       publicPath: '/_media',
     },
     manifestPath,
+    cacheDir: path.join(repoRoot, MEDIA_CACHE_DIR),
     log: message => {
       console.log(message)
     },
   })
   const seconds = ((performance.now() - started) / 1000).toFixed(1)
   console.log(
-    `Media: ${Object.keys(manifest.items).length} files ` +
-      `(${processed.length} processed, ${skipped.length} unchanged), ` +
+    `media: ${Object.keys(manifest.items).length} sources, ` +
+      `${skipped.length} cached, ${processed.length} processed, ` +
       `${removed.length} stale outputs removed, in ${seconds} s. ` +
       `Wrote ${path.relative(repoRoot, manifestPath)}.`
   )
