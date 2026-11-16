@@ -3,11 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { CSSProperties } from 'react'
 
-import {
-  PAGE_GUTTER,
-  READING_COLUMN,
-  WIDE_COLUMN,
-} from '@/components/layout/page-gutter'
+import { PAGE_GUTTER, READING_COLUMN } from '@/components/layout/page-gutter'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { MediaImage } from '@/components/ui/media-image'
@@ -34,23 +30,35 @@ export async function PhotoPage({
   ])
   if (!photo || !album) notFound()
   return (
-    <div className={cn(PAGE_GUTTER, 'pt-0 md:pt-10')}>
-      <div className={WIDE_COLUMN}>
-        <ArrowNavigation
-          previous={photo.previous && `/photos/${slug}/${photo.previous.slug}`}
-          next={photo.next && `/photos/${slug}/${photo.next.slug}`}
-        />
-        <article className="grid min-w-0 gap-0 md:gap-6 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-8">
-          <div className="min-w-0">
-            <figure className="relative -mx-4 flex items-center justify-center overflow-hidden bg-sunken md:mx-0 md:rounded-md xl:h-[calc(100dvh-10rem)] xl:min-h-80 xl:p-6">
+    <div className={PAGE_GUTTER}>
+      <ArrowNavigation
+        previous={photo.previous && `/photos/${slug}/${photo.previous.slug}`}
+        next={photo.next && `/photos/${slug}/${photo.next.slug}`}
+      />
+      <article>
+        <header className="mb-6 flex flex-col gap-3">
+          <Breadcrumb
+            items={[
+              { label: 'photos', href: '/photos' },
+              { label: slug, href: `/photos/${slug}` as Route },
+              { label: photo.slug },
+            ]}
+          />
+          <h1 className="text-h1 font-semibold tracking-[-0.022em] text-fg xl:text-h2">
+            {photo.title}
+          </h1>
+        </header>
+        <div className="flex min-w-0 flex-col gap-6 xl:flex-row xl:gap-8">
+          <div className="min-w-0 flex-1">
+            <figure className="relative -mx-4 flex items-center justify-center overflow-hidden bg-sunken md:mx-0 md:rounded-md xl:h-[calc(100dvh-17rem)] xl:min-h-80 xl:p-6">
               <div
-                className="relative xl:max-w-[var(--photo-width)]"
+                className="relative w-[min(100%,var(--photo-width))] xl:w-full xl:max-w-[var(--frame-photo-width)]"
                 style={
                   {
-                    width: `min(100%, ${cappedWidth(photo.image)}dvh)`,
+                    '--photo-width': `${cappedWidth(photo.image)}dvh`,
                     aspectRatio: `${photo.image.width} / ${photo.image.height}`,
                     backgroundColor: photo.image.color,
-                    '--photo-width': `calc((100dvh - 13rem) * ${photo.image.width / photo.image.height})`,
+                    '--frame-photo-width': `calc((max(20rem, 100dvh - 17rem) - 3rem) * ${photo.image.width / photo.image.height})`,
                   } as CSSProperties
                 }
               >
@@ -63,12 +71,23 @@ export async function PhotoPage({
                   className="absolute inset-0 size-full object-contain"
                 />
               </div>
+              <PhotoNavigation photo={photo} layout="frame" />
             </figure>
+            <div className="-mx-4 md:mx-0 xl:hidden">
+              <PhotoNavigation photo={photo} layout="stacked" />
+            </div>
+            <output
+              aria-label="Photo position"
+              className="mt-4 hidden text-center font-mono text-meta text-fg-muted xl:block"
+            >
+              <span className="text-fg">{photo.position}</span> /{' '}
+              {photo.album.count}
+            </output>
             <nav
               aria-label="Photos in this album"
-              className="mt-4 hidden overflow-x-auto p-1 xl:block"
+              className="mt-3 hidden overflow-x-auto p-1 xl:block"
             >
-              <ol className="flex w-max gap-3">
+              <ol className="mx-auto flex w-max gap-3">
                 {album.photos.map((entry, index) => (
                   <li key={entry.slug}>
                     <Link
@@ -96,34 +115,19 @@ export async function PhotoPage({
               </ol>
             </nav>
           </div>
-          <div
+          <section
+            aria-label="Photo details"
             className={cn(
               READING_COLUMN,
-              'flex w-full min-w-0 flex-col gap-6 xl:sticky xl:top-10 xl:self-start'
+              'flex w-full min-w-0 flex-col gap-6 xl:sticky xl:top-10 xl:mx-0 xl:w-75 xl:shrink-0 xl:self-start'
             )}
           >
-            <div className="order-first -mx-4 md:mx-0 xl:order-none xl:row-start-3">
-              <PhotoNavigation photo={photo} />
-            </div>
-            <Breadcrumb
-              className="py-2 xl:order-first"
-              items={[
-                { label: 'photos', href: '/photos' },
-                { label: slug, href: `/photos/${slug}` as Route },
-                { label: photo.slug },
-              ]}
-            />
-            <header className="flex flex-col gap-3 xl:order-first">
-              <h1 className="text-h1 font-semibold tracking-[-0.022em] text-fg xl:text-h2">
-                {photo.title}
-              </h1>
-              {photo.story && <ArticleBody body={photo.story} />}
-            </header>
+            {photo.story && <ArticleBody body={photo.story} />}
             <PhotoMeta photo={photo} />
-          </div>
-        </article>
-        <SiteFooter />
-      </div>
+          </section>
+        </div>
+      </article>
+      <SiteFooter />
     </div>
   )
 }

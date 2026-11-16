@@ -1,9 +1,9 @@
 // The `sizes` hints below follow the page frame: the sidebar is 260px wide
 // from 1024px and 300px from 1280px, and the page gutters are 16px, 40px,
-// 56px and 72px a side at the four tiers. Photos sit in a column of at
-// most 1100px.
+// 56px and 72px a side at the four tiers. Gallery columns cap at 1100px;
+// the full-tier viewer fills the remaining space beside its 300px details.
 
-/** Photos are never taller than this share of the viewport, in percent. */
+/** Stacked photos are capped at this share of the viewport, in percent. */
 const MAX_HEIGHT = 80
 
 /**
@@ -39,7 +39,7 @@ export function cappedWidth({ width, height }: Dimensions): number {
 export function photoSizes(image: Dimensions): string {
   const capped = `${cappedWidth(image)}vh`
   return [
-    `(min-width: 1544px) min(720px, ${capped}), (min-width: 1280px) min(100vw - 824px, ${capped})`,
+    `(min-width: 1280px) min(100vw - 824px, calc((max(20rem, 100vh - 17rem) - 3rem) * ${image.width / image.height}))`,
     `(min-width: 1024px) min(100vw - 372px, ${capped})`,
     `(min-width: 768px) min(100vw - 80px, ${capped})`,
     `min(100vw, ${capped})`,

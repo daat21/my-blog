@@ -110,8 +110,26 @@ test('photo layout is two columns only at full tier, otherwise stacked', async (
   const frame = await main.locator('figure').boundingBox()
   const title = await heading.boundingBox()
   if (!frame || !title) throw new Error('Missing image frame or heading')
+  expect(title.y + title.height).toBeLessThan(frame.y)
+  expect(
+    await heading.evaluate(element =>
+      Boolean(
+        element.compareDocumentPosition(
+          document.querySelector('main figure') as Node
+        ) & Node.DOCUMENT_POSITION_FOLLOWING
+      )
+    )
+  ).toBe(true)
+  const counter = await main
+    .getByLabel('Photo position')
+    .locator('visible=true')
+    .boundingBox()
+  if (!counter) throw new Error('Missing photo counter')
+  expect(
+    Math.abs(counter.x + counter.width / 2 - (frame.x + frame.width / 2))
+  ).toBeLessThanOrEqual(2)
   if ((viewport?.width ?? 0) >= 1280) {
-    expect(title.x).toBeGreaterThan(frame.x + frame.width)
+    expect(title.x).toBe(frame.x)
     await expect(
       main.getByRole('navigation', { name: 'Photos in this album' })
     ).toBeVisible()
@@ -119,7 +137,15 @@ test('photo layout is two columns only at full tier, otherwise stacked', async (
       main.getByRole('link', { name: '2. Low sun' })
     ).toHaveAttribute('aria-current', 'page')
   } else {
-    expect(title.y).toBeGreaterThan(frame.y + frame.height)
+    const row = await main
+      .getByRole('navigation', { name: 'Photo navigation' })
+      .boundingBox()
+    if (!row) throw new Error('Missing navigation row')
+    expect(
+      Math.abs(counter.x + counter.width / 2 - (row.x + row.width / 2))
+    ).toBeLessThanOrEqual(2)
+    expect(row.y).toBeGreaterThanOrEqual(frame.y + frame.height)
+    await expect(main.locator('figure').getByRole('navigation')).toBeHidden()
     if ((viewport?.width ?? 0) < 768) {
       expect(frame.x).toBe(0)
       expect(frame.width).toBe(viewport?.width)
@@ -133,8 +159,8 @@ test('photo layout is two columns only at full tier, otherwise stacked', async (
     main.getByText(/^We reached the end of the west pier/)
   ).toBeVisible()
   await expect(
-    main.getByRole('navigation', { name: 'Photo navigation' })
-  ).toContainText(/2\s*(?:of|\/)\s*2/, { useInnerText: true })
+    main.getByLabel('Photo position').locator('visible=true')
+  ).toHaveText(/2\s*\/\s*2/)
   await expect(main.locator('dl dt')).toHaveText([
     'Camera',
     'Lens',
@@ -169,19 +195,123 @@ test('previous/next, counter, arrow keys and breadcrumb stay within the album', 
   await page.goto(PHOTO)
   const nav = page.getByRole('navigation', { name: 'Photo navigation' })
   await expect(nav.getByRole('link', { name: /Next/ })).toHaveCount(0)
+  await expect(nav.locator('[aria-disabled="true"]')).toHaveAttribute(
+    'aria-label',
+    'Next photo'
+  )
   await nav.getByRole('link', { name: /Previous/ }).click()
   await expect(page).toHaveURL(`${ALBUM}/tide-pool`)
-  await expect(nav).toContainText(/1\s*(?:of|\/)\s*2/, { useInnerText: true })
+  await expect(
+    page.getByLabel('Photo position').locator('visible=true')
+  ).toHaveText(/1\s*\/\s*2/)
   await expect(nav.getByRole('link', { name: /Previous/ })).toHaveCount(0)
-  await page.keyboard.press('ArrowRight')
+  await expect(nav.locator('[aria-disabled="true"]')).toHaveAttribute(
+    'aria-label',
+    'Previous photo'
+  )
+  await nav.getByRole('link', { name: 'Next photo: Low sun' }).click()
   await expect(page).toHaveURL(PHOTO)
-  await page.keyboard.press('ArrowLeft')
-  await expect(page).toHaveURL(`${ALBUM}/tide-pool`)
+  // A URL change can precede the keyboard enhancement's effect after navigation.
+  for (const [key, path] of [
+    ['ArrowLeft', `${ALBUM}/tide-pool`],
+    ['ArrowRight', PHOTO],
+    ['ArrowLeft', `${ALBUM}/tide-pool`],
+  ] as const) {
+    await expect
+      .poll(async () => {
+        await page.keyboard.press(key)
+        return new URL(page.url()).pathname
+      })
+      .toBe(path)
+  }
   await page
     .getByRole('navigation', { name: 'Breadcrumb' })
     .getByRole('link', { name: 'coastal-light', exact: true })
     .click()
   await expect(page).toHaveURL(ALBUM)
+})
+
+test('full-tier viewer fills the main gutters with centred controls and right-aligned details', async ({
+  page,
+  viewport,
+}) => {
+  test.skip((viewport?.width ?? 0) < 1280, 'Full-tier layout only')
+  if (!viewport) throw new Error('Missing project viewport')
+  for (const size of [viewport, { width: 1920, height: 1080 }]) {
+    await page.setViewportSize(size)
+    await page.goto(PHOTO)
+    const main = page.getByRole('main')
+    const frame = await main.locator('figure').boundingBox()
+    const details = await main
+      .getByRole('region', { name: 'Photo details' })
+      .boundingBox()
+    const title = await main.getByRole('heading', { level: 1 }).boundingBox()
+    const counter = await main
+      .getByLabel('Photo position')
+      .locator('visible=true')
+      .boundingBox()
+    const rail = main.getByRole('navigation', { name: 'Photos in this album' })
+    const thumbnails = await rail.locator('ol').boundingBox()
+    const footer = await main.locator('footer').boundingBox()
+    const mainBox = await main.boundingBox()
+    if (
+      !frame ||
+      !details ||
+      !title ||
+      !counter ||
+      !thumbnails ||
+      !footer ||
+      !mainBox
+    )
+      throw new Error('Missing viewer layout')
+    const gutter = await main
+      .locator(':scope > div')
+      .evaluate(element => parseFloat(getComputedStyle(element).paddingRight))
+    expect(Math.abs(frame.x - mainBox.x - gutter)).toBeLessThanOrEqual(1)
+    expect(
+      Math.abs(size.width - details.x - details.width - gutter)
+    ).toBeLessThanOrEqual(1)
+    expect(details.width).toBe(300)
+    expect(details.y).toBe(frame.y)
+    await expect(main.getByRole('region', { name: 'Photo details' })).toHaveCSS(
+      'position',
+      'sticky'
+    )
+    expect(title.x).toBe(frame.x)
+    expect(title.y + title.height).toBeLessThan(frame.y)
+    for (const box of [counter, thumbnails])
+      expect(
+        Math.abs(box.x + box.width / 2 - frame.x - frame.width / 2)
+      ).toBeLessThanOrEqual(2)
+    expect(thumbnails.y + thumbnails.height).toBeLessThanOrEqual(size.height)
+    expect(footer.x).toBe(frame.x)
+    expect(footer.x + footer.width).toBe(details.x + details.width)
+    const controls = main.getByRole('navigation', { name: 'Photo navigation' })
+    for (const [index, control] of (
+      await controls.locator('a, [aria-disabled="true"]').all()
+    ).entries()) {
+      const box = await control.boundingBox()
+      if (!box) throw new Error('Missing photo control')
+      expect(box.width).toBeCloseTo(44, 2)
+      expect(box.height).toBeCloseTo(44, 2)
+      expect(box.x).toBeGreaterThanOrEqual(frame.x)
+      expect(box.x + box.width).toBeLessThanOrEqual(frame.x + frame.width)
+      expect(
+        Math.abs(box.y + box.height / 2 - frame.y - frame.height / 2)
+      ).toBeLessThanOrEqual(1)
+      expect(
+        index === 0
+          ? box.x < frame.x + frame.width / 2
+          : box.x > frame.x + frame.width / 2
+      ).toBe(true)
+      expect(
+        await control.evaluate(element =>
+          parseFloat(getComputedStyle(element).borderRadius)
+        )
+      ).toBeGreaterThanOrEqual(22)
+    }
+    await expectCleanPage(page)
+  }
 })
 
 test('full-tier frames stay fixed across aspect ratios and long thumbnail rails scroll internally', async ({

@@ -17,7 +17,7 @@ describe('photoSizes', () => {
   it('takes the column width, or less when the height cap applies', () => {
     expect(photoSizes({ width: 1600, height: 2400 })).toBe(
       [
-        '(min-width: 1544px) min(720px, 53.33vh), (min-width: 1280px) min(100vw - 824px, 53.33vh)',
+        '(min-width: 1280px) min(100vw - 824px, calc((max(20rem, 100vh - 17rem) - 3rem) * 0.6666666666666666))',
         '(min-width: 1024px) min(100vw - 372px, 53.33vh)',
         '(min-width: 768px) min(100vw - 80px, 53.33vh)',
         'min(100vw, 53.33vh)',
