@@ -58,7 +58,7 @@ test.describe('home page', () => {
     await expect(entries).toHaveCount(3)
     await expect(entries.nth(0)).toContainText('Mar 2024 – Now')
     await expect(entries.nth(0)).toContainText(
-      'Senior web developer · Example Studio'
+      'Senior web application developer · Example Studio'
     )
     await expect(
       entries.nth(0).getByText('Fictional studio · Contract', { exact: true })
@@ -75,14 +75,14 @@ test.describe('home page', () => {
         0,
         'Sample publishing tools',
         'Nov 2026 – Now',
-        'Developer',
+        'Developer and Reviewer',
         'Builds a small editing workflow for a fictional publication.',
       ],
       [
         1,
         'Example component library',
         'Feb 2025 – Oct 2026',
-        'Developer → Reviewer → Maintainer',
+        'Developer → Reviewer (Jun) → Lead reviewer (Jul)',
         'Created shared patterns and reviewed contributions across sample sites.',
       ],
       [
@@ -93,7 +93,7 @@ test.describe('home page', () => {
         'Rebuilt an example catalogue with accessible navigation and forms.',
       ],
     ] as const) {
-      await expect(projects.nth(index)).toContainText(`${title} · ${role}`)
+      await expect(projects.nth(index)).toContainText(`${title} ${role}`)
       await expect(projects.nth(index)).toContainText(dates)
       await expect(projects.nth(index).getByText(summary)).toBeVisible()
     }

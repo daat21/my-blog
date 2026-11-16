@@ -5,6 +5,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { EmptyState } from '@/components/ui/empty-state'
 import { MediaImage } from '@/components/ui/media-image'
 import { PageHeader } from '@/components/ui/page-header'
+import { SeparatedList } from '@/components/ui/separated-list'
 import { listAlbums } from '@/lib/content'
 
 import { AlbumMeta } from './album-meta'
@@ -40,8 +41,12 @@ export async function GalleryPage() {
                   {year}
                 </h2>
                 <span className="ml-auto font-mono text-meta text-fg-muted">
-                  {entries.length} albums ·{' '}
-                  {entries.reduce((sum, album) => sum + album.count, 0)} photos
+                  <SeparatedList
+                    items={[
+                      `${entries.length} albums`,
+                      `${entries.reduce((sum, album) => sum + album.count, 0)} photos`,
+                    ]}
+                  />
                 </span>
               </div>
               <ol>

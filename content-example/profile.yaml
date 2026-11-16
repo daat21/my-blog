@@ -28,7 +28,7 @@ stack:
     items: [Git, Figma, Playwright, Vitest]
 experience:
   - start: '2024-03'
-    role: Senior web developer
+    role: Senior web application developer
     organization: Example Studio
     note: Fictional studio · Contract
     summary: Leads front-end work on content sites and the studio's shared
@@ -36,12 +36,12 @@ experience:
     projects:
       - start: '2026-11'
         title: Sample publishing tools
-        role: Developer
+        role: Developer and Reviewer
         summary: Builds a small editing workflow for a fictional publication.
       - start: '2025-02'
         end: '2026-10'
         title: Example component library
-        role: Developer → Reviewer → Maintainer
+        role: Developer → Reviewer (Jun) → Lead reviewer (Jul)
         summary: Created shared patterns and reviewed contributions across sample sites.
       - start: '2024-03'
         end: '2024-12'

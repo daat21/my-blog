@@ -1,3 +1,4 @@
+import { SeparatedList } from '@/components/ui/separated-list'
 import type { ExperienceEntry } from '@/lib/content'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,8 @@ export function ExperienceTimeline({ entries }: ExperienceTimelineProps) {
       {entries.map((entry, index) => {
         const ongoing = entry.end === undefined
         const isLast = index === entries.length - 1
+        const roleWords = entry.role.split(' ')
+        const lastWord = roleWords.pop() ?? ''
         return (
           <li
             key={`${entry.organization}:${entry.role}:${entry.start}`}
@@ -48,11 +51,17 @@ export function ExperienceTimeline({ entries }: ExperienceTimelineProps) {
                 <ExperienceDates start={entry.start} end={entry.end} />
               </p>
               <p className="text-body leading-snug font-semibold text-fg">
-                {entry.role} · {entry.organization}
+                {roleWords.length > 0 && `${roleWords.join(' ')} `}
+                <SeparatedList
+                  className="contents"
+                  items={[lastWord, entry.organization]}
+                />
               </p>
               {entry.note && (
                 <p className="font-mono text-meta text-fg-muted">
-                  {entry.note}
+                  <SeparatedList
+                    items={entry.note.split('·').map(item => item.trim())}
+                  />
                 </p>
               )}
               <p className="text-ui leading-relaxed text-fg-muted">

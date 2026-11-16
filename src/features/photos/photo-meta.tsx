@@ -1,3 +1,4 @@
+import { SeparatedList } from '@/components/ui/separated-list'
 import type { PhotoSummary } from '@/lib/content'
 
 import { photoDetails } from './photo-details'
@@ -22,7 +23,7 @@ export function PhotoMeta({ photo }: { photo: PhotoSummary }) {
           <dd className="text-sm wrap-anywhere text-fg">
             {label === 'Taken' ? (
               <time dateTime={value.replace(' ', 'T')}>
-                {value.replace(' ', ' · ')}
+                <SeparatedList items={value.split(' ')} />
               </time>
             ) : (
               value

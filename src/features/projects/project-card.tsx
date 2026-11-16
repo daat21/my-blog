@@ -1,4 +1,5 @@
 import { MediaImage } from '@/components/ui/media-image'
+import { SeparatedList } from '@/components/ui/separated-list'
 import type { Project } from '@/lib/content'
 import { cn } from '@/lib/utils'
 
@@ -77,7 +78,7 @@ export function ProjectCard({ project, headingLevel }: ProjectCardProps) {
         </p>
         {project.stack.length > 0 && (
           <p className="pt-1 font-mono text-meta text-fg-muted">
-            {project.stack.join(' · ')}
+            <SeparatedList items={project.stack} />
           </p>
         )}
       </div>

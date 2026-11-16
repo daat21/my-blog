@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
 
+import { SeparatedList } from '@/components/ui/separated-list'
 import type { Profile, TagCount } from '@/lib/content/types'
 
 import { NavLinks, NavList } from './nav-links'
@@ -50,7 +51,7 @@ export function SidebarContent({ profile, topics }: SidebarContentProps) {
             {profile.name}
           </Link>
           <p className="text-sm text-fg-muted">
-            {profile.role} · {profile.location}
+            <SeparatedList items={[profile.role, profile.location]} />
           </p>
         </div>
         <p className="text-sm leading-relaxed text-fg-body xl:text-ui">

@@ -1,3 +1,4 @@
+import { SeparatedList } from '@/components/ui/separated-list'
 import type { ExperienceProject } from '@/lib/content'
 import { cn } from '@/lib/utils'
 
@@ -30,8 +31,12 @@ export function ExperienceProjects({ projects }: ExperienceProjectsProps) {
               <ExperienceDates start={project.start} end={project.end} />
             </p>
             <p className="text-ui text-fg">
-              <span className="font-medium">{project.title}</span>
-              <span className="text-fg-muted"> · {project.role}</span>
+              <span className="block font-medium">{project.title}</span>{' '}
+              <SeparatedList
+                className="flex text-fg-muted"
+                separator="→"
+                items={project.role.split('→').map(step => step.trim())}
+              />
             </p>
             <p className="text-sm text-fg-muted">{project.summary}</p>
           </div>

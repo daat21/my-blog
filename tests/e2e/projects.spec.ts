@@ -38,7 +38,7 @@ test.describe('projects page', () => {
       })
     await expect(card('Weather Glance')).toContainText('in progress')
     await expect(card('Weather Glance')).toContainText(
-      'Next.js · TypeScript · Tailwind CSS'
+      'Next.js · TypeScript · Tailwind CSS · Zod · Vitest'
     )
     await expect(card('Palette Picker')).toContainText('archived')
     // Without a status, the year takes its place.
