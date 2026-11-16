@@ -78,6 +78,24 @@ test('the album masonry keeps image ratios and captions in chronological order',
   )
 })
 
+test('the album intro aligns with the header and stays within the reading width', async ({
+  page,
+}) => {
+  await page.goto(ALBUM)
+  const main = page.getByRole('main')
+  const heading = await main.getByRole('heading', { level: 1 }).boundingBox()
+  const intro = await main
+    .getByText('A few quiet moments by the water, from low tide to sunset.', {
+      exact: true,
+    })
+    .boundingBox()
+  if (!heading || !intro) throw new Error('Missing album heading or intro')
+  expect(intro.x).toBe(heading.x)
+  expect(intro.width).toBeLessThanOrEqual(690)
+  expect(intro.x + intro.width).toBeLessThanOrEqual(heading.x + heading.width)
+  await expectCleanPage(page)
+})
+
 test('photo layout is two columns only at full tier, otherwise stacked', async ({
   page,
   viewport,

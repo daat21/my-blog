@@ -10,6 +10,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { LinkCard } from '@/components/ui/link-card'
 import { ArticleBody } from '@/features/posts'
 import { getAlbum, listAlbums } from '@/lib/content'
+import { cn } from '@/lib/utils'
 
 import { AlbumMeta } from './album-meta'
 import { PhotoGrid } from './photo-grid'
@@ -34,7 +35,7 @@ export async function AlbumPage({ slug }: { slug: string }) {
             {album.description}
           </p>
           {album.intro && (
-            <div className={`${READING_COLUMN} w-full`}>
+            <div className={cn(READING_COLUMN, 'mx-0 w-full')}>
               <ArticleBody body={album.intro} />
             </div>
           )}
