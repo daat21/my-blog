@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   typedRoutes: true,
+  // Runtime text and media fallback data are server-only build artifacts.
+  outputFileTracingIncludes: {
+    '/*': ['./.content-runtime/baseline.json', './.media/manifest.json'],
+  },
+  outputFileTracingExcludes: { '/*': ['./.content/**/*'] },
   poweredByHeader: false,
   // Dev server only: allow testing from a phone or tablet on the local network
   // or a Tailscale tailnet. Without this, the dev server blocks its scripts for
