@@ -32,6 +32,7 @@ export async function PhotoPage({
   return (
     <div className={PAGE_GUTTER}>
       <ArrowNavigation
+        current={`/photos/${slug}/${photo.slug}`}
         previous={photo.previous && `/photos/${slug}/${photo.previous.slug}`}
         next={photo.next && `/photos/${slug}/${photo.next.slug}`}
       />

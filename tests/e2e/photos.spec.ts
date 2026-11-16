@@ -211,18 +211,19 @@ test('previous/next, counter, arrow keys and breadcrumb stay within the album', 
   )
   await nav.getByRole('link', { name: 'Next photo: Low sun' }).click()
   await expect(page).toHaveURL(PHOTO)
-  // A URL change can precede the keyboard enhancement's effect after navigation.
+  let current = PHOTO
   for (const [key, path] of [
     ['ArrowLeft', `${ALBUM}/tide-pool`],
     ['ArrowRight', PHOTO],
     ['ArrowLeft', `${ALBUM}/tide-pool`],
   ] as const) {
-    await expect
-      .poll(async () => {
-        await page.keyboard.press(key)
-        return new URL(page.url()).pathname
-      })
-      .toBe(path)
+    await expect(page.locator('[data-photo-keyboard-ready]')).toHaveAttribute(
+      'data-photo-keyboard-ready',
+      current
+    )
+    await page.keyboard.press(key)
+    await expect(page).toHaveURL(path)
+    current = path
   }
   await page
     .getByRole('navigation', { name: 'Breadcrumb' })
