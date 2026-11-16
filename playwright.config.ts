@@ -37,8 +37,8 @@ export default defineConfig({
         },
       }))
     ),
-    // A second engine catches behaviour that differs from Chromium, such as
-    // dialog exit transitions. Two representative combinations keep it fast.
+    // Engine spot checks catch differences such as dialog exit transitions.
+    // Representative combinations keep them fast.
     {
       name: 'firefox-phone-light',
       use: {
@@ -55,6 +55,31 @@ export default defineConfig({
         colorScheme: 'dark' as const,
       },
     },
+    // WebKit's Linux system libraries are available on CI, not every workstation.
+    ...(isCI
+      ? [
+          {
+            name: 'webkit-phone-light',
+            use: {
+              browserName: 'webkit' as const,
+              viewport: { width: 390, height: 844 },
+              isMobile: true,
+              hasTouch: true,
+              colorScheme: 'light' as const,
+            },
+          },
+          {
+            name: 'webkit-ipad-portrait-dark',
+            use: {
+              browserName: 'webkit' as const,
+              viewport: { width: 820, height: 1180 },
+              isMobile: true,
+              hasTouch: true,
+              colorScheme: 'dark' as const,
+            },
+          },
+        ]
+      : []),
   ],
   webServer: {
     // CI builds in an earlier step; locally, build first so the test runs

@@ -75,15 +75,15 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           # The browser list is part of the key, so adding a browser misses the cache.
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium-firefox
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium-firefox-webkit
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --with-deps chromium firefox
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
 
       - name: Install Playwright system dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps chromium firefox
+        run: pnpm exec playwright install-deps chromium firefox webkit
 
       - name: End-to-end tests
         run: pnpm test:e2e
