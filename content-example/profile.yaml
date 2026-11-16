@@ -1,0 +1,61 @@
+# Fictional sample profile. The real one lives in the private content repository.
+name: Avery Example
+role: Web developer
+location: Exampleton
+bio: Avery builds small, fast websites and writes about the craft of the web.
+intro:
+  headline: Hi, I'm Avery, a web developer in Exampleton.
+  detail: I build quiet, fast interfaces and write down what I learn along the way.
+  paragraphs:
+    - For the past few years I have worked on design systems, content sites and
+      the occasional data-heavy dashboard. I care about readable code, honest
+      performance budgets and pages that work before JavaScript arrives.
+    - This site is where I keep longer essays, photographs and a list of the
+      side projects I tinker with on weekends.
+links:
+  - label: Email
+    href: mailto:avery@example.com
+  - label: Code
+    href: https://code.example.com/avery
+  - label: Social
+    href: https://social.example.com/@avery
+stack:
+  - group: Languages
+    items: [TypeScript, HTML, CSS, SQL]
+  - group: Frameworks
+    items: [Next.js, React, Tailwind CSS]
+  - group: Tools
+    items: [Git, Figma, Playwright, Vitest]
+experience:
+  - start: '2024-03'
+    role: Senior web application developer
+    organization: Example Studio
+    note: Fictional studio · Contract
+    summary: Leads front-end work on content sites and the studio's shared
+      component library.
+    projects:
+      - start: '2026-11'
+        title: Sample publishing tools
+        role: Developer and Reviewer
+        summary: Builds a small editing workflow for a fictional publication.
+      - start: '2025-02'
+        end: '2026-10'
+        title: Example component library
+        role: Developer → Reviewer (Jun) → Lead reviewer (Jul)
+        summary: Created shared patterns and reviewed contributions across sample sites.
+      - start: '2024-03'
+        end: '2024-12'
+        title: Placeholder site refresh
+        role: Developer
+        summary: Rebuilt an example catalogue with accessible navigation and forms.
+  - start: 2021
+    end: 2024
+    role: Front-end developer
+    organization: Sample Co.
+    summary: Built the customer dashboard and moved it from a single-page app to
+      server rendering.
+  - start: 2019
+    end: 2021
+    role: Junior developer
+    organization: Placeholder Agency
+    summary: Shipped marketing sites and learned to love accessible forms.

@@ -1,123 +1,50 @@
-## 1. Overview
+# my-blog
 
-`my-blog` is a web application built with Next.js 15 and the App Router. It serves as a personal blog platform, featuring blog posts, user authentication, message board, and back-end manage interface. The project utilises modern web development practices, including TypeScript, Tailwind CSS for styling, and Supabase for backend services. 
+Source code for [damingchen.com](https://damingchen.com), a personal site and blog.
 
-## 2. Tech Stack
+Built with Next.js, React, TypeScript and Tailwind CSS. Version 3 is under active development on the `v3` branch; version 2 is archived on the `legacy-v2` branch.
 
-- **Framework:** [Next.js](https://nextjs.org/)
-- **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/) with [Shadcn UI](https://ui.shadcn.com/)
-- **Component Libraries:**
-    - `motion`: Animation library.
-    - `magicui`: UI components.
-    - `lucide-react`, `@heroicons/react`, `@tabler/icons-react`: Icon libraries.
-    - `next-themes`: Dark mode / theme management.
-    - `class-variance-authority` & `clsx`: For managing component variants and conditional classes.
-    - `@react-three/fiber`, `three`, `cobe`: 3D/WebGL elements.
-- **Markdown:** `react-markdown`, `rehype-highlight`, `remark-gfm`, `highlight.js`: For rendering and styling Markdown content (likely blog posts).
-- **Backend/Authentication:**
-    - `@supabase/ssr`, `@supabase/supabase-js`: Supabase integration for backend-as-a-service (database, auth).
-- **Linting/Formatting:** ESLint, Prettier (`prettier-plugin-tailwindcss`)
-- **Analytics:** Vercel Analytics, Vercel Speed Insights
-- **Deployment:** Vercel
+## Development
 
-## 3. Key Features
+Requirements: Node.js 26 and pnpm (enabled through Corepack).
 
-- **Blog Platform:** Displaying blog posts, likely fetched from a backend (Supabase) and rendered from Markdown.
-- **User permission classification：** (for content access), implemented using PostgreSQL ENUM Types.
-    - Users are assigned 'normal', 'plus', or 'Admin' levels, allowing them to respectively access different tiers of database content (e.g., articles, comments, messages).
-- **User Authentication:** Login/signup functionality (`app/(auth)/`, `components/auth/`, Supabase dependencies).
-- **Theming:** Light/dark mode support (`next-themes`, `ModeToggle.tsx`).
-- **Responsive Design:** Built with Tailwind CSS, implying responsiveness.
-- **Optimised Images:** Uses Next.js Image component, configured for Supabase remote patterns (`next.config.ts`).
-- **Analytics:** Integrated Vercel Analytics and Speed Insights (`app/layout.tsx`).
-- **Potential 3D/Interactive Elements:** Inclusion of `three`, `@react-three/fiber`, `cobe` suggests possible interactive visuals.
-
-## 4. Project Structure
-
-```
-my-blog/
-├── app/                     # Main application code (App Router)
-│   ├── (auth)/              # Authentication related pages/routes
-│   ├── (home)/              # Main site pages/routes
-│   ├── globals.css          # Global CSS styles
-│   └── layout.tsx           # Root application layout
-├── components/              # Shared UI components
-│   ├── auth/                # Authentication components
-│   ├── blogs/               # Blog-specific components
-│   ├── contact/             # Contact form components
-│   ├── home/                # Components specific to home pages
-│   ├── pages/               # General page-level components
-│   ├── profiles/            # User profile components
-│   ├── project/             # Project display components
-│   ├── ui/                  # Base UI components (Shadcn UI)
-├── lib/                     # Utility functions and helpers
-│   ├── supabase/            # Supabase client/utility setup
-│   └── utils.ts             # General utilities
-├── types/                   # Define types
-├── public/                  # Static assets (images, fonts, etc.)
-├── scripts/                 # Build scripts
-├── middleware.ts            # Next.js middleware
-├── prettier.config.js       # Prettier configuration
-
+```bash
+corepack enable
+pnpm install
+pnpm dev
 ```
 
-- **`app/`**: Organises routes using Next.js App Router conventions. Route groups (`(auth)`, `(home)`) are used to structure sections without affecting the URL path.
-- **`components/`**: Contains reusable React components, categorized by feature (`auth`, `blogs`, `home`, etc.) or type (`ui`).
-- **`lib/`**: Includes helper functions, utility modules like date formatting, and Supabase client setup.
+| Command          | Purpose                                             |
+| ---------------- | --------------------------------------------------- |
+| `pnpm dev`       | Start the development server                        |
+| `pnpm build`     | Create a production build                           |
+| `pnpm start`     | Serve the production build                          |
+| `pnpm typecheck` | Type-check the project                              |
+| `pnpm lint`      | Lint, including architecture and design-token rules |
+| `pnpm format`    | Format all files with Prettier                      |
+| `pnpm check`     | Format check, lint and type-check together          |
 
-## 5. Components
+Tests:
 
-- **Organisation:** Components are grouped by feature (`blogs`, `auth`, `home`) or type (`ui`, `magicui`) within the `components/` directory.
-- **Conventions:**
-    - Functional Components with TypeScript (`.tsx`).
-    - PascalCase naming (e.g., `BlogCard.tsx`).
-    - Named exports are common.
-    - Props are clearly typed using TypeScript interfaces or types.
+| Command         | Purpose                                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test`     | Unit tests (Vitest)                                                                                                  |
+| `pnpm test:e2e` | End-to-end smoke tests (Playwright) at phone, tablet and desktop sizes in both colour schemes; builds the site first |
 
-## 6. Styling
+Run `pnpm exec playwright install chromium firefox` once before the first end-to-end run. Every page is tested in Chromium at four sizes and both colour schemes, with Firefox spot checks on a phone and a desktop.
 
-- **Tailwind CSS:** The primary styling method, using utility classes. Configured in `tailwind.config.js` and `postcss.config.mjs`. Tailwind v4 is used.
-- **Global Styles:** Base styles and Tailwind directives are in `app/globals.css`.
-- **Shadcn UI:** Provides pre-built, customisable components styled with Tailwind.
-- **Typography:** `@tailwindcss/typography` plugin likely used for styling Markdown content.
-- **Animations:** Includes custom keyframes (`caret-blink`) in `tailwind.config.js` and uses `motion` library.
+Content and media:
 
-## 7. Configuration
+| Command                       | Purpose                                                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm media:build`            | Pre-optimise images (AVIF and WebP at several widths) and copy videos into `public/_media`; runs before `dev` and `build` |
+| `pnpm media:gif2mp4 <in.gif>` | Convert an animated GIF into a web-friendly MP4 (needs `ffmpeg`)                                                          |
+| `pnpm content:sync`           | Fetch the private content repository; runs before `build` and does nothing without credentials                            |
 
-- `.prettierrc`
-    
-    ```json
-    {
-      "semi": false,
-      "singleQuote": true,
-      "tabWidth": 2,
-      "trailingComma": "es5",
-      "printWidth": 80,
-      "bracketSpacing": true,
-      "arrowParens": "avoid",
-      "jsxSingleQuote": false,
-      "jsxBracketSameLine": false,
-      "plugins": ["prettier-plugin-tailwindcss"]
-    }
-    ```
-    
-- **`tailwind.config.js`:**
-    - Extends the default theme with custom keyframes and animations (`caret-blink`).
-- **`middleware.ts`:** Handles request middleware (specific logic needs inspection).
-- **Environment Variables:** Supabase keys and other secrets should be managed via environment variables (e.g., in `.env.local`). `dotenv` package is used for local script running.
+Content is read from `CONTENT_DIR`, which defaults to the bundled sample content in `content-example/`.
 
-## 8. Running the Project
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/). Git hooks format and lint staged files before each commit, check the commit message, and run the checks and unit tests before each push. CI runs everything, including the end-to-end tests, on every push.
 
-Standard Next.js scripts are available in `package.json`:
+## License
 
-- **Development:** `npm run dev`
-- **Build:** `npm run build`
-- **Start Production Server:** `npm run start`
-- **Linting:** `npm run lint`
-
-Ensure necessary environment variables (e.g., Supabase URL and keys) are set up in a `.env.local` file.
-
-## 9. Deployment
-
-Deployment would connect the Git repository to Vercel.
+The source code is released under the [MIT License](LICENSE). Articles, images and other site content are not part of this repository and are not covered by this license.

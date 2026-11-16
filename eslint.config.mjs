@@ -1,26 +1,60 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
+// @ts-check
+import comments from '@eslint-community/eslint-plugin-eslint-comments/configs'
+import js from '@eslint/js'
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
+import { defineConfig, globalIgnores } from 'eslint/config'
+import tseslint from 'typescript-eslint'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { architecture } from './eslint/architecture.mjs'
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
+export default defineConfig([
+  globalIgnores([
+    '.next/**',
+    'out/**',
+    'build/**',
+    'coverage/**',
+    'playwright-report/**',
+    'test-results/**',
+    'next-env.d.ts',
+  ]),
 
-// const eslintConfig = [
-//   ...compat.extends('next/core-web-vitals', 'next/typescript'),
-// ]
+  js.configs.recommended,
+  ...nextVitals,
+  ...nextTs,
+  comments.recommended,
 
-const eslintConfig = [
-  ...compat.config({
-    extends: ['next'],
+  {
+    linterOptions: { reportUnusedDisableDirectives: 'error' },
     rules: {
-      'react/no-unescaped-entities': 'off',
-      '@next/next/no-page-custom-font': 'off',
+      '@eslint-community/eslint-comments/require-description': 'error',
+      'react/no-danger': 'error',
     },
-  }),
-]
+  },
 
-export default eslintConfig
+  // TypeScript: strict, type-aware rules.
+  {
+    files: ['**/*.{ts,tsx,mts}'],
+    extends: [
+      tseslint.configs.strictTypeChecked,
+      tseslint.configs.stylisticTypeChecked,
+    ],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-import-type-side-effects': 'error',
+      '@typescript-eslint/restrict-template-expressions': [
+        'error',
+        { allowNumber: true },
+      ],
+    },
+  },
+
+  // Naming, exports, environment access, design tokens, module boundaries.
+  ...architecture,
+])

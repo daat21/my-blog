@@ -1,23 +1,48 @@
 import type { NextConfig } from 'next'
-import bundleAnalyzer from '@next/bundle-analyzer'
-
-const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-})
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
+  cacheComponents: true,
+  partialPrefetching: true,
+  typedRoutes: true,
+  poweredByHeader: false,
+  // Dev server only: allow testing from a phone or tablet on the local network
+  // or a Tailscale tailnet. Without this, the dev server blocks its scripts for
+  // any hostname other than localhost and the page never becomes interactive.
+  allowedDevOrigins: ['192.168.*.*', '10.*.*.*', '100.*.*.*', '*.local'],
+  headers() {
+    return Promise.resolve([
       {
-        hostname: 'xhdmbwafrzxbgyeumhzu.supabase.co',
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+          { key: 'X-Frame-Options', value: 'DENY' },
+        ],
       },
-    ],
+      {
+        // Processed media file names carry a content hash, so they never change.
+        source: '/_media/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ])
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '5mb',
+  turbopack: {
+    rules: {
+      '*.css': {
+        loaders: ['@tailwindcss/turbopack'],
+        as: '*.css',
+      },
     },
   },
 }
 
-export default withBundleAnalyzer(nextConfig)
+export default nextConfig

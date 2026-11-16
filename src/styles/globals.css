@@ -1,0 +1,279 @@
+@import 'tailwindcss';
+
+/* `dark:` follows the resolved theme set on <html> by the theme script. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ------------------------------------------------------------------------ */
+/* Colour tokens. The only place in the codebase where raw colours appear.   */
+/* ------------------------------------------------------------------------ */
+
+:root {
+  color-scheme: light;
+  --canvas: #fbfaf8;
+  --surface: #f5f3ef;
+  --sunken: #f3f1ed;
+  --code: #f8f7f4;
+  --border: #e7e4de;
+  --border-control: #e1ddd6;
+  --border-strong: #d9d5cd;
+  --fg: #1b1a18;
+  --fg-body: #33312d;
+  --fg-muted: #6b6862;
+  --accent: #1d5c45;
+  --accent-tint: #e3ece6;
+  --on-accent: #fbfaf8;
+  /* Dims the page behind modal sheets; always darker than the page. */
+  --scrim: rgb(27 26 24 / 0.4);
+}
+
+/* Dark palette: chosen explicitly, or by the system when nothing is chosen
+   (this also covers visitors without JavaScript). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --canvas: #161513;
+  --surface: #1c1b19;
+  --sunken: #201f1c;
+  --code: #1a1917;
+  --border: #2b2926;
+  --border-control: #34312d;
+  --border-strong: #3a3733;
+  --fg: #eeece7;
+  --fg-body: #cfcbc3;
+  --fg-muted: #918d85;
+  --accent: #7db596;
+  --accent-tint: #1e2a23;
+  --on-accent: #161513;
+  --scrim: rgb(0 0 0 / 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --canvas: #161513;
+    --surface: #1c1b19;
+    --sunken: #201f1c;
+    --code: #1a1917;
+    --border: #2b2926;
+    --border-control: #34312d;
+    --border-strong: #3a3733;
+    --fg: #eeece7;
+    --fg-body: #cfcbc3;
+    --fg-muted: #918d85;
+    --accent: #7db596;
+    --accent-tint: #1e2a23;
+    --on-accent: #161513;
+    --scrim: rgb(0 0 0 / 0.6);
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Theme: tokens only. Tailwind's default palette and type scale are off.    */
+/* ------------------------------------------------------------------------ */
+
+@theme inline {
+  --color-*: initial;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-code: var(--code);
+  --color-border: var(--border);
+  --color-border-control: var(--border-control);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-body: var(--fg-body);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent: var(--accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-on-accent: var(--on-accent);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-*: initial;
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.12em;
+  --text-meta: 0.78125rem;
+  --text-meta--line-height: 1.25rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5;
+  --text-ui: 0.9375rem;
+  --text-ui--line-height: 1.5;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.75;
+  --text-lead: 1.1875rem;
+  --text-lead--line-height: 1.5;
+  --text-section: 1.125rem;
+  --text-section--line-height: 1.4;
+  --text-h2: 1.375rem;
+  --text-h2--line-height: 1.3;
+  --text-display: clamp(1.625rem, 2.8vw, 2.125rem);
+  --text-display--line-height: 1.3;
+  --text-h1: clamp(1.875rem, 3.4vw, 2.5rem);
+  --text-h1--line-height: 1.15;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Base                                                                       */
+/* ------------------------------------------------------------------------ */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-fg-body antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+
+  ::selection {
+    @apply bg-accent-tint text-fg;
+  }
+
+  /* Lock page scroll while a modal dialog (the mobile menu) is open. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Code highlighting (Shiki dual theme)                                      */
+/* ------------------------------------------------------------------------ */
+
+/* Every token carries --shiki-light and --shiki-dark; the theme picks one.
+   The block itself uses the code token instead of the highlighter's
+   background. */
+.shiki {
+  background-color: var(--code);
+}
+
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+}
+
+:root[data-theme='dark'] .shiki,
+:root[data-theme='dark'] .shiki span {
+  color: var(--shiki-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .shiki,
+  :root:not([data-theme]) .shiki span {
+    color: var(--shiki-dark);
+  }
+}
+
+/* Some of the theme's token colours (comments, punctuation, faded quotes)
+   fall below 4.5:1 on the code background. Each token is made opaque and
+   pulled toward the text colour, just enough for all of them to pass while
+   keeping their hue: 40% in light, 25% in dark. */
+@supports (color: rgb(from red r g b / 1)) {
+  .shiki,
+  .shiki span {
+    color: color-mix(
+      in oklab,
+      rgb(from var(--shiki-light) r g b / 1) 60%,
+      var(--fg)
+    );
+  }
+
+  :root[data-theme='dark'] .shiki,
+  :root[data-theme='dark'] .shiki span {
+    color: color-mix(
+      in oklab,
+      rgb(from var(--shiki-dark) r g b / 1) 75%,
+      var(--fg)
+    );
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .shiki,
+    :root:not([data-theme]) .shiki span {
+      color: color-mix(
+        in oklab,
+        rgb(from var(--shiki-dark) r g b / 1) 75%,
+        var(--fg)
+      );
+    }
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Mobile menu sheet (< 1024px): slides in from the left and out again,     */
+/* while its backdrop fades. Reduced motion turns both off (see base).      */
+/* ------------------------------------------------------------------------ */
+
+@layer components {
+  .menu-sheet {
+    translate: -100% 0;
+    transition:
+      translate 250ms cubic-bezier(0.2, 0, 0, 1),
+      display 250ms allow-discrete,
+      overlay 250ms allow-discrete;
+  }
+
+  .menu-sheet[open] {
+    translate: 0 0;
+  }
+
+  @starting-style {
+    .menu-sheet[open] {
+      translate: -100% 0;
+    }
+  }
+
+  .menu-sheet::backdrop {
+    background-color: var(--scrim, rgb(0 0 0 / 0.5));
+    opacity: 0;
+    transition:
+      opacity 250ms ease-out,
+      display 250ms allow-discrete,
+      overlay 250ms allow-discrete;
+  }
+
+  .menu-sheet[open]::backdrop {
+    opacity: 1;
+  }
+
+  /* Set by the menu while it slides out; it closes once the slide ends.
+     Driving the exit from script makes it work in every browser, not only
+     in those that keep a closing dialog in the top layer. */
+  .menu-sheet[open][data-closing] {
+    translate: -100% 0;
+  }
+
+  .menu-sheet[open][data-closing]::backdrop {
+    opacity: 0;
+  }
+
+  @starting-style {
+    .menu-sheet[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}

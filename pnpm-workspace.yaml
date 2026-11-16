@@ -1,0 +1,14 @@
+saveExact: true
+engineStrict: true
+
+# eslint-config-next supports ESLint 10 since 16.4.0, but some plugins it bundles
+# have not widened their peer ranges yet. Remove each entry once its plugin does.
+peerDependencyRules:
+  allowedVersions:
+    eslint-plugin-react>eslint: '10'
+    eslint-plugin-import>eslint: '10'
+    eslint-plugin-jsx-a11y>eslint: '10'
+
+allowBuilds:
+  sharp: false
+  unrs-resolver: false
