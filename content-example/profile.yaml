@@ -27,11 +27,27 @@ stack:
   - group: Tools
     items: [Git, Figma, Playwright, Vitest]
 experience:
-  - start: 2024-03
+  - start: '2024-03'
     role: Senior web developer
     organization: Example Studio
+    note: Fictional studio · Contract
     summary: Leads front-end work on content sites and the studio's shared
       component library.
+    projects:
+      - start: '2026-11'
+        title: Sample publishing tools
+        role: Developer
+        summary: Builds a small editing workflow for a fictional publication.
+      - start: '2025-02'
+        end: '2026-10'
+        title: Example component library
+        role: Developer → Reviewer → Maintainer
+        summary: Created shared patterns and reviewed contributions across sample sites.
+      - start: '2024-03'
+        end: '2024-12'
+        title: Placeholder site refresh
+        role: Developer
+        summary: Rebuilt an example catalogue with accessible navigation and forms.
   - start: 2021
     end: 2024
     role: Front-end developer

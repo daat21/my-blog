@@ -348,6 +348,111 @@ describe('profileSchema', () => {
     expect(profile.experience[0]?.start).toBe('2024')
   })
 
+  const nestedEntry = {
+    start: '2026-02',
+    role: 'Developer',
+    organization: 'Example Co',
+    note: 'Fictional team · Contract',
+    summary: 'Built sample tools.',
+    projects: [
+      {
+        start: '2026-11',
+        title: 'Sample editor',
+        role: 'Developer',
+        summary: 'Builds sample editing tools.',
+      },
+      {
+        start: 2025,
+        end: '2026-10',
+        title: 'Example library',
+        role: 'Developer → Reviewer',
+        summary: 'Reviewed example components.',
+      },
+    ],
+  }
+
+  it('accepts nested projects and a note, preserving the written order', () => {
+    const profile = validate(
+      profileSchema,
+      { ...validProfile, experience: [nestedEntry] },
+      FILE_NAME
+    )
+    expect(profile.experience).toEqual([
+      {
+        ...nestedEntry,
+        projects: [
+          nestedEntry.projects[0],
+          { ...nestedEntry.projects[1], start: '2025' },
+        ],
+      },
+    ])
+  })
+
+  it.each(['2026-00', '2026-13', '2026-2', '26', '2026-02-01', 26])(
+    'rejects invalid dates at both levels and names the value %j',
+    value => {
+      for (const field of ['start', 'end'] as const) {
+        const topLevel = errorOf(() =>
+          validate(
+            profileSchema,
+            {
+              ...validProfile,
+              experience: [{ ...nestedEntry, [field]: value }],
+            },
+            FILE_NAME
+          )
+        )
+        expect(topLevel.message).toBe(
+          `profile.yaml: experience[0].${field}: Invalid experience date "${value}", expected YYYY or YYYY-MM (month 01–12)`
+        )
+
+        const nested = errorOf(() =>
+          validate(
+            profileSchema,
+            {
+              ...validProfile,
+              experience: [
+                {
+                  ...nestedEntry,
+                  projects: [{ ...nestedEntry.projects[0], [field]: value }],
+                },
+              ],
+            },
+            FILE_NAME
+          )
+        )
+        expect(nested.message).toBe(
+          `profile.yaml: experience[0].projects[0].${field}: Invalid experience date "${value}", expected YYYY or YYYY-MM (month 01–12)`
+        )
+      }
+    }
+  )
+
+  it('rejects unknown keys on entries and nested projects', () => {
+    const error = errorOf(() =>
+      validate(
+        profileSchema,
+        {
+          ...validProfile,
+          experience: [
+            {
+              ...nestedEntry,
+              extra: true,
+              projects: [{ ...nestedEntry.projects[0], extra: true }],
+            },
+          ],
+        },
+        FILE_NAME
+      )
+    )
+    expect(error.message).toContain(
+      'profile.yaml: experience[0].extra: Unknown field'
+    )
+    expect(error.message).toContain(
+      'profile.yaml: experience[0].projects[0].extra: Unknown field'
+    )
+  })
+
   it('accepts site-relative link paths', () => {
     const links = [{ label: 'RSS', href: '/rss.xml' }]
     expect(

@@ -54,13 +54,63 @@ test.describe('home page', () => {
       name: 'Experience',
       exact: true,
     })
-    const entries = experience.getByRole('listitem')
+    const entries = experience.locator(':scope > ol > li')
     await expect(entries).toHaveCount(3)
-    await expect(entries.nth(0)).toContainText('2024-03 — Now')
+    await expect(entries.nth(0)).toContainText('Mar 2024 – Now')
     await expect(entries.nth(0)).toContainText(
       'Senior web developer · Example Studio'
     )
-    await expect(entries.nth(2)).toContainText('2019 — 2021')
+    await expect(
+      entries.nth(0).getByText('Fictional studio · Contract', { exact: true })
+    ).toBeVisible()
+    await expect(entries.nth(0).locator('time').first()).toHaveAttribute(
+      'datetime',
+      '2024-03'
+    )
+
+    const projects = entries.nth(0).getByRole('listitem')
+    await expect(projects).toHaveCount(3)
+    for (const [index, title, dates, role, summary] of [
+      [
+        0,
+        'Sample publishing tools',
+        'Nov 2026 – Now',
+        'Developer',
+        'Builds a small editing workflow for a fictional publication.',
+      ],
+      [
+        1,
+        'Example component library',
+        'Feb 2025 – Oct 2026',
+        'Developer → Reviewer → Maintainer',
+        'Created shared patterns and reviewed contributions across sample sites.',
+      ],
+      [
+        2,
+        'Placeholder site refresh',
+        'Mar 2024 – Dec 2024',
+        'Developer',
+        'Rebuilt an example catalogue with accessible navigation and forms.',
+      ],
+    ] as const) {
+      await expect(projects.nth(index)).toContainText(`${title} · ${role}`)
+      await expect(projects.nth(index)).toContainText(dates)
+      await expect(projects.nth(index).getByText(summary)).toBeVisible()
+    }
+    await expect(projects.nth(0).locator('time')).toHaveCount(1)
+    await expect(projects.nth(0).locator('time')).toHaveAttribute(
+      'datetime',
+      '2026-11'
+    )
+    await expect(projects.nth(1).locator('time').nth(0)).toHaveAttribute(
+      'datetime',
+      '2025-02'
+    )
+    await expect(projects.nth(1).locator('time').nth(1)).toHaveAttribute(
+      'datetime',
+      '2026-10'
+    )
+    await expect(entries.nth(2)).toContainText('2019 – 2021')
     await expect(entries.nth(2)).toContainText(
       'Junior developer · Placeholder Agency'
     )

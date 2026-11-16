@@ -1,6 +1,9 @@
 import type { ExperienceEntry } from '@/lib/content'
 import { cn } from '@/lib/utils'
 
+import { ExperienceDates } from './experience-dates'
+import { ExperienceProjects } from './experience-projects'
+
 interface ExperienceTimelineProps {
   entries: readonly ExperienceEntry[]
 }
@@ -42,15 +45,23 @@ export function ExperienceTimeline({ entries }: ExperienceTimelineProps) {
                   ongoing ? 'text-accent' : 'text-fg-muted'
                 )}
               >
-                {entry.start} — {entry.end ?? 'Now'}
+                <ExperienceDates start={entry.start} end={entry.end} />
               </p>
               <p className="text-body leading-snug font-semibold text-fg">
                 {entry.role} · {entry.organization}
               </p>
+              {entry.note && (
+                <p className="font-mono text-meta text-fg-muted">
+                  {entry.note}
+                </p>
+              )}
               <p className="text-ui leading-relaxed text-fg-muted">
                 {entry.summary}
               </p>
             </div>
+            {entry.projects && entry.projects.length > 0 && (
+              <ExperienceProjects projects={entry.projects} />
+            )}
           </li>
         )
       })}

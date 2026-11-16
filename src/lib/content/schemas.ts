@@ -62,6 +62,14 @@ const yearLike = z
   .union([text, z.number().int().nonnegative()])
   .transform(value => String(value))
 
+const experienceDate = z
+  .union([z.string(), z.number()])
+  .transform(value => String(value))
+  .refine(value => /^\d{4}(?:-(?:0[1-9]|1[0-2]))?$/.test(value), {
+    error: issue =>
+      `Invalid experience date "${String(issue.input)}", expected YYYY or YYYY-MM (month 01–12)`,
+  })
+
 /** Front matter of `writing/<slug>/index.md`. */
 export const postFrontMatterSchema = z
   .strictObject({
@@ -197,11 +205,23 @@ export const profileSchema: z.ZodType<Profile> = z.strictObject({
   ),
   experience: z.array(
     z.strictObject({
-      start: yearLike,
-      end: yearLike.optional(),
+      start: experienceDate,
+      end: experienceDate.optional(),
       role: text,
       organization: text,
+      note: text.optional(),
       summary: text,
+      projects: z
+        .array(
+          z.strictObject({
+            start: experienceDate,
+            end: experienceDate.optional(),
+            title: text,
+            role: text,
+            summary: text,
+          })
+        )
+        .optional(),
     })
   ),
 })

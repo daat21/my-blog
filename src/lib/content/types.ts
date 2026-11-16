@@ -106,14 +106,27 @@ export interface StackGroup {
   items: string[]
 }
 
+export interface ExperienceProject {
+  /** `YYYY` or `YYYY-MM`. */
+  start: string
+  /** Omitted while ongoing. */
+  end?: string
+  title: string
+  role: string
+  summary: string
+}
+
 export interface ExperienceEntry {
-  /** Free-form, e.g. `2024` or `2024-03`. */
+  /** `YYYY` or `YYYY-MM`. */
   start: string
   /** Omitted while ongoing. */
   end?: string
   role: string
   organization: string
+  note?: string
   summary: string
+  /** Rendered in the order written, newest first. */
+  projects?: ExperienceProject[]
 }
 
 export interface Profile {
