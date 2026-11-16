@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { expect, test, type Page, type TestInfo } from './fixtures'
 import { fillMetadataSegment } from 'next/dist/lib/metadata/get-metadata-route.js'
 
 // These checks run against content-example/.
@@ -191,6 +191,39 @@ test('unknown URLs get an accessible 404 page', async ({ page }) => {
 
   const { violations } = await new AxeBuilder({ page }).analyze()
   expect(violations.map(v => `${v.id}: ${v.help}`)).toEqual([])
+})
+
+test('legacy URLs permanently redirect to their replacements', async ({
+  request,
+}, testInfo) => {
+  runOnce(testInfo)
+  for (const [path, destination] of [
+    ['/blogs', '/writing'],
+    ['/blogs/an-old-post', '/writing'],
+    ['/blogs/an-old-post/nested', '/writing'],
+    ...[
+      '/contact',
+      '/profiles',
+      '/login',
+      '/signup',
+      '/signup/confirm',
+      '/forget_password',
+      '/update_password',
+      '/error',
+      '/callback',
+      '/confirm/reset_password',
+      '/confirm/signup',
+      '/signout',
+    ].map(path => [path, '/'] as const),
+  ] as const) {
+    const response = await request.get(path, { maxRedirects: 0 })
+    expect(response.status(), path).toBe(308)
+    expect(response.headers().location, path).toBe(destination)
+  }
+  // This route belongs to both versions and must not be redirected.
+  expect((await request.get('/projects', { maxRedirects: 0 })).status()).toBe(
+    200
+  )
 })
 
 test('responses carry the security headers', async ({ request }, testInfo) => {

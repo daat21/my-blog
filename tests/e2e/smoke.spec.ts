@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test('home page renders cleanly and accessibly', async ({ page }) => {
   const errors: string[] = []

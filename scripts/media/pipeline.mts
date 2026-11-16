@@ -1,6 +1,12 @@
-import { readdir, rm, rmdir } from 'node:fs/promises'
+import { readFile, readdir, rm, rmdir } from 'node:fs/promises'
 import path from 'node:path'
 
+import {
+  mediaCacheKey,
+  pruneMediaCache,
+  restoreMediaCache,
+  storeMediaCache,
+} from './cache.mts'
 import { isNotFound } from './files.mts'
 import type { MediaSource, OutputTarget, ProcessedMedia } from './files.mts'
 import { processImage, rejectGif } from './image.mts'
@@ -31,6 +37,8 @@ export interface BuildMediaOptions {
   output: OutputTarget
   /** Where to write the manifest JSON. */
   manifestPath: string
+  /** Omit to process without a persistent cache. */
+  cacheDir?: string
   log?: (message: string) => void
 }
 
@@ -119,6 +127,7 @@ export async function buildMedia({
   mediaRoot,
   output,
   manifestPath,
+  cacheDir,
   log,
 }: BuildMediaOptions): Promise<BuildMediaResult> {
   const files = await listFiles(mediaRoot)
@@ -129,6 +138,7 @@ export async function buildMedia({
   const processed: string[] = []
   const skipped: string[] = []
   const failures: string[] = []
+  const usedCacheKeys = new Set<string>()
 
   for (const file of files ?? []) {
     const source = { key: toKey(mediaRoot, file), file }
@@ -139,14 +149,24 @@ export async function buildMedia({
           `Unsupported file type. Supported types: ${SUPPORTED.join(', ')}.`
         )
       }
-      const result = await processor(source, output)
+      const key = cacheDir
+        ? mediaCacheKey(await readFile(file), source.key, output.publicPath)
+        : undefined
+      const cached =
+        cacheDir && key
+          ? await restoreMediaCache(cacheDir, key, output)
+          : undefined
+      const result = cached ?? (await processor(source, output))
+      if (cacheDir && key) {
+        if (!cached) await storeMediaCache(cacheDir, key, output, result)
+        usedCacheKeys.add(key)
+      }
       entries.set(source.key, result.entry)
       for (const name of result.outputs) outputs.add(name)
-      if (result.skipped) {
+      if (cacheDir ? cached : result.skipped) {
         skipped.push(source.key)
       } else {
         processed.push(source.key)
-        log?.(`Processed media/${source.key}`)
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
@@ -164,5 +184,6 @@ export async function buildMedia({
   const manifest = createManifest(entries)
   await writeManifest(manifestPath, manifest)
   const removed = await removeStaleOutputs(output.dir, outputs)
+  if (cacheDir) await pruneMediaCache(cacheDir, usedCacheKeys)
   return { manifest, processed, skipped, removed }
 }

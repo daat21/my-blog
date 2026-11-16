@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './fixtures'
 
 /** Below 1024px the sidebar becomes a menu sheet behind a top-bar button. */
 function hasMenu(page: Page): boolean {

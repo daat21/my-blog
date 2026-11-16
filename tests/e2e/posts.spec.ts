@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './fixtures'
 
 /** The sample post that uses every Markdown feature. */
 const TOUR = '/writing/a-tour-of-the-content-format'

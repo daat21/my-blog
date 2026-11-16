@@ -32,6 +32,7 @@ export async function PhotoPage({
   return (
     <div className={PAGE_GUTTER}>
       <ArrowNavigation
+        current={`/photos/${slug}/${photo.slug}`}
         previous={photo.previous && `/photos/${slug}/${photo.previous.slug}`}
         next={photo.next && `/photos/${slug}/${photo.next.slug}`}
       />
@@ -50,15 +51,16 @@ export async function PhotoPage({
         </header>
         <div className="flex min-w-0 flex-col gap-6 xl:flex-row xl:gap-8">
           <div className="min-w-0 flex-1">
-            <figure className="relative -mx-4 flex items-center justify-center overflow-hidden bg-sunken md:mx-0 md:rounded-md xl:h-[calc(100dvh-17rem)] xl:min-h-80 xl:p-6">
+            <figure className="relative -mx-4 flex items-center justify-center overflow-clip bg-sunken md:mx-0 md:rounded-md xl:h-[calc(100lvh-17rem)] xl:min-h-80 xl:p-6">
               <div
                 className="relative w-[min(100%,var(--photo-width))] xl:w-full xl:max-w-[var(--frame-photo-width)]"
                 style={
                   {
-                    '--photo-width': `${cappedWidth(photo.image)}dvh`,
+                    // Safari's toolbars overlay the photo instead of resizing it.
+                    '--photo-width': `${cappedWidth(photo.image)}lvh`,
                     aspectRatio: `${photo.image.width} / ${photo.image.height}`,
                     backgroundColor: photo.image.color,
-                    '--frame-photo-width': `calc((max(20rem, 100dvh - 17rem) - 3rem) * ${photo.image.width / photo.image.height})`,
+                    '--frame-photo-width': `calc((max(20rem, 100lvh - 17rem) - 3rem) * ${photo.image.width / photo.image.height})`,
                   } as CSSProperties
                 }
               >

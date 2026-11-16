@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './fixtures'
 
 const ALBUM = '/photos/coastal-light'
 const PHOTO = `${ALBUM}/low-sun`
@@ -189,6 +189,48 @@ test('photo layout is two columns only at full tier, otherwise stacked', async (
   expect(errors).toEqual([])
 })
 
+test('scrolling leaves portrait photo sizing stable without nested scrollports', async ({
+  page,
+}) => {
+  await page.goto('/photos/ordinary-days/birch-stand')
+  const image = page.locator('main figure img')
+  const before = await image.boundingBox()
+  if (!before) throw new Error('Missing portrait photo')
+  const scrollports = await image.evaluate(element => {
+    const problems: string[] = []
+    for (
+      let parent = element.parentElement;
+      parent;
+      parent = parent.parentElement
+    ) {
+      const style = getComputedStyle(parent)
+      if (style.scrollbarGutter !== 'auto')
+        problems.push(`${parent.tagName}: scrollbar gutter`)
+      // The document owns scrolling, not an ancestor around the photo.
+      if (
+        parent !== document.body &&
+        parent !== document.documentElement &&
+        [style.overflowX, style.overflowY].some(value =>
+          ['auto', 'scroll', 'hidden'].includes(value)
+        )
+      )
+        problems.push(`${parent.tagName}: nested scrollport`)
+    }
+    return problems
+  })
+  expect(scrollports).toEqual([])
+  await page.evaluate(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'instant',
+    })
+  })
+  const after = await image.boundingBox()
+  if (!after) throw new Error('Missing portrait photo after scrolling')
+  expect(after.width).toBeCloseTo(before.width, 1)
+  expect(after.height).toBeCloseTo(before.height, 1)
+})
+
 test('previous/next, counter, arrow keys and breadcrumb stay within the album', async ({
   page,
 }) => {
@@ -211,18 +253,19 @@ test('previous/next, counter, arrow keys and breadcrumb stay within the album', 
   )
   await nav.getByRole('link', { name: 'Next photo: Low sun' }).click()
   await expect(page).toHaveURL(PHOTO)
-  // A URL change can precede the keyboard enhancement's effect after navigation.
+  let current = PHOTO
   for (const [key, path] of [
     ['ArrowLeft', `${ALBUM}/tide-pool`],
     ['ArrowRight', PHOTO],
     ['ArrowLeft', `${ALBUM}/tide-pool`],
   ] as const) {
-    await expect
-      .poll(async () => {
-        await page.keyboard.press(key)
-        return new URL(page.url()).pathname
-      })
-      .toBe(path)
+    await expect(page.locator('[data-photo-keyboard-ready]')).toHaveAttribute(
+      'data-photo-keyboard-ready',
+      current
+    )
+    await page.keyboard.press(key)
+    await expect(page).toHaveURL(path)
+    current = path
   }
   await page
     .getByRole('navigation', { name: 'Breadcrumb' })

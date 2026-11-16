@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import { writeFileAtomic } from './files.mts'
 
 // The site validates this shape with Zod when it reads the manifest, so a
@@ -35,6 +37,38 @@ export interface VideoEntry {
 }
 
 export type MediaEntry = ImageEntry | VideoEntry
+
+const dimension = z.int().positive()
+const hash = z.string().regex(/^[0-9a-f]{12}$/)
+const url = z.string().regex(/^[^\s,]+$/)
+
+/** Validate entries restored from the build cache before trusting them. */
+export const mediaEntrySchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('image'),
+    hash,
+    width: dimension,
+    height: dimension,
+    color: z.string().regex(/^#[0-9a-f]{6}$/),
+    variants: z
+      .array(
+        z.object({
+          format: z.enum(['avif', 'webp']),
+          width: dimension,
+          src: url,
+        })
+      )
+      .min(1),
+  }),
+  z.object({
+    kind: z.literal('video'),
+    hash,
+    width: dimension,
+    height: dimension,
+    type: z.literal('video/mp4'),
+    src: url,
+  }),
+]) satisfies z.ZodType<MediaEntry>
 
 export interface MediaManifest {
   version: 1

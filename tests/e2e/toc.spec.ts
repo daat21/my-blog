@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 const ARTICLE = '/writing/a-tour-of-the-content-format'
 

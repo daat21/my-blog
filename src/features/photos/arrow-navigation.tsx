@@ -1,17 +1,20 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 /** Optional keyboard enhancement; ordinary links work without JavaScript. */
 export function ArrowNavigation({
+  current,
   previous,
   next,
 }: {
+  current: `/photos/${string}/${string}`
   previous?: `/photos/${string}/${string}`
   next?: `/photos/${string}/${string}`
 }) {
   const router = useRouter()
+  const readiness = useRef<HTMLSpanElement>(null)
   useEffect(() => {
     function navigate(event: KeyboardEvent) {
       if (
@@ -48,9 +51,14 @@ export function ArrowNavigation({
       }
     }
     window.addEventListener('keydown', navigate)
+    // A URL change can precede this effect. Identify the route whose listener
+    // is installed, rather than treating navigation as keyboard readiness.
+    const marker = readiness.current
+    marker?.setAttribute('data-photo-keyboard-ready', current)
     return () => {
+      marker?.removeAttribute('data-photo-keyboard-ready')
       window.removeEventListener('keydown', navigate)
     }
-  }, [previous, next, router])
-  return null
+  }, [current, previous, next, router])
+  return <span key={current} ref={readiness} hidden />
 }

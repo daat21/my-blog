@@ -9,6 +9,26 @@ const nextConfig: NextConfig = {
   // or a Tailscale tailnet. Without this, the dev server blocks its scripts for
   // any hostname other than localhost and the page never becomes interactive.
   allowedDevOrigins: ['192.168.*.*', '10.*.*.*', '100.*.*.*', '*.local'],
+  redirects() {
+    return Promise.resolve([
+      { source: '/blogs', destination: '/writing', permanent: true },
+      { source: '/blogs/:slug*', destination: '/writing', permanent: true },
+      ...[
+        '/contact',
+        '/profiles',
+        '/login',
+        '/signup',
+        '/signup/confirm',
+        '/forget_password',
+        '/update_password',
+        '/error',
+        '/callback',
+        '/confirm/reset_password',
+        '/confirm/signup',
+        '/signout',
+      ].map(source => ({ source, destination: '/', permanent: true })),
+    ])
+  },
   headers() {
     return Promise.resolve([
       {
