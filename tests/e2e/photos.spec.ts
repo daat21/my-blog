@@ -189,6 +189,48 @@ test('photo layout is two columns only at full tier, otherwise stacked', async (
   expect(errors).toEqual([])
 })
 
+test('scrolling leaves portrait photo sizing stable without nested scrollports', async ({
+  page,
+}) => {
+  await page.goto('/photos/ordinary-days/birch-stand')
+  const image = page.locator('main figure img')
+  const before = await image.boundingBox()
+  if (!before) throw new Error('Missing portrait photo')
+  const scrollports = await image.evaluate(element => {
+    const problems: string[] = []
+    for (
+      let parent = element.parentElement;
+      parent;
+      parent = parent.parentElement
+    ) {
+      const style = getComputedStyle(parent)
+      if (style.scrollbarGutter !== 'auto')
+        problems.push(`${parent.tagName}: scrollbar gutter`)
+      // The document owns scrolling, not an ancestor around the photo.
+      if (
+        parent !== document.body &&
+        parent !== document.documentElement &&
+        [style.overflowX, style.overflowY].some(value =>
+          ['auto', 'scroll', 'hidden'].includes(value)
+        )
+      )
+        problems.push(`${parent.tagName}: nested scrollport`)
+    }
+    return problems
+  })
+  expect(scrollports).toEqual([])
+  await page.evaluate(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'instant',
+    })
+  })
+  const after = await image.boundingBox()
+  if (!after) throw new Error('Missing portrait photo after scrolling')
+  expect(after.width).toBeCloseTo(before.width, 1)
+  expect(after.height).toBeCloseTo(before.height, 1)
+})
+
 test('previous/next, counter, arrow keys and breadcrumb stay within the album', async ({
   page,
 }) => {

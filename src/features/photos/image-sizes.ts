@@ -37,9 +37,9 @@ export function cappedWidth({ width, height }: Dimensions): number {
  * when the height cap makes a tall photo narrower.
  */
 export function photoSizes(image: Dimensions): string {
-  const capped = `${cappedWidth(image)}vh`
+  const capped = `${cappedWidth(image)}lvh`
   return [
-    `(min-width: 1280px) min(100vw - 824px, calc((max(20rem, 100vh - 17rem) - 3rem) * ${image.width / image.height}))`,
+    `(min-width: 1280px) min(100vw - 824px, calc((max(20rem, 100lvh - 17rem) - 3rem) * ${image.width / image.height}))`,
     `(min-width: 1024px) min(100vw - 372px, ${capped})`,
     `(min-width: 768px) min(100vw - 80px, ${capped})`,
     `min(100vw, ${capped})`,
