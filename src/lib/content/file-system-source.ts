@@ -14,16 +14,21 @@ import {
 import { resolveImage } from '@/lib/content/resolve-media'
 import {
   normalizeTag,
+  albumFrontMatterSchema,
   photoFrontMatterSchema,
+  photoSlugSchema,
   postFrontMatterSchema,
   profileSchema,
   projectFrontMatterSchema,
   validate,
+  type AlbumFrontMatter,
   type PhotoFrontMatter,
   type PostFrontMatter,
 } from '@/lib/content/schemas'
 import type { ContentSource, PostFilter } from '@/lib/content/source'
 import type {
+  Album,
+  AlbumSummary,
   Photo,
   PhotoSummary,
   Post,
@@ -56,10 +61,10 @@ const WRITING: EntryFolder<PostFrontMatter> = {
   schema: postFrontMatterSchema,
 }
 
-const PHOTOS: EntryFolder<PhotoFrontMatter> = {
+const ALBUMS: EntryFolder<AlbumFrontMatter> = {
   name: 'photos',
-  example: 'my-photo',
-  schema: photoFrontMatterSchema,
+  example: 'my-album',
+  schema: albumFrontMatterSchema,
 }
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
@@ -126,8 +131,8 @@ function slugError(where: string, name: string): ContentError {
  * Reads content from a directory laid out like the content repository:
  *
  * - `writing/<slug>/index.md`: one post per folder
- * - `photos/<slug>/index.md`: one photograph per folder, with an optional
- *   story as the body
+ * - `photos/<album>/index.md`: one album, with an optional intro
+ * - `photos/<album>/<photo>.md`: one photograph with an optional story
  * - `projects/<slug>.md`: one project per file; only the front matter is
  *   used, the body is ignored
  * - `profile.yaml`
@@ -271,28 +276,128 @@ export function createFileSystemSource(
     }
   }
 
-  async function listPhotos(): Promise<PhotoSummary[]> {
-    const entries = (await readEntries(PHOTOS)).filter(isVisible)
-    const photos = await Promise.all(entries.map(summarizePhoto))
-    return photos.sort(newestFirst)
+  async function readAlbumEntries() {
+    const albums = await readEntries(ALBUMS)
+    return Promise.all(
+      albums.map(async album => {
+        if (!photoSlugSchema.safeParse(album.slug).success) {
+          throw slugError(`photos/${album.slug}`, album.slug)
+        }
+        const files = await listFolder(`photos/${album.slug}`)
+        const entries = await Promise.all(
+          files
+            .filter(file => file.name !== 'index.md')
+            .map(async file => {
+              const where = `photos/${album.slug}/${file.name}`
+              if (!file.isFile() || !file.name.endsWith('.md')) {
+                throw new ContentError(
+                  `${where}: Expected a Markdown photo file`
+                )
+              }
+              const slug = file.name.slice(0, -3)
+              if (!photoSlugSchema.safeParse(slug).success)
+                throw slugError(where, slug)
+              const source = await readText(where)
+              if (source === undefined)
+                throw new ContentError(`${where}: Not found`)
+              const { data, body } = splitFrontMatter(source, where)
+              const meta = validate(photoFrontMatterSchema, data, where)
+              return { slug, file: where, meta, body }
+            })
+        )
+        if (
+          album.meta.cover &&
+          !entries.some(photo => photo.slug === album.meta.cover)
+        ) {
+          throw new ContentError(
+            `${album.file}: cover: No photo named ${album.meta.cover} in this album`
+          )
+        }
+        entries.sort((a, b) => {
+          if (a.meta.taken === undefined && b.meta.taken !== undefined) return 1
+          if (b.meta.taken === undefined && a.meta.taken !== undefined)
+            return -1
+          return (
+            compareText(a.meta.taken ?? '', b.meta.taken ?? '') ||
+            compareText(a.slug, b.slug)
+          )
+        })
+        return { album, entries }
+      })
+    )
   }
 
-  async function getPhoto(slug: string): Promise<Photo | null> {
-    // It may come from a URL, so anything unexpected is simply not found.
-    if (!isSlug(slug)) return null
-    await ensureContentDir()
-    const entry = await readEntry(PHOTOS, slug)
-    if (!entry || !isVisible(entry)) return null
-    const photo = await summarizePhoto(entry)
-    if (entry.body.trim() === '') return { ...photo, description: photo.alt }
-    const { body: story } = await renderMarkdown(entry.body, {
-      file: entry.file,
-      media,
-    })
+  async function visibleAlbums() {
+    const albums = await readAlbumEntries()
+    const visible = await Promise.all(
+      albums
+        .filter(({ album }) => isVisible(album))
+        .map(async ({ album, entries }) => {
+          const photos = await Promise.all(
+            entries.filter(isVisible).map(async entry => ({
+              ...(await summarizePhoto(entry)),
+              location: entry.meta.location ?? album.meta.location,
+            }))
+          )
+          const cover =
+            photos.find(photo => photo.slug === album.meta.cover) ?? photos[0]
+          if (!cover) return null
+          const summary: AlbumSummary = {
+            ...album.meta,
+            slug: album.slug,
+            cover,
+            count: photos.length,
+          }
+          return { album, entries, photos, summary }
+        })
+    )
+    return visible
+      .filter(item => item !== null)
+      .sort((a, b) => newestFirst(a.summary, b.summary))
+  }
+
+  async function listAlbums(): Promise<AlbumSummary[]> {
+    return (await visibleAlbums()).map(item => item.summary)
+  }
+
+  async function getAlbum(slug: string): Promise<Album | null> {
+    if (!photoSlugSchema.safeParse(slug).success) return null
+    const item = (await visibleAlbums()).find(item => item.album.slug === slug)
+    if (!item) return null
+    const intro = item.album.body.trim()
+      ? (
+          await renderMarkdown(item.album.body, {
+            file: item.album.file,
+            media,
+          })
+        ).body
+      : undefined
+    return { ...item.summary, photos: item.photos, intro }
+  }
+
+  async function getPhoto(album: string, slug: string): Promise<Photo | null> {
+    if (
+      !photoSlugSchema.safeParse(album).success ||
+      !photoSlugSchema.safeParse(slug).success
+    )
+      return null
+    const item = (await visibleAlbums()).find(item => item.album.slug === album)
+    if (!item) return null
+    const index = item.photos.findIndex(photo => photo.slug === slug)
+    const photo = item.photos[index]
+    const entry = item.entries.find(entry => entry.slug === slug)
+    if (!photo || !entry) return null
+    const story = entry.body.trim()
+      ? (await renderMarkdown(entry.body, { file: entry.file, media })).body
+      : undefined
     return {
       ...photo,
       story,
       description: firstSentenceOf(entry.body) ?? photo.alt,
+      album: item.summary,
+      previous: item.photos[index - 1],
+      next: item.photos[index + 1],
+      position: index + 1,
     }
   }
 
@@ -346,7 +451,8 @@ export function createFileSystemSource(
     listPosts,
     getPost,
     listTags,
-    listPhotos,
+    listAlbums,
+    getAlbum,
     getPhoto,
     listProjects,
     getProfile,

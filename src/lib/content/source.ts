@@ -1,6 +1,7 @@
 import type {
+  Album,
+  AlbumSummary,
   Photo,
-  PhotoSummary,
   Post,
   PostSummary,
   Profile,
@@ -24,8 +25,9 @@ export interface ContentSource {
   /** Most used first. */
   listTags(): Promise<TagCount[]>
   /** Newest first. */
-  listPhotos(): Promise<PhotoSummary[]>
-  getPhoto(slug: string): Promise<Photo | null>
+  listAlbums(): Promise<AlbumSummary[]>
+  getAlbum(album: string): Promise<Album | null>
+  getPhoto(album: string, photo: string): Promise<Photo | null>
   /** Sorted by `order`, then newest first. */
   listProjects(): Promise<Project[]>
   getProfile(): Promise<Profile>

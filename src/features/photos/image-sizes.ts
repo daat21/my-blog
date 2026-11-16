@@ -39,9 +39,9 @@ export function cappedWidth({ width, height }: Dimensions): number {
 export function photoSizes(image: Dimensions): string {
   const capped = `${cappedWidth(image)}vh`
   return [
-    `(min-width: 1280px) min(100vw - 444px, 1100px, ${capped})`,
+    `(min-width: 1544px) min(720px, ${capped}), (min-width: 1280px) min(100vw - 824px, ${capped})`,
     `(min-width: 1024px) min(100vw - 372px, ${capped})`,
     `(min-width: 768px) min(100vw - 80px, ${capped})`,
-    `min(100vw - 32px, ${capped})`,
+    `min(100vw, ${capped})`,
   ].join(', ')
 }

@@ -11,13 +11,15 @@ const PUBLISHED = [
 ]
 const DRAFT = '/writing/unfinished-thoughts-on-testing'
 const PUBLISHED_PHOTOS = [
-  '/photos/low-sun',
-  '/photos/tide-pool',
-  '/photos/birch-stand',
-  '/photos/city-haze',
-  '/photos/window-light',
+  '/photos/coastal-light',
+  '/photos/ordinary-days',
+  '/photos/coastal-light/low-sun',
+  '/photos/coastal-light/tide-pool',
+  '/photos/ordinary-days/birch-stand',
+  '/photos/ordinary-days/city-haze',
+  '/photos/ordinary-days/window-light',
 ]
-const DRAFT_PHOTO = '/photos/night-ferry'
+const DRAFT_PHOTO = '/photos/coastal-light/night-ferry'
 const UNKNOWN = '/this-page-does-not-exist'
 
 /** Skips checks whose result is the same at every viewport and in both themes. */
@@ -214,7 +216,13 @@ test('page titles follow the site template', async ({ page }, testInfo) => {
 
   // Every other page either keeps the default or fills in the template.
   const titled = new RegExp(`^(?:.+ · )?${SITE_NAME}$`)
-  for (const path of ['/writing', '/photos', '/photos/low-sun', '/projects']) {
+  for (const path of [
+    '/writing',
+    '/photos',
+    '/photos/coastal-light',
+    '/photos/coastal-light/low-sun',
+    '/projects',
+  ]) {
     await page.goto(path)
     await expect(page).toHaveTitle(titled)
   }

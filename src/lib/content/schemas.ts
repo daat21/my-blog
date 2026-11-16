@@ -79,10 +79,61 @@ export const postFrontMatterSchema = z
 
 export type PostFrontMatter = z.output<typeof postFrontMatterSchema>
 
-/** Front matter of `photos/<slug>/index.md`: one photograph per folder. */
+/** A content segment must not shadow a framework metadata route. */
+export const photoSlugSchema = z
+  .string()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+  .refine(
+    value =>
+      ![
+        'index',
+        'opengraph-image',
+        'twitter-image',
+        'icon',
+        'apple-icon',
+        'favicon',
+        'robots',
+        'sitemap',
+        'manifest',
+      ].includes(value),
+    { error: 'Reserved segment' }
+  )
+
+/** Front matter of `photos/<album>/index.md`. */
+export const albumFrontMatterSchema = z
+  .strictObject({
+    title: text,
+    description: text,
+    date: isoDate,
+    endDate: isoDate.optional(),
+    location: text.optional(),
+    cover: photoSlugSchema.optional(),
+    draft: z.boolean().default(false),
+  })
+  .refine(album => album.endDate === undefined || album.endDate >= album.date, {
+    error: 'Must not be earlier than date',
+    path: ['endDate'],
+  })
+
+export type AlbumFrontMatter = z.output<typeof albumFrontMatterSchema>
+
+/** Front matter of `photos/<album>/<photo>.md`. */
 export const photoFrontMatterSchema = z.strictObject({
   title: text,
-  date: isoDate,
+  taken: z
+    .string()
+    .refine(
+      value => {
+        const [date, time, extra] = value.split(' ')
+        return (
+          isoDate.safeParse(date).success &&
+          extra === undefined &&
+          (time === undefined || /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time))
+        )
+      },
+      { error: 'Expected YYYY-MM-DD or YYYY-MM-DD HH:mm' }
+    )
+    .optional(),
   image: mediaRef,
   alt: z
     .string({
@@ -96,7 +147,10 @@ export const photoFrontMatterSchema = z.strictObject({
   location: text.optional(),
   camera: text.optional(),
   lens: text.optional(),
-  exposure: text.optional(),
+  focalLength: text.optional(),
+  aperture: text.optional(),
+  shutter: text.optional(),
+  iso: z.union([text, z.number()]).transform(String).optional(),
   draft: z.boolean().default(false),
 })
 

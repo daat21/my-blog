@@ -2,36 +2,34 @@ import type { PhotoSummary } from '@/lib/content'
 
 import { photoDetails } from './photo-details'
 
-interface PhotoMetaProps {
-  photo: Pick<
-    PhotoSummary,
-    'date' | 'location' | 'camera' | 'lens' | 'exposure'
-  >
-}
-
-/**
- * A mono row: the date, then location, camera, lens and exposure, each only
- * when the photo has it. Labels are for assistive technology only.
- */
-export function PhotoMeta({ photo }: PhotoMetaProps) {
+/** Parameters are stacked below full tier and label/value columns on desktop. */
+export function PhotoMeta({ photo }: { photo: PhotoSummary }) {
+  const details = photoDetails(photo)
+  if (details.length === 0) return null
   return (
-    <ul
-      aria-label="Photo details"
-      className="flex flex-wrap items-center gap-x-3.5 gap-y-2 font-mono text-meta text-fg-muted"
+    <dl
+      aria-label="Photo parameters"
+      className="border-t border-border font-mono"
     >
-      <li>
-        <span className="sr-only">Date: </span>
-        <time dateTime={photo.date}>{photo.date}</time>
-      </li>
-      {photoDetails(photo).map(({ label, value }) => (
-        <li key={label} className="flex items-center gap-x-3.5">
-          <span aria-hidden="true">·</span>
-          <span>
-            <span className="sr-only">{label}: </span>
-            {value}
-          </span>
-        </li>
+      {details.map(({ label, value }) => (
+        <div
+          key={label}
+          className="grid gap-1 border-b border-border py-3 xl:grid-cols-[7rem_minmax(0,1fr)] xl:gap-3"
+        >
+          <dt className="text-label tracking-widest text-fg-muted uppercase">
+            {label}
+          </dt>
+          <dd className="text-sm wrap-anywhere text-fg">
+            {label === 'Taken' ? (
+              <time dateTime={value.replace(' ', 'T')}>
+                {value.replace(' ', ' · ')}
+              </time>
+            ) : (
+              value
+            )}
+          </dd>
+        </div>
       ))}
-    </ul>
+    </dl>
   )
 }

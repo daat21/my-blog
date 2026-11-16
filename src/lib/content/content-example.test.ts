@@ -113,40 +113,45 @@ describe('content-example', () => {
     ])
   })
 
-  it('lists the published photos newest first, without the draft', async () => {
-    const photos = await published.listPhotos()
-    expect(photos.map(photo => photo.slug)).toEqual([
-      'low-sun',
-      'tide-pool',
-      'birch-stand',
-      'city-haze',
-      'window-light',
+  it('lists two albums and all five published photos in album order', async () => {
+    expect((await published.listAlbums()).map(album => album.slug)).toEqual([
+      'coastal-light',
+      'ordinary-days',
     ])
+    expect(
+      (await published.getAlbum('coastal-light'))?.photos.map(
+        photo => photo.slug
+      )
+    ).toEqual(['tide-pool', 'low-sun'])
+    expect(
+      (await published.getAlbum('ordinary-days'))?.photos.map(
+        photo => photo.slug
+      )
+    ).toEqual(['city-haze', 'birch-stand', 'window-light'])
   })
 
   it('has one draft photo, shown only with drafts on', async () => {
-    const drafts = (await withDrafts.listPhotos()).filter(photo => photo.draft)
-    expect(drafts.map(photo => photo.slug)).toEqual(['night-ferry'])
+    expect(await published.getPhoto('coastal-light', 'night-ferry')).toBeNull()
+    expect(
+      await withDrafts.getPhoto('coastal-light', 'night-ferry')
+    ).toMatchObject({ draft: true })
   })
 
-  it('has photos with every detail, with none, and one with a story', async () => {
-    const photos = await Promise.all(
-      (await withDrafts.listPhotos()).map(({ slug }) =>
-        withDrafts.getPhoto(slug)
-      )
-    )
-    const details = ['location', 'camera', 'lens', 'exposure'] as const
-    const counts = photos.map(
-      photo => details.filter(key => photo?.[key] !== undefined).length
-    )
-    expect(counts).toContain(4)
-    expect(counts).toContain(0)
-
-    const told = photos.filter(photo => photo?.story)
-    expect(told.map(photo => photo?.slug)).toEqual(['low-sun'])
-    expect(told[0]?.description).toBe(
+  it('has filled parameters, a story, and an undated photo without parameters', async () => {
+    const photo = await published.getPhoto('coastal-light', 'low-sun')
+    expect(photo).toMatchObject({
+      camera: 'Rangefinder R1',
+      aperture: 'ƒ/8',
+      iso: '100',
+      story: { type: 'root' },
+    })
+    expect(photo?.description).toBe(
       'We reached the end of the west pier just as the light began to go.'
     )
+    const undated = await published.getPhoto('ordinary-days', 'window-light')
+    expect(undated?.taken).toBeUndefined()
+    expect(undated?.camera).toBeUndefined()
+    expect(undated?.location).toBeUndefined()
   })
 
   it('keeps the sample photos small, in four aspect ratios', async () => {

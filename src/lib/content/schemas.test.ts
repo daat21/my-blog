@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { ContentError } from '@/lib/content/content-error'
 import {
   normalizeTag,
+  albumFrontMatterSchema,
   photoFrontMatterSchema,
   postFrontMatterSchema,
   profileSchema,
@@ -141,11 +142,48 @@ describe('postFrontMatterSchema', () => {
   })
 })
 
+describe('albumFrontMatterSchema', () => {
+  const album = {
+    title: 'A walk',
+    description: 'Light along the shore.',
+    date: '2026-11-08',
+  }
+  it('applies defaults and accepts optional fields', () => {
+    expect(albumFrontMatterSchema.parse(album)).toEqual({
+      ...album,
+      draft: false,
+    })
+    const full = {
+      ...album,
+      endDate: '2026-11-09',
+      location: 'Sample Bay',
+      cover: 'low-sun',
+      draft: true,
+    }
+    expect(albumFrontMatterSchema.parse(full)).toEqual(full)
+  })
+  it.each([
+    { title: '' },
+    { description: '' },
+    { date: '2026-02-30' },
+    { endDate: '2026-01-01' },
+    { cover: '../escape' },
+    { cover: 'index' },
+    { cover: 'opengraph-image' },
+    { unknown: true },
+    { draft: 'yes' },
+  ])('rejects invalid album fields %o', fields => {
+    expect(
+      albumFrontMatterSchema.safeParse({ ...album, ...fields }).success
+    ).toBe(false)
+  })
+})
+
 describe('photoFrontMatterSchema', () => {
-  const PHOTO = 'photos/low-sun/index.md'
+  const PHOTO = 'photos/coast/low-sun.md'
   const validPhoto = {
     title: 'Low sun',
-    date: '2026-11-08',
+    taken: '2026-11-08',
     image: 'media:photos/low-sun.jpg',
     alt: 'A pale sun low over a violet sea.',
   }
@@ -163,10 +201,29 @@ describe('photoFrontMatterSchema', () => {
       location: 'Exampleton, west pier',
       camera: 'Example R1',
       lens: '35 mm ƒ/2',
-      exposure: 'ƒ/2.8 · 1/250 s · ISO 200',
+      focalLength: '35 mm',
+      aperture: 'ƒ/2.8',
+      shutter: '1/250 s',
+      iso: '200',
       draft: true,
     }
     expect(validate(photoFrontMatterSchema, photo, PHOTO)).toEqual(photo)
+  })
+
+  it('accepts numeric ISO and photos without taken', () => {
+    expect(photoFrontMatterSchema.parse({ ...validPhoto, iso: 200 }).iso).toBe(
+      '200'
+    )
+    expect(
+      photoFrontMatterSchema.parse({ ...validPhoto, taken: undefined }).taken
+    ).toBeUndefined()
+  })
+
+  it('accepts a date or local minute timestamp', () => {
+    expect(
+      photoFrontMatterSchema.parse({ ...validPhoto, taken: '2026-11-08 18:42' })
+        .taken
+    ).toBe('2026-11-08 18:42')
   })
 
   it('asks for alt text when it is missing', () => {
@@ -174,7 +231,7 @@ describe('photoFrontMatterSchema', () => {
       validate(photoFrontMatterSchema, { ...validPhoto, alt: undefined }, PHOTO)
     )
     expect(error.message).toBe(
-      'photos/low-sun/index.md: alt: Required: describe what the photo shows'
+      'photos/coast/low-sun.md: alt: Required: describe what the photo shows'
     )
   })
 
@@ -183,28 +240,31 @@ describe('photoFrontMatterSchema', () => {
     ['title', '', 'title: Must not be empty'],
     ['image', 'photos/low-sun.jpg', 'image: Expected a media reference'],
     ['image', 'https://example.com/a.jpg', 'image: Expected a media reference'],
-    ['date', '8 Nov 2026', 'date: Invalid date, expected YYYY-MM-DD'],
+    ['taken', '8 Nov 2026', 'taken: Expected YYYY-MM-DD or YYYY-MM-DD HH:mm'],
+    ['taken', '2026-02-30', 'taken: '],
+    ['taken', '2026-11-08 24:00', 'taken: '],
+    ['taken', '2026-11-08 18:00 extra', 'taken: '],
     ['camera', '', 'camera: Must not be empty'],
-    ['exposure', 2.8, 'exposure: '],
+    ['aperture', 2.8, 'aperture: '],
     ['draft', 'no', 'draft: '],
   ])('names the file and the field for an invalid %s', (field, value, msg) => {
     const error = errorOf(() =>
       validate(photoFrontMatterSchema, { ...validPhoto, [field]: value }, PHOTO)
     )
-    expect(error.message).toContain(`photos/low-sun/index.md: ${msg}`)
+    expect(error.message).toContain(`photos/coast/low-sun.md: ${msg}`)
   })
 
   it('rejects unknown fields, each on its own line', () => {
     const error = errorOf(() =>
       validate(
         photoFrontMatterSchema,
-        { ...validPhoto, caption: 'Hi', iso: 200 },
+        { ...validPhoto, caption: 'Hi', exposure: 'old' },
         PHOTO
       )
     )
     expect(error.message.split('\n')).toEqual([
-      'photos/low-sun/index.md: caption: Unknown field',
-      'photos/low-sun/index.md: iso: Unknown field',
+      'photos/coast/low-sun.md: caption: Unknown field',
+      'photos/coast/low-sun.md: exposure: Unknown field',
     ])
   })
 })

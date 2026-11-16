@@ -78,7 +78,7 @@ function post({ title = 'A post', date, tags = [], draft, body }: PostOptions) {
 
 interface PhotoOptions {
   title?: string
-  date: string
+  date?: string
   image?: string
   draft?: boolean
   /** Extra front matter lines, e.g. `location: Exampleton`. */
@@ -97,7 +97,7 @@ function photo({
   return [
     '---',
     `title: ${title}`,
-    `date: ${date}`,
+    ...(date ? [`taken: ${date}`] : []),
     `image: ${image}`,
     'alt: Soft light over still water.',
     ...fields,
@@ -346,148 +346,211 @@ describe('createFileSystemSource: validation', () => {
   })
 })
 
-describe('createFileSystemSource: photos', () => {
+describe('createFileSystemSource: albums', () => {
+  function album(date = '2026-06-01', fields = '', body = '') {
+    return `---\ntitle: An album\ndescription: A quiet walk.\ndate: ${date}\n${fields}\n---\n${body}`
+  }
   const files = {
-    'photos/older/index.md': photo({ date: '2026-01-10' }),
-    'photos/newest/index.md': photo({
-      title: 'Newest',
-      date: '2026-11-15',
-      image: 'media:photos/newest.jpg',
-      fields: [
-        'location: Exampleton',
-        'camera: Example R1',
-        'lens: 35 mm ƒ/2',
-        "exposure: 'ƒ/2.8 · 1/250 s · ISO 200'",
-      ],
+    'photos/older/index.md': album('2026-01-10'),
+    'photos/older/a.md': photo({}),
+    'photos/newest/index.md': album(
+      '2026-11-15',
+      'location: Exampleton\ncover: late',
+      'A short **intro**.'
+    ),
+    'photos/newest/late.md': photo({
+      date: '2026-11-15 18:00',
+      body: 'A quiet evening. The light faded.',
     }),
-    'photos/same-day-b/index.md': photo({ date: '2026-06-01' }),
-    'photos/same-day-a/index.md': photo({ date: '2026-06-01' }),
-    'photos/secret/index.md': photo({ date: '2026-12-01', draft: true }),
+    'photos/newest/early-b.md': photo({ date: '2026-11-15' }),
+    'photos/newest/early-a.md': photo({
+      date: '2026-11-15',
+      fields: ['location: Elsewhere', 'iso: 200'],
+    }),
+    'photos/newest/undated-b.md': photo({}),
+    'photos/newest/undated-a.md': photo({}),
+    'photos/newest/draft.md': photo({ date: '2026-11-15 12:00', draft: true }),
+    'photos/same-day-b/index.md': album(),
+    'photos/same-day-b/a.md': photo({}),
+    'photos/same-day-a/index.md': album(),
+    'photos/same-day-a/a.md': photo({}),
+    'photos/secret/index.md': album('2026-12-01', 'draft: true'),
+    'photos/secret/a.md': photo({}),
+    'photos/empty/index.md': album(),
+    'photos/only-drafts/index.md': album(),
+    'photos/only-drafts/a.md': photo({ draft: true }),
     'photos/.DS_Store': '',
   }
 
-  it('lists visible photos newest first, by slug on the same day', async () => {
-    const photos = await (await source(files)).listPhotos()
-    expect(photos.map(p => p.slug)).toEqual([
-      'newest',
-      'same-day-a',
-      'same-day-b',
-      'older',
+  it('orders albums by descending date, then slug; hides empty albums', async () => {
+    expect((await (await source(files)).listAlbums()).map(a => a.slug)).toEqual(
+      ['newest', 'same-day-a', 'same-day-b', 'older']
+    )
+  })
+
+  it('orders photos by taken ascending, slug on ties, and undated last', async () => {
+    const album = await (await source(files)).getAlbum('newest')
+    expect(album?.photos.map(p => p.slug)).toEqual([
+      'early-a',
+      'early-b',
+      'late',
+      'undated-a',
+      'undated-b',
     ])
-  })
-
-  it('returns summaries with the image resolved', async () => {
-    const [newest] = await (await source(files)).listPhotos()
-    expect(newest).toEqual({
-      slug: 'newest',
-      title: 'Newest',
-      date: '2026-11-15',
-      image: {
-        kind: 'image',
-        width: 1200,
-        height: 750,
-        src: '/_media/photos/newest.jpg.webp',
-        sources: [
-          {
-            type: 'image/webp',
-            srcSet: '/_media/photos/newest.jpg.webp 1200w',
-          },
-        ],
-      },
-      alt: 'Soft light over still water.',
-      location: 'Exampleton',
-      camera: 'Example R1',
-      lens: '35 mm ƒ/2',
-      exposure: 'ƒ/2.8 · 1/250 s · ISO 200',
-      draft: false,
+    expect(album?.cover.slug).toBe('late')
+    expect(album?.count).toBe(5)
+    expect(album?.intro?.type).toBe('root')
+    expect(album?.photos[0]).toMatchObject({
+      location: 'Elsewhere',
+      iso: '200',
+      image: { kind: 'image' },
     })
+    expect(album?.photos[1]?.location).toBe('Exampleton')
   })
 
-  it('includes drafts only when showDrafts is on', async () => {
-    const hidden = await source(files)
-    expect((await hidden.listPhotos()).map(p => p.slug)).not.toContain('secret')
-    expect(await hidden.getPhoto('secret')).toBeNull()
+  it('defaults the cover to the first visible photo, including when the chosen cover is a draft', async () => {
+    const content = await source({
+      ...files,
+      'photos/newest/index.md': album('2026-11-15', 'cover: draft'),
+    })
+    expect((await content.getAlbum('newest'))?.cover.slug).toBe('early-a')
+    expect((await content.getAlbum('older'))?.cover.slug).toBe('a')
+  })
 
+  it('hides draft albums and their photos, draft photos and empty albums', async () => {
+    const hidden = await source(files)
+    expect(await hidden.getAlbum('secret')).toBeNull()
+    expect(await hidden.getPhoto('secret', 'a')).toBeNull()
+    expect(await hidden.getPhoto('newest', 'draft')).toBeNull()
+    expect(await hidden.getAlbum('empty')).toBeNull()
+    expect(await hidden.getAlbum('only-drafts')).toBeNull()
     const shown = await source(files, true)
-    expect((await shown.listPhotos())[0]).toMatchObject({
-      slug: 'secret',
+    expect(await shown.getPhoto('secret', 'a')).toMatchObject({ slug: 'a' })
+    expect(await shown.getPhoto('newest', 'draft')).toMatchObject({
       draft: true,
     })
-    expect(await shown.getPhoto('secret')).toMatchObject({ slug: 'secret' })
+    expect((await shown.getAlbum('only-drafts'))?.count).toBe(1)
+    expect(await shown.getAlbum('empty')).toBeNull()
   })
 
-  it('describes a photo without a story by its alt text', async () => {
-    const older = await (await source(files)).getPhoto('older')
-    expect(older).toMatchObject({
-      slug: 'older',
+  it('returns chronological neighbours and positions, skipping drafts', async () => {
+    const content = await source(files)
+    expect(await content.getPhoto('newest', 'early-a')).toMatchObject({
+      position: 1,
+      previous: undefined,
+      next: { slug: 'early-b' },
+    })
+    expect(await content.getPhoto('newest', 'early-b')).toMatchObject({
+      position: 2,
+      previous: { slug: 'early-a' },
+      next: { slug: 'late' },
+    })
+    expect(await content.getPhoto('newest', 'undated-b')).toMatchObject({
+      position: 5,
+      next: undefined,
+    })
+    expect(await content.getPhoto('older', 'a')).toMatchObject({
+      position: 1,
+      previous: undefined,
+      next: undefined,
+    })
+  })
+
+  it('renders stories and falls back to alt text without a story', async () => {
+    const content = await source(files)
+    expect(await content.getPhoto('newest', 'late')).toMatchObject({
+      story: { type: 'root' },
+      description: 'A quiet evening.',
+    })
+    expect(await content.getPhoto('older', 'a')).toMatchObject({
+      story: undefined,
       description: 'Soft light over still water.',
     })
-    expect(older).not.toHaveProperty('story')
   })
 
-  it('renders the story and describes the photo by its first sentence', async () => {
+  it('rejects an unknown cover even on a draft album', async () => {
     const content = await source({
-      'photos/told/index.md': photo({
-        date: '2026-02-02',
-        body: 'We waited an hour for the fog. It never lifted.\n',
-      }),
+      'photos/a/index.md': album('2026-01-01', 'draft: true\ncover: missing'),
     })
-    const told = await content.getPhoto('told')
-    expect(told).toMatchObject({
-      slug: 'told',
-      description: 'We waited an hour for the fog.',
-    })
-    expect(told?.story?.type).toBe('root')
-    expect(told?.story?.children.length).toBeGreaterThan(0)
+    await expect(content.listAlbums()).rejects.toThrow(
+      'photos/a/index.md: cover: No photo named missing'
+    )
   })
 
-  it('returns null for unknown or malformed slugs', async () => {
+  it('validates hidden photo front matter in production', async () => {
+    const content = await source({
+      'photos/a/index.md': album('2026-01-01', 'draft: true'),
+      'photos/a/b.md': photo({ draft: true, fields: ['unknown: nope'] }),
+    })
+    await expect(content.listAlbums()).rejects.toThrow(
+      'photos/a/b.md: unknown: Unknown field'
+    )
+  })
+
+  it('names the photo and field for bad media', async () => {
+    const content = await source({
+      'photos/a/index.md': album(),
+      'photos/a/b.md': photo({ image: 'media:missing/lost.jpg' }),
+    })
+    await expect(content.listAlbums()).rejects.toThrow(
+      'photos/a/b.md: image: Cannot resolve media:missing/lost.jpg'
+    )
+  })
+
+  it('returns null for unknown, malformed and reserved URL segments', async () => {
     const content = await source(files)
-    expect(await content.getPhoto('missing')).toBeNull()
-    expect(await content.getPhoto('../older')).toBeNull()
-    expect(await content.getPhoto('Older')).toBeNull()
+    for (const slug of [
+      'missing',
+      '../older',
+      'Older',
+      'index',
+      'opengraph-image',
+      '__placeholder__',
+    ]) {
+      expect(await content.getAlbum(slug)).toBeNull()
+      expect(await content.getPhoto(slug, 'a')).toBeNull()
+      expect(await content.getPhoto('newest', slug)).toBeNull()
+    }
   })
 
-  it('returns an empty list without a photos folder', async () => {
-    expect(
-      await (await source({ 'profile.yaml': PROFILE })).listPhotos()
-    ).toEqual([])
-  })
+  it.each(['Bad_Name', 'index', 'opengraph-image'])(
+    'rejects invalid album and photo segment %s on disk',
+    async slug => {
+      await expect(
+        (await source({ [`photos/${slug}/index.md`]: album() })).listAlbums()
+      ).rejects.toThrow('not a valid slug')
+      // index.md is the album itself, not a possible photo file.
+      if (slug !== 'index') {
+        await expect(
+          (
+            await source({
+              'photos/a/index.md': album(),
+              [`photos/a/${slug}.md`]: photo({}),
+            })
+          ).listAlbums()
+        ).rejects.toThrow('not a valid slug')
+      }
+    }
+  )
 
-  it('names the file and the field for invalid front matter', async () => {
-    const content = await source({
-      'photos/bad/index.md': photo({ date: '2026-02-30' }),
-    })
-    await expect(content.listPhotos()).rejects.toThrow(
-      'photos/bad/index.md: date: Invalid date, expected YYYY-MM-DD'
-    )
-  })
-
-  it('names the file and field when the image cannot be resolved', async () => {
-    const content = await source({
-      'photos/lost/index.md': photo({
-        date: '2026-02-02',
-        image: 'media:missing/lost.jpg',
-      }),
-    })
-    await expect(content.listPhotos()).rejects.toThrow(
-      'photos/lost/index.md: image: Cannot resolve media:missing/lost.jpg'
-    )
-  })
-
-  it('rejects non-kebab-case folders and stray files', async () => {
+  it('rejects stray files and nested photo directories', async () => {
+    await expect(
+      (await source({ 'photos/stray.jpg': 'x' })).listAlbums()
+    ).rejects.toThrow('Expected a folder holding index.md')
     await expect(
       (
         await source({
-          'photos/Low_Sun/index.md': photo({ date: '2026-01-01' }),
+          'photos/a/index.md': album(),
+          'photos/a/b/index.md': photo({}),
         })
-      ).listPhotos()
-    ).rejects.toThrow('photos/Low_Sun: "Low_Sun" is not a valid slug')
-    await expect(
-      (await source({ 'photos/stray.jpg': 'x' })).listPhotos()
-    ).rejects.toThrow(
-      'photos/stray.jpg: Expected a folder holding index.md, e.g. photos/my-photo/index.md'
-    )
+      ).listAlbums()
+    ).rejects.toThrow('Expected a Markdown photo file')
+  })
+
+  it('returns an empty collection without a photos folder', async () => {
+    expect(
+      await (await source({ 'profile.yaml': PROFILE })).listAlbums()
+    ).toEqual([])
   })
 })
 

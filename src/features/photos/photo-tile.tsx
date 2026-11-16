@@ -6,7 +6,8 @@ import type { PhotoSummary } from '@/lib/content'
 import { GALLERY_SIZES } from './image-sizes'
 
 interface PhotoTileProps {
-  photo: Pick<PhotoSummary, 'slug' | 'title' | 'date' | 'image' | 'alt'>
+  album: string
+  photo: Pick<PhotoSummary, 'slug' | 'title' | 'taken' | 'image' | 'alt'>
   /** Load the image at once, for tiles likely on the first screen. */
   eager?: boolean
 }
@@ -16,7 +17,7 @@ interface PhotoTileProps {
  * title and date. Until the image loads, its dominant colour holds its
  * place. The title link covers the whole tile.
  */
-export function PhotoTile({ photo, eager = false }: PhotoTileProps) {
+export function PhotoTile({ album, photo, eager = false }: PhotoTileProps) {
   return (
     <article className="group relative flex flex-col gap-2.5 rounded-md has-focus-visible:outline-2 has-focus-visible:outline-offset-4 has-focus-visible:outline-accent">
       <div
@@ -31,18 +32,23 @@ export function PhotoTile({ photo, eager = false }: PhotoTileProps) {
           className="block h-auto w-full transition-opacity duration-150 group-hover:opacity-90"
         />
       </div>
-      <div className="flex items-baseline justify-between gap-4 font-mono text-meta">
+      <div className="flex items-baseline justify-between gap-3 text-sm">
         <h2 className="min-w-0 text-fg">
           <Link
-            href={`/photos/${photo.slug}`}
+            href={`/photos/${album}/${photo.slug}`}
             className="transition-colors duration-150 outline-none group-hover:text-accent before:absolute before:inset-0 before:content-['']"
           >
             {photo.title}
           </Link>
         </h2>
-        <time dateTime={photo.date} className="shrink-0 text-fg-muted">
-          {photo.date}
-        </time>
+        {photo.taken && (
+          <time
+            dateTime={photo.taken.replace(' ', 'T')}
+            className="shrink-0 font-mono text-meta text-fg-muted"
+          >
+            {photo.taken.includes(' ') ? photo.taken.slice(11) : photo.taken}
+          </time>
+        )}
       </div>
     </article>
   )

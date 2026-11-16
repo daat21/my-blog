@@ -4,7 +4,8 @@ import { createFileSystemSource } from '@/lib/content/file-system-source'
 import type { PostFilter } from '@/lib/content/source'
 import type {
   Photo,
-  PhotoSummary,
+  Album,
+  AlbumSummary,
   Post,
   PostSummary,
   Profile,
@@ -34,8 +35,8 @@ const source = createFileSystemSource({
 
 // Every read is cached for as long as possible and tagged, so publishing can
 // later invalidate exactly what changed: `posts` covers every list of posts
-// (and the tag counts derived from them), `post:<slug>` one post, `photos`
-// the list of photos and `photo:<slug>` one photo.
+// (and their tag counts), `post:<slug>` one post, `albums` the index,
+// `album:<album>` an album and `photo:<album>/<photo>` one photograph.
 
 /** Every post, or those with a tag, newest first. */
 export async function listPosts(filter?: PostFilter): Promise<PostSummary[]> {
@@ -61,20 +62,31 @@ export async function listTags(): Promise<TagCount[]> {
   return await source.listTags()
 }
 
-/** Every visible photo, newest first. */
-export async function listPhotos(): Promise<PhotoSummary[]> {
+/** Every visible album, newest first. */
+export async function listAlbums(): Promise<AlbumSummary[]> {
   'use cache'
   cacheLife('max')
-  cacheTag('photos')
-  return await source.listPhotos()
+  cacheTag('albums')
+  return await source.listAlbums()
 }
 
-/** One photo and its story, or null if missing or a hidden draft. */
-export async function getPhoto(slug: string): Promise<Photo | null> {
+/** An album with its ordered visible photographs and rendered intro. */
+export async function getAlbum(album: string): Promise<Album | null> {
   'use cache'
   cacheLife('max')
-  cacheTag(`photo:${slug}`)
-  return await source.getPhoto(slug)
+  cacheTag(`album:${album}`)
+  return await source.getAlbum(album)
+}
+
+/** One photograph with its story and neighbours in the album. */
+export async function getPhoto(
+  album: string,
+  photo: string
+): Promise<Photo | null> {
+  'use cache'
+  cacheLife('max')
+  cacheTag(`album:${album}`, `photo:${album}/${photo}`)
+  return await source.getPhoto(album, photo)
 }
 
 /** All projects, sorted by `order` and then newest first. */
