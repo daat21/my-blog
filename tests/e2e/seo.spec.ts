@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { expect, test, type Page, type TestInfo } from './fixtures'
 import { fillMetadataSegment } from 'next/dist/lib/metadata/get-metadata-route.js'
 
 // These checks run against content-example/.

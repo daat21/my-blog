@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page } from './fixtures'
 
 const ALBUM = '/photos/coastal-light'
 const PHOTO = `${ALBUM}/low-sun`
