@@ -86,8 +86,15 @@ test.describe('post lists', () => {
     ])
     await expectCleanPage(page, errors)
 
+    await expect(
+      page.getByText('2 posts tagged “design”, newest first.', { exact: true })
+    ).toBeVisible()
+
     await page.goto('/tags/habits')
     await expect(listedTitles(page)).toHaveText(['Keeping a work log'])
+    await expect(
+      page.getByText('1 post tagged “habits”, newest first.', { exact: true })
+    ).toBeVisible()
   })
 })
 

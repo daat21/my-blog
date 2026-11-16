@@ -4,6 +4,7 @@ import { PAGE_GUTTER, READING_COLUMN } from '@/components/layout/page-gutter'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { PageHeader } from '@/components/ui/page-header'
 import { listPosts } from '@/lib/content'
+import { formatCount } from '@/lib/utils'
 
 import { PostList } from './post-list'
 
@@ -16,7 +17,7 @@ export async function TagPostsPage({ tag }: TagPostsPageProps) {
   const posts = await listPosts({ tag })
   if (posts.length === 0) notFound()
 
-  const count = posts.length === 1 ? '1 post' : `${posts.length} posts`
+  const count = formatCount(posts.length, 'post')
 
   return (
     <div className={PAGE_GUTTER}>
