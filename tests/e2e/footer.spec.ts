@@ -32,19 +32,22 @@ for (const path of [
   test(`footer follows content without overlap: ${path}`, async ({ page }) => {
     await page.goto(path)
     await page.evaluate(() => document.fonts.ready)
-    const geometry = await page.locator('main footer').evaluate(footer => {
-      const wrapper = footer.parentElement
-      const content = wrapper?.previousElementSibling
-      if (!content) throw new Error('Footer must follow page content')
-      return {
-        gap:
-          footer.getBoundingClientRect().top -
-          content.getBoundingClientRect().bottom,
-        bottom: footer.getBoundingClientRect().bottom + window.scrollY,
-        page: document.documentElement.scrollHeight,
-        viewport: window.innerHeight,
-      }
-    })
+    const geometry = await page
+      .locator('main footer')
+      .last()
+      .evaluate(footer => {
+        const wrapper = footer.parentElement
+        const content = wrapper?.previousElementSibling
+        if (!content) throw new Error('Footer must follow page content')
+        return {
+          gap:
+            footer.getBoundingClientRect().top -
+            content.getBoundingClientRect().bottom,
+          bottom: footer.getBoundingClientRect().bottom + window.scrollY,
+          page: document.documentElement.scrollHeight,
+          viewport: window.innerHeight,
+        }
+      })
     expect(geometry.gap).toBeGreaterThanOrEqual(79)
     expect(geometry.bottom).toBeGreaterThanOrEqual(geometry.viewport - 41)
     expect(geometry.page - geometry.bottom).toBeCloseTo(40, 0)
