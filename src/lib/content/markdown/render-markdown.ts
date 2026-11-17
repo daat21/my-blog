@@ -7,9 +7,11 @@ import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
+import { visit } from 'unist-util-visit'
 
 import { ContentError, messageOf } from '@/lib/content/content-error'
 import type { Heading } from '@/lib/content/types'
+import type { MediaRef } from '@/lib/media/types'
 
 import type { MarkdownContext } from './context'
 import { firstSentence } from './first-sentence'
@@ -18,14 +20,18 @@ import { countReadingMinutes } from './reading-time'
 import { rehypeCodeBlocks } from './rehype-code-blocks'
 import { rehypeTidy } from './rehype-tidy'
 import { remarkDirectives } from './remark-directives'
-import { remarkImages } from './remark-images'
+import { imageRef, remarkImages } from './remark-images'
 
 export type { MarkdownContext } from './context'
 
-export interface RenderedMarkdown {
+export interface MarkdownSummary {
+  readingMinutes: number
+  cover?: { src: MediaRef; alt: string }
+}
+
+export interface RenderedMarkdown extends MarkdownSummary {
   body: HastRoot
   headings: Heading[]
-  readingMinutes: number
 }
 
 const SHIKI_OPTIONS: RehypeShikiOptions = {
@@ -54,6 +60,24 @@ const markdown = unified()
   .use(remarkGfm)
   .use(remarkDirective)
   .freeze()
+
+function summarizeTree(tree: MdastRoot, file: string): MarkdownSummary {
+  let cover: MarkdownSummary['cover']
+  visit(tree, 'image', image => {
+    if (cover) return
+    const src = imageRef(image, file)
+    cover = { src, alt: image.alt ?? '' }
+  })
+  return { readingMinutes: countReadingMinutes(tree), ...(cover && { cover }) }
+}
+
+/** Extracts list metadata from the same syntax tree used by article rendering. */
+export function summarizeMarkdown(
+  source: string,
+  file: string
+): MarkdownSummary {
+  return summarizeTree(markdown.parse(source), file)
+}
 
 /** Estimates the reading time of a Markdown body without rendering it. */
 export function readingMinutesOf(source: string): number {
@@ -84,7 +108,7 @@ export async function renderMarkdown(
     .use(rehypeTidy)
 
   const tree: MdastRoot = processor.parse(source)
-  const readingMinutes = countReadingMinutes(tree)
+  const summary = summarizeTree(tree, context.file)
   let body: HastRoot
   try {
     body = await processor.run(tree)
@@ -94,5 +118,5 @@ export async function renderMarkdown(
       cause: error,
     })
   }
-  return { body, headings: collectHeadings(body), readingMinutes }
+  return { body, headings: collectHeadings(body), ...summary }
 }

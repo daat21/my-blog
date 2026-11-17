@@ -6,6 +6,7 @@ import {
   firstSentenceOf,
   readingMinutesOf,
   renderMarkdown,
+  summarizeMarkdown,
 } from '@/lib/content/markdown/render-markdown'
 import type { MediaResolver, ResolvedMedia } from '@/lib/media/types'
 
@@ -87,6 +88,39 @@ function el(
 ): Element {
   return { type: 'element', tagName, properties, children }
 }
+
+describe('Markdown cover extraction', () => {
+  it('uses the first image in document order, including nested images', async () => {
+    const body =
+      '> ![First diagram](media:first.png)\n\n![Second](media:second.png)'
+    const expected = { src: 'media:first.png', alt: 'First diagram' }
+    expect(summarizeMarkdown(body, FILE).cover).toEqual(expected)
+    expect((await render(body)).cover).toEqual(expected)
+  })
+
+  it('ignores videos before the first image', async () => {
+    const body =
+      '::video[A clip.]{src="media:demo.mp4"}\n\n![A still](media:still.png)'
+    expect(summarizeMarkdown(body, FILE).cover).toEqual({
+      src: 'media:still.png',
+      alt: 'A still',
+    })
+    expect((await render(body)).cover).toEqual({
+      src: 'media:still.png',
+      alt: 'A still',
+    })
+  })
+
+  it.each([
+    'Text only.',
+    '::video[A clip.]{src="media:demo.mp4"}',
+    '```md\n![Not an image](media:code.png)\n```',
+    '`![Inline code](media:code.png)`',
+  ])('has no cover for %s', async body => {
+    expect(summarizeMarkdown(body, FILE)).not.toHaveProperty('cover')
+    expect(await render(body)).not.toHaveProperty('cover')
+  })
+})
 
 describe('renderMarkdown: images', () => {
   it('renders a media image with a caption as a figure with a picture', async () => {

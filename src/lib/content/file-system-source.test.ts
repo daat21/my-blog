@@ -173,6 +173,23 @@ describe('createFileSystemSource: posts', () => {
     'writing/.DS_Store': '',
   }
 
+  it('resolves the first body image into the list and article summary', async () => {
+    const content = await source({
+      'writing/illustrated/index.md': post({
+        date: '2026-11-15',
+        body: '```md\n![Code](media:code.png)\n```\n\n![First](media:first.png)\n\n![Second](media:second.png)',
+      }),
+      'writing/plain/index.md': post({ date: '2026-01-01' }),
+    })
+    const [illustrated, plain] = await content.listPosts()
+    const image = await media.resolve('media:first.png')
+    expect(illustrated?.cover).toEqual({ image, alt: 'First' })
+    expect(plain).not.toHaveProperty('cover')
+    expect((await content.getPost('illustrated'))?.cover).toEqual(
+      illustrated?.cover
+    )
+  })
+
   it('lists visible posts newest first, by slug on the same day', async () => {
     const posts = await (await source(files)).listPosts()
     expect(posts.map(p => p.slug)).toEqual([

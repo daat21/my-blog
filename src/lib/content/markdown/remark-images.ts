@@ -48,6 +48,22 @@ function figureChildren(
     : [picture]
 }
 
+/** Validates an inline image's alt text and logical media reference. */
+export function imageRef(image: Image, file: string): MediaRef {
+  const where = locate(file, image)
+  if (!image.alt?.trim()) {
+    throw new ContentError(
+      `${where}: Image ${image.url} has no alt text; describe it in ![alt](…)`
+    )
+  }
+  if (!isMediaRef(image.url)) {
+    throw new ContentError(
+      `${where}: Image URL "${image.url}" is not allowed; reference media as media:<path below media/>`
+    )
+  }
+  return image.url
+}
+
 /**
  * Turns `![alt](media:path "caption")` into
  * `<figure data-kind="image"><picture>…</picture><figcaption>…</figcaption></figure>`.
@@ -68,17 +84,7 @@ export const remarkImages: Plugin<[MarkdownContext], Root> =
       if (node.type !== 'image') return
 
       const where = locate(context.file, node)
-      if (!node.alt?.trim()) {
-        throw new ContentError(
-          `${where}: Image ${node.url} has no alt text; describe it in ![alt](…)`
-        )
-      }
-      const ref = node.url
-      if (!isMediaRef(ref)) {
-        throw new ContentError(
-          `${where}: Image URL "${ref}" is not allowed; reference media as media:<path below media/>`
-        )
-      }
+      const ref = imageRef(node, context.file)
       if (parent?.type !== 'paragraph' || !standsAlone(parent, node)) {
         throw new ContentError(
           `${where}: Image ${ref} must stand in a paragraph of its own, separated by blank lines`
