@@ -86,7 +86,16 @@ it('filesystem and GitHub omit placeholders and placeholder-only directories', a
   const source = createFileSystemSource({
     contentDir: dir,
     showDrafts: false,
-    media: { resolve: () => Promise.reject(new Error('unused')) },
+    media: {
+      resolve: () =>
+        Promise.resolve({
+          kind: 'image',
+          width: 640,
+          height: 400,
+          src: '/_media/fixture.webp',
+          sources: [],
+        }),
+    },
   })
   expect((await source.listPosts()).length).toBe(3)
 })

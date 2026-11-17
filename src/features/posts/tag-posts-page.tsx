@@ -1,10 +1,14 @@
 import { notFound } from 'next/navigation'
 
-import { PAGE_GUTTER, READING_COLUMN } from '@/components/layout/page-gutter'
+import {
+  PAGE_COLUMN,
+  PAGE_FRAME,
+  READING_COLUMN,
+} from '@/components/layout/page-gutter'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { PageHeader } from '@/components/ui/page-header'
 import { listPosts } from '@/lib/content'
-import { formatCount } from '@/lib/utils'
+import { cn, formatCount } from '@/lib/utils'
 
 import { PostList } from './post-list'
 
@@ -20,8 +24,8 @@ export async function TagPostsPage({ tag }: TagPostsPageProps) {
   const count = formatCount(posts.length, 'post')
 
   return (
-    <div className={PAGE_GUTTER}>
-      <div className={READING_COLUMN}>
+    <div className={PAGE_FRAME}>
+      <div className={cn(READING_COLUMN, PAGE_COLUMN)}>
         <PageHeader
           title={
             <>

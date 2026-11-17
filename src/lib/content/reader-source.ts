@@ -4,8 +4,9 @@ import { ContentError } from '@/lib/content/content-error'
 import { parseYamlIn, splitFrontMatter } from '@/lib/content/front-matter'
 import {
   firstSentenceOf,
-  readingMinutesOf,
+  summarizeMarkdown,
   renderMarkdown,
+  type MarkdownSummary,
 } from '@/lib/content/markdown/render-markdown'
 import { resolveImage } from '@/lib/content/resolve-media'
 import {
@@ -184,20 +185,32 @@ export function createReaderSource(
     return showDrafts || !entry.meta.draft
   }
 
-  function summarize(
+  async function summarize(
     post: Entry<PostFrontMatter>,
-    readingMinutes = readingMinutesOf(post.body)
-  ): PostSummary {
-    return { slug: post.slug, ...post.meta, readingMinutes }
+    summary: MarkdownSummary = summarizeMarkdown(post.body, post.file)
+  ): Promise<PostSummary> {
+    const { readingMinutes, cover } = summary
+    return {
+      slug: post.slug,
+      ...post.meta,
+      readingMinutes,
+      ...(cover && {
+        cover: {
+          image: await resolveImage(media, cover.src, `${post.file}: cover`),
+          alt: cover.alt,
+        },
+      }),
+    }
   }
 
   async function listPosts(filter: PostFilter = {}): Promise<PostSummary[]> {
     const tag = filter.tag === undefined ? undefined : normalizeTag(filter.tag)
-    return (await readEntries(WRITING))
+    const posts = (await readEntries(WRITING))
       .filter(isVisible)
       .filter(post => tag === undefined || post.meta.tags.includes(tag))
-      .map(post => summarize(post))
-      .sort(newestFirst)
+    return (await Promise.all(posts.map(post => summarize(post)))).sort(
+      newestFirst
+    )
   }
 
   async function getPost(slug: string): Promise<Post | null> {
@@ -208,7 +221,7 @@ export function createReaderSource(
     if (!post || !isVisible(post)) return null
     const rendered = await renderMarkdown(post.body, { file: post.file, media })
     return {
-      ...summarize(post, rendered.readingMinutes),
+      ...(await summarize(post, rendered)),
       body: rendered.body,
       headings: rendered.headings,
     }

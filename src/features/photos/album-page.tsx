@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 
 import {
-  PAGE_GUTTER,
+  PAGE_COLUMN,
+  PAGE_FRAME,
   READING_COLUMN,
   WIDE_COLUMN,
 } from '@/components/layout/page-gutter'
@@ -21,8 +22,8 @@ export async function AlbumPage({ slug }: { slug: string }) {
   if (!album) notFound()
   const older = albums[albums.findIndex(entry => entry.slug === slug) + 1]
   return (
-    <div className={PAGE_GUTTER}>
-      <div className={WIDE_COLUMN}>
+    <div className={PAGE_FRAME}>
+      <div className={cn(WIDE_COLUMN, PAGE_COLUMN)}>
         <Breadcrumb
           items={[{ label: 'photos', href: '/photos' }, { label: slug }]}
         />

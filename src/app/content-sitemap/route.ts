@@ -1,11 +1,14 @@
-import type { MetadataRoute } from 'next'
-
 import { getAlbum, listAlbums, listPosts } from '@/lib/content'
 import { env } from '@/lib/env'
+import { renderSitemap, type SitemapEntry } from '@/lib/feed/sitemap'
 
 const SECTIONS = ['/', '/writing', '/photos', '/projects'] as const
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+// Served at /sitemap.xml through a rewrite in next.config.ts. A route named
+// sitemap.xml counts as a static metadata route, which Vercel keeps in its
+// edge cache until the next deploy; under another name it is refreshed with
+// the content tags, like the feed.
+export async function GET(): Promise<Response> {
   // Previews list drafts too; the sitemap only ever names published posts
   // and photos, and the tags the posts use.
   const [allPosts, allAlbums] = await Promise.all([listPosts(), listAlbums()])
@@ -19,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter(album => album.photos.some(photo => !photo.draft))
   const tags = [...new Set(posts.flatMap(post => post.tags))].sort()
 
-  return [
+  const entries: SitemapEntry[] = [
     ...SECTIONS.map(path => ({ url: `${env.siteUrl}${path}` })),
     ...posts.map(post => ({
       url: `${env.siteUrl}/writing/${post.slug}`,
@@ -39,4 +42,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]),
     ...tags.map(tag => ({ url: `${env.siteUrl}/tags/${tag}` })),
   ]
+
+  return new Response(renderSitemap(entries), {
+    headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+  })
 }

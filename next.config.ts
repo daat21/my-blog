@@ -40,6 +40,11 @@ const nextConfig: NextConfig = {
       ].map(source => ({ source, destination: '/', permanent: true })),
     ])
   },
+  rewrites() {
+    return Promise.resolve([
+      { source: '/sitemap.xml', destination: '/content-sitemap' },
+    ])
+  },
   headers() {
     return Promise.resolve([
       {

@@ -16,8 +16,8 @@ export default async function HomePage() {
   const homeProjects = pickHomeProjects(projects)
 
   return (
-    <div className="px-4 pt-10 pb-10 md:px-12 md:pt-12 lg:px-18 lg:pt-18 xl:px-22 xl:pt-22">
-      <div className="mx-auto max-w-190">
+    <div className="flex flex-1 flex-col px-4 pt-10 pb-10 md:px-12 md:pt-12 lg:px-18 lg:pt-18 xl:px-22 xl:pt-22">
+      <div className="mx-auto flex w-full max-w-190 flex-1 flex-col">
         <div className="flex flex-col gap-18">
           <Intro intro={profile.intro} links={profile.links} />
 

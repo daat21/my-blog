@@ -19,6 +19,8 @@ export interface PostSummary {
   tags: string[]
   draft: boolean
   readingMinutes: number
+  /** First body image, resolved through the media seam; absent for text-only posts. */
+  cover?: { image: ResolvedImage; alt: string }
 }
 
 export interface Post extends PostSummary {

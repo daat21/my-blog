@@ -5,6 +5,10 @@
  */
 export const PAGE_GUTTER = 'px-4 pt-8 pb-10 md:px-10 md:pt-10 lg:px-14 xl:px-18'
 
+/** Stretch a page and its column so short-page footers can use auto space. */
+export const PAGE_FRAME = `${PAGE_GUTTER} flex flex-1 flex-col`
+export const PAGE_COLUMN = 'flex w-full flex-1 flex-col'
+
 /** The reading column: about 70 characters of body text. */
 export const READING_COLUMN = 'mx-auto max-w-172.5'
 

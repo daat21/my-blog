@@ -101,6 +101,20 @@ describe('GitHub content snapshots', () => {
     expect(await selected.source.listProjects()).toEqual(
       await fs.listProjects()
     )
+    const summaries = await selected.source.listPosts()
+    expect(summaries).toEqual(await fs.listPosts())
+    expect(
+      summaries.find(post => post.slug === 'a-tour-of-the-content-format')
+        ?.cover
+    ).toEqual({
+      image: await media.resolve(
+        'media:2026/a-tour-of-the-content-format/layout-sketch.png'
+      ),
+      alt: 'A wireframe of a page with a sidebar on the left and a content column with a heading, text lines and an image placeholder',
+    })
+    expect(
+      summaries.find(post => post.slug === 'keeping-a-work-log')
+    ).not.toHaveProperty('cover')
     expect(await selected.source.listTags()).toEqual(await fs.listTags())
     for (const post of await fs.listPosts())
       expect(await selected.source.getPost(post.slug)).toEqual(
