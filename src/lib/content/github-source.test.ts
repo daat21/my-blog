@@ -277,9 +277,19 @@ describe('GitHub content snapshots', () => {
         }
         return value
       })
-      await expect(
-        createGitHubClient(f.options).loadHead(baseline.mediaTree)
-      ).rejects.toBeInstanceOf(InvalidSnapshot)
+      const load = createGitHubClient(f.options).loadHead(baseline.mediaTree)
+      await expect(load).rejects.toBeInstanceOf(InvalidSnapshot)
+      const code =
+        kind === 'symlink'
+          ? 'unsupported_entry'
+          : kind === 'traversal'
+            ? 'invalid_path'
+            : kind === 'size'
+              ? 'text_too_large'
+              : kind === 'utf8'
+                ? 'invalid_utf8'
+                : 'invalid_commit'
+      await expect(load).rejects.toMatchObject({ issues: [{ code }] })
     }
   )
   it('fully validates hidden stories and empty-album intros', async () => {
