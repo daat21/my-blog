@@ -1,5 +1,11 @@
 import type { NextConfig } from 'next'
 
+import { env } from './src/lib/env'
+import {
+  CONTENT_SECURITY_POLICY,
+  CSP_HEADER_NAME,
+} from './src/lib/security/csp'
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
@@ -46,6 +52,10 @@ const nextConfig: NextConfig = {
             value: 'camera=(), microphone=(), geolocation=()',
           },
           { key: 'X-Frame-Options', value: 'DENY' },
+          // Omit CSP in next dev rather than weakening the production policy for HMR.
+          ...(env.isDevelopment
+            ? []
+            : [{ key: CSP_HEADER_NAME, value: CONTENT_SECURITY_POLICY }]),
         ],
       },
       {

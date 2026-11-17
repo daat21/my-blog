@@ -6,6 +6,11 @@ import {
   MediaChanged,
 } from '@/lib/content/github-client'
 import type { GitHubClientOptions } from '@/lib/content/github-client'
+import {
+  InvalidSnapshot,
+  snapshotIssue,
+  type SnapshotIssue,
+} from '@/lib/content/snapshot-error'
 import { createReaderSource } from '@/lib/content/reader-source'
 import {
   snapshotReader,
@@ -17,7 +22,7 @@ import type { MediaResolver } from '@/lib/media/types'
 export class SnapshotRejected extends Error {
   constructor(
     public readonly revision: string | undefined,
-    public readonly issues: { code: string; path?: string; ref?: string }[]
+    public readonly issues: SnapshotIssue[]
   ) {
     super('invalid_content')
   }
@@ -32,7 +37,7 @@ interface GitHubSourceOptions extends GitHubClientOptions {
     code: string
     revision?: string
     fallback?: string
-    issues?: { code: string; path?: string; ref?: string }[]
+    issues?: SnapshotIssue[]
   }) => void
 }
 
@@ -71,18 +76,12 @@ export function createGitHubSource(options: GitHubSourceOptions) {
       previous = snapshot
       return snapshot
     } catch (error) {
-      const message = error instanceof Error ? error.message : ''
-      const path = Object.keys(candidate.files).find(file =>
-        message.includes(file)
+      throw new SnapshotRejected(
+        candidate.revision,
+        error instanceof InvalidSnapshot
+          ? error.issues
+          : [snapshotIssue('validation_failed')]
       )
-      const ref = /media:[a-zA-Z0-9/._-]+/.exec(message)?.[0]?.slice(0, 256)
-      throw new SnapshotRejected(candidate.revision, [
-        {
-          code: 'validation_failed',
-          ...(path && { path }),
-          ...(ref && { ref }),
-        },
-      ])
     }
   }
   async function select() {
@@ -108,8 +107,9 @@ export function createGitHubSource(options: GitHubSourceOptions) {
                 : 'invalid_content',
           ...(error instanceof SnapshotRejected && {
             revision: error.revision,
-            issues: error.issues,
           }),
+          ...((error instanceof SnapshotRejected ||
+            error instanceof InvalidSnapshot) && { issues: error.issues }),
           fallback: snapshot.revision,
         })
       }

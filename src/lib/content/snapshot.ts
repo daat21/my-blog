@@ -2,16 +2,24 @@ import { z } from 'zod'
 
 import { splitFrontMatter } from '@/lib/content/front-matter'
 import { renderMarkdown } from '@/lib/content/markdown/render-markdown'
-import { classifyPath } from '@/lib/content/publish-paths'
+import {
+  admitEntry,
+  MAX_TEXT_BYTES,
+  MAX_SNAPSHOT_BYTES,
+  MAX_TEXT_FILES,
+} from '@/lib/content/admission'
+import { InvalidSnapshot } from '@/lib/content/snapshot-error'
 import {
   createReaderSource,
   type ContentReader,
 } from '@/lib/content/reader-source'
 import type { MediaResolver } from '@/lib/media/types'
 
-export const MAX_TEXT_BYTES = 1024 * 1024
-export const MAX_SNAPSHOT_BYTES = 16 * MAX_TEXT_BYTES
-export const MAX_TEXT_FILES = 10_000
+export {
+  MAX_TEXT_BYTES,
+  MAX_SNAPSHOT_BYTES,
+  MAX_TEXT_FILES,
+} from '@/lib/content/admission'
 export const shaSchema = z.string().regex(/^[a-f0-9]{40}$/)
 export const snapshotSchema = z.strictObject({
   version: z.literal(1),
@@ -51,39 +59,58 @@ export async function validateSnapshot(
   input: unknown,
   media: MediaResolver
 ): Promise<TextSnapshot> {
-  const snapshot = snapshotSchema.parse(input)
+  const parsed = snapshotSchema.safeParse(input)
+  if (!parsed.success) throw new InvalidSnapshot()
+  const snapshot = {
+    ...parsed.data,
+    files: Object.fromEntries(
+      Object.entries(parsed.data.files).filter(
+        ([file, text]) =>
+          admitEntry(file, 'file', Buffer.byteLength(text)) === 'text'
+      )
+    ),
+  }
   const entries = Object.entries(snapshot.files)
   if (entries.length > MAX_TEXT_FILES)
-    throw new Error('snapshot: too many files')
+    throw new InvalidSnapshot('too_many_files')
   let total = 0
   for (const [file, text] of entries) {
-    if (classifyPath(file).kind !== 'text')
-      throw new Error(`snapshot: unsupported path ${file}`)
     const size = Buffer.byteLength(text)
-    if (size > MAX_TEXT_BYTES)
-      throw new Error(`snapshot: text too large ${file}`)
+    if (size > MAX_TEXT_BYTES) throw new InvalidSnapshot('text_too_large', file)
     total += size
+    if (total > MAX_SNAPSHOT_BYTES)
+      throw new InvalidSnapshot('text_budget_exceeded')
   }
-  if (total > MAX_SNAPSHOT_BYTES)
-    throw new Error('snapshot: text budget exceeded')
-  const source = createReaderSource({
-    reader: snapshotReader(snapshot),
-    showDrafts: true,
-    media,
-  })
-  await source.getProfile()
-  await source.listProjects()
-  // Empty albums and hidden stories must be checked too, not just visible lists.
-  for (const [file, text] of entries) {
-    if (file.startsWith('writing/') || file.startsWith('photos/')) {
-      await renderMarkdown(splitFrontMatter(text, file).body, { file, media })
+  if (!('profile.yaml' in snapshot.files))
+    throw new InvalidSnapshot('missing_profile', 'profile.yaml')
+  try {
+    const source = createReaderSource({
+      reader: snapshotReader(snapshot),
+      showDrafts: true,
+      media,
+    })
+    await source.getProfile()
+    await source.listProjects()
+    // Empty albums and hidden stories must be checked too, not just visible lists.
+    for (const [file, text] of entries) {
+      if (file.startsWith('writing/') || file.startsWith('photos/')) {
+        await renderMarkdown(splitFrontMatter(text, file).body, { file, media })
+      }
     }
+    for (const post of await source.listPosts()) await source.getPost(post.slug)
+    for (const album of await source.listAlbums()) {
+      const entry = await source.getAlbum(album.slug)
+      for (const photo of entry?.photos ?? [])
+        await source.getPhoto(album.slug, photo.slug)
+    }
+    return snapshot
+  } catch (error) {
+    if (error instanceof InvalidSnapshot) throw error
+    const message = error instanceof Error ? error.message : ''
+    const file =
+      entries.find(([file]) => message.includes(file))?.[0] ??
+      /^((?:writing|photos|projects)\/[a-zA-Z0-9 /._-]+):/.exec(message)?.[1]
+    const ref = /media:[a-zA-Z0-9/._-]+/.exec(message)?.[0]
+    throw new InvalidSnapshot('validation_failed', file, ref)
   }
-  for (const post of await source.listPosts()) await source.getPost(post.slug)
-  for (const album of await source.listAlbums()) {
-    const entry = await source.getAlbum(album.slug)
-    for (const photo of entry?.photos ?? [])
-      await source.getPhoto(album.slug, photo.slug)
-  }
-  return snapshot
 }

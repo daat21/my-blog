@@ -104,6 +104,8 @@ export const env = {
   /** Drafts show in development and preview deployments, never in production. */
   showDrafts:
     parsed.NODE_ENV === 'development' || parsed.VERCEL_ENV === 'preview',
+  /** Next dev needs eval and WebSockets; production builds must not allow them. */
+  isDevelopment: parsed.NODE_ENV === 'development',
   /** True only on the Vercel production deployment. */
   isProduction: parsed.VERCEL_ENV === 'production',
 } as const

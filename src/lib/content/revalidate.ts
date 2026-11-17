@@ -104,6 +104,7 @@ export async function handleRevalidation(
       options.expire(tag)
     })
     return reply(200, {
+      code: 'revalidated',
       revalidated: true,
       revision: head.revision,
       tags: classified.tags,
@@ -120,7 +121,7 @@ export async function handleRevalidation(
     if (error instanceof InvalidSnapshot)
       return reply(422, {
         code: 'invalid_content',
-        issues: [{ code: 'invalid_snapshot' }],
+        issues: error.issues,
       })
     if (!(error instanceof GitHubUnavailable))
       console.error('content_revalidation_unavailable')

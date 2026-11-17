@@ -2,7 +2,9 @@ import 'server-only'
 
 import { z } from 'zod'
 
-import { classifyPath, isContentPath } from '@/lib/content/publish-paths'
+import { admitEntry } from '@/lib/content/admission'
+import { InvalidSnapshot } from '@/lib/content/snapshot-error'
+export { InvalidSnapshot } from '@/lib/content/snapshot-error'
 import {
   MAX_SNAPSHOT_BYTES,
   MAX_TEXT_BYTES,
@@ -30,7 +32,7 @@ const commitSchema = z.object({
 })
 const blobSchema = z.object({
   encoding: z.literal('base64'),
-  size: z.number().int().nonnegative().max(MAX_TEXT_BYTES),
+  size: z.number().int().nonnegative(),
   content: z.string(),
 })
 
@@ -42,11 +44,6 @@ export class GitHubUnavailable extends Error {
 export class MediaChanged extends Error {
   constructor() {
     super('deploy_required')
-  }
-}
-export class InvalidSnapshot extends Error {
-  constructor() {
-    super('invalid_content')
   }
 }
 
@@ -72,7 +69,8 @@ export function createGitHubClient({
   async function request(
     endpoint: string,
     signal: AbortSignal,
-    immutable = true
+    immutable = true,
+    file?: string
   ): Promise<unknown> {
     if (active >= 4) await new Promise<void>(resolve => waiting.push(resolve))
     active++
@@ -111,7 +109,7 @@ export function createGitHubClient({
         size += value.byteLength
         if (size > 8 * MAX_TEXT_BYTES) {
           await reader.cancel()
-          throw new InvalidSnapshot()
+          throw new InvalidSnapshot('response_too_large', file)
         }
         chunks.push(value)
       }
@@ -122,7 +120,7 @@ export function createGitHubClient({
           )
         ) as unknown
       } catch {
-        throw new InvalidSnapshot()
+        throw new InvalidSnapshot('invalid_json', file)
       }
     } catch (error) {
       if (
@@ -144,24 +142,30 @@ export function createGitHubClient({
     const commit = commitSchema.safeParse(
       await request(`commits/${encodeURIComponent(ref)}`, signal, false)
     )
-    if (!commit.success) throw new InvalidSnapshot()
-    async function tree(sha: string, recursive = false) {
+    if (!commit.success) throw new InvalidSnapshot('invalid_commit')
+    async function tree(sha: string, recursive = false, prefix?: string) {
       const parsed = treeSchema.safeParse(
         await request(
           `git/trees/${sha}${recursive ? '?recursive=1' : ''}`,
-          signal
+          signal,
+          true,
+          prefix
         )
       )
-      if (!parsed.success) throw new InvalidSnapshot()
+      if (!parsed.success) throw new InvalidSnapshot('invalid_tree', prefix)
       return parsed.data
     }
     const root = await tree(commit.data.commit.tree.sha)
-    if (root.truncated) throw new InvalidSnapshot()
-    const rootNames = new Set(root.tree.map(item => item.path))
-    if (rootNames.size !== root.tree.length) throw new InvalidSnapshot()
+    if (root.truncated) throw new InvalidSnapshot('truncated_tree')
+    const rootNames = new Set<string>()
+    for (const item of root.tree) {
+      if (rootNames.has(item.path))
+        throw new InvalidSnapshot('duplicate_path', item.path)
+      rootNames.add(item.path)
+    }
     const media = root.tree.find(item => item.path === 'media')
     if (media && (media.type !== 'tree' || media.mode !== '040000'))
-      throw new InvalidSnapshot()
+      throw new InvalidSnapshot('unsupported_entry', 'media')
     if ((media?.sha ?? null) !== expectedMediaTree) throw new MediaChanged()
     const blobs: { path: string; sha: string; size?: number }[] = []
     const seen = new Set<string>()
@@ -169,28 +173,30 @@ export function createGitHubClient({
       path: string,
       item: z.infer<typeof treeSchema>['tree'][number]
     ) {
-      if (!isContentPath(path) || seen.has(path)) throw new InvalidSnapshot()
-      seen.add(path)
-      if (item.type === 'tree' && item.mode === '040000') return
-      if (
-        item.type !== 'blob' ||
-        !['100644', '100755'].includes(item.mode) ||
-        classifyPath(path).kind !== 'text'
+      const kind = admitEntry(
+        path,
+        item.type === 'tree' && item.mode === '040000'
+          ? 'directory'
+          : item.type === 'blob' && ['100644', '100755'].includes(item.mode)
+            ? 'file'
+            : 'unsupported',
+        item.size
       )
-        throw new InvalidSnapshot()
-      if (item.size !== undefined && item.size > MAX_TEXT_BYTES)
-        throw new InvalidSnapshot()
+      if (seen.has(path)) throw new InvalidSnapshot('duplicate_path', path)
+      seen.add(path)
+      if (kind !== 'text') return
       blobs.push({ path, sha: item.sha, size: item.size })
-      if (blobs.length > MAX_TEXT_FILES) throw new InvalidSnapshot()
+      if (blobs.length > MAX_TEXT_FILES)
+        throw new InvalidSnapshot('too_many_files')
     }
     async function visit(
       prefix: string,
       sha: string,
       recursive = true
     ): Promise<void> {
-      const result = await tree(sha, recursive)
+      const result = await tree(sha, recursive, prefix)
       if (result.truncated) {
-        if (!recursive) throw new InvalidSnapshot()
+        if (!recursive) throw new InvalidSnapshot('truncated_tree', prefix)
         return visit(prefix, sha, false)
       }
       for (const item of result.tree) {
@@ -203,7 +209,7 @@ export function createGitHubClient({
       if (item.path === 'profile.yaml') admit(item.path, item)
       if (['writing', 'photos', 'projects'].includes(item.path)) {
         if (item.type !== 'tree' || item.mode !== '040000')
-          throw new InvalidSnapshot()
+          throw new InvalidSnapshot('unsupported_entry', item.path)
         await visit(item.path, item.sha)
       }
     }
@@ -220,27 +226,34 @@ export function createGitHubClient({
           const blob = blobs[cursor++]
           if (!blob) return
           const parsed = blobSchema.safeParse(
-            await request(`git/blobs/${blob.sha}`, signal)
+            await request(`git/blobs/${blob.sha}`, signal, true, blob.path)
           )
           if (
             !parsed.success ||
             !/^[A-Za-z0-9+/=\r\n]*$/.test(parsed.data.content)
           )
-            throw new InvalidSnapshot()
+            throw new InvalidSnapshot('invalid_blob', blob.path)
+          admitEntry(blob.path, 'file', parsed.data.size)
           const bytes = Buffer.from(parsed.data.content, 'base64')
+          if (
+            bytes.toString('base64') !==
+            parsed.data.content.replaceAll(/\r|\n/g, '')
+          )
+            throw new InvalidSnapshot('invalid_blob', blob.path)
           if (
             bytes.length !== parsed.data.size ||
             (blob.size !== undefined && bytes.length !== blob.size)
           )
-            throw new InvalidSnapshot()
+            throw new InvalidSnapshot('blob_size_mismatch', blob.path)
           total += bytes.length
-          if (total > MAX_SNAPSHOT_BYTES) throw new InvalidSnapshot()
+          if (total > MAX_SNAPSHOT_BYTES)
+            throw new InvalidSnapshot('text_budget_exceeded')
           try {
             files[blob.path] = new TextDecoder('utf-8', { fatal: true }).decode(
               bytes
             )
           } catch {
-            throw new InvalidSnapshot()
+            throw new InvalidSnapshot('invalid_utf8', blob.path)
           }
         }
       })

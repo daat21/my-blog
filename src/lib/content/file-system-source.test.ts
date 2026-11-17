@@ -312,7 +312,7 @@ describe('createFileSystemSource: validation', () => {
         [`writing/${name}/index.md`]: post({ date: '2026-01-01' }),
       })
       await expect(content.listPosts()).rejects.toThrow(
-        `writing/${name}: "${name}" is not a valid slug`
+        `writing/${name}/index.md is not a content file`
       )
     }
   )
@@ -322,14 +322,14 @@ describe('createFileSystemSource: validation', () => {
       'writing/stray.md': post({ date: '2026-01-01' }),
     })
     await expect(content.listPosts()).rejects.toThrow(
-      'writing/stray.md: Expected a folder holding index.md'
+      'writing/stray.md is not a content file'
     )
   })
 
   it('rejects a post folder without index.md', async () => {
     const content = await source({ 'writing/empty/README.md': 'Hi' })
     await expect(content.listPosts()).rejects.toThrow(
-      'writing/empty: Missing index.md'
+      'writing/empty/README.md is not a content file'
     )
   })
 
@@ -518,7 +518,7 @@ describe('createFileSystemSource: albums', () => {
     async slug => {
       await expect(
         (await source({ [`photos/${slug}/index.md`]: album() })).listAlbums()
-      ).rejects.toThrow('not a valid slug')
+      ).rejects.toThrow('is not a content file')
       // index.md is the album itself, not a possible photo file.
       if (slug !== 'index') {
         await expect(
@@ -528,7 +528,7 @@ describe('createFileSystemSource: albums', () => {
               [`photos/a/${slug}.md`]: photo({}),
             })
           ).listAlbums()
-        ).rejects.toThrow('not a valid slug')
+        ).rejects.toThrow('is not a content file')
       }
     }
   )
@@ -536,7 +536,7 @@ describe('createFileSystemSource: albums', () => {
   it('rejects stray files and nested photo directories', async () => {
     await expect(
       (await source({ 'photos/stray.jpg': 'x' })).listAlbums()
-    ).rejects.toThrow('Expected a folder holding index.md')
+    ).rejects.toThrow('photos/stray.jpg is not a content file')
     await expect(
       (
         await source({
@@ -544,7 +544,7 @@ describe('createFileSystemSource: albums', () => {
           'photos/a/b/index.md': photo({}),
         })
       ).listAlbums()
-    ).rejects.toThrow('Expected a Markdown photo file')
+    ).rejects.toThrow('is not a content file')
   })
 
   it('returns an empty collection without a photos folder', async () => {
@@ -625,12 +625,10 @@ describe('createFileSystemSource: projects', () => {
       (
         await source({ 'projects/My Project.md': project({ title: 'X' }) })
       ).listProjects()
-    ).rejects.toThrow(
-      'projects/My Project.md: "My Project" is not a valid slug'
-    )
+    ).rejects.toThrow('projects/My Project.md is not a content file')
     await expect(
       (await source({ 'projects/readme.txt': 'x' })).listProjects()
-    ).rejects.toThrow('projects/readme.txt: Expected a Markdown file')
+    ).rejects.toThrow('projects/readme.txt is not a content file')
   })
 
   it('returns an empty list without a projects folder', async () => {

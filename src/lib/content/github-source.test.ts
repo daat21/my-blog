@@ -167,6 +167,32 @@ describe('GitHub content snapshots', () => {
     f.set({ ...changed, revision: 'e'.repeat(40) })
     expect((await source.select()).degraded).toBe(false)
   })
+  it('reports admission issues in fallback logs and authenticated preflight errors', async () => {
+    const f = fixture()
+    const report = vi.fn()
+    f.set({
+      ...baseline,
+      files: {
+        ...baseline.files,
+        'writing/stray.txt': 'private text not to log',
+      },
+    })
+    const source = createGitHubSource({ ...f.options, report })
+    const expected = new InvalidSnapshot(
+      'unsupported_path',
+      'writing/stray.txt'
+    )
+    await expect(source.preflight()).rejects.toMatchObject({
+      issues: expected.issues,
+    })
+    expect((await source.select()).degraded).toBe(true)
+    expect(report).toHaveBeenCalledWith({
+      code: 'invalid_content',
+      issues: expected.issues,
+      fallback: baseline.revision,
+    })
+    expect(JSON.stringify(report.mock.calls)).not.toContain('private text')
+  })
   it('gates media before fetching text and never depends on history', async () => {
     const f = fixture()
     f.set({ ...baseline, revision: 'd'.repeat(40), mediaTree: 'f'.repeat(40) })
@@ -214,6 +240,15 @@ describe('GitHub content snapshots', () => {
       const f = fixture()
       f.transform((key, value) => {
         if (kind === 'envelope' && key.startsWith('commits')) return {}
+        if (kind === 'utf8' && key.startsWith('git/trees/')) {
+          const tree = value as { tree: { type: string; size?: number }[] }
+          return {
+            ...tree,
+            tree: tree.tree.map(item =>
+              item.type === 'blob' ? { ...item, size: 1 } : item
+            ),
+          }
+        }
         if (key.endsWith('?recursive=1')) {
           const tree = value as { tree: object[] }
           if (kind === 'symlink')
@@ -251,9 +286,19 @@ describe('GitHub content snapshots', () => {
         }
         return value
       })
-      await expect(
-        createGitHubClient(f.options).loadHead(baseline.mediaTree)
-      ).rejects.toBeInstanceOf(InvalidSnapshot)
+      const load = createGitHubClient(f.options).loadHead(baseline.mediaTree)
+      await expect(load).rejects.toBeInstanceOf(InvalidSnapshot)
+      const code =
+        kind === 'symlink'
+          ? 'unsupported_entry'
+          : kind === 'traversal'
+            ? 'invalid_path'
+            : kind === 'size'
+              ? 'text_too_large'
+              : kind === 'utf8'
+                ? 'invalid_utf8'
+                : 'invalid_commit'
+      await expect(load).rejects.toMatchObject({ issues: [{ code }] })
     }
   )
   it('fully validates hidden stories and empty-album intros', async () => {
@@ -281,7 +326,7 @@ describe('GitHub content snapshots', () => {
         { ...baseline, files: { 'profile.yaml': 'x'.repeat(1024 * 1024 + 1) } },
         media
       )
-    ).rejects.toThrow('text too large')
+    ).rejects.toThrow('1 MiB text limit')
     await expect(
       validateSnapshot(
         {
@@ -295,7 +340,7 @@ describe('GitHub content snapshots', () => {
         },
         media
       )
-    ).rejects.toThrow('too many files')
+    ).rejects.toThrow('10,000 text file limit')
     await expect(
       validateSnapshot(
         {
@@ -309,7 +354,7 @@ describe('GitHub content snapshots', () => {
         },
         media
       )
-    ).rejects.toThrow('text budget')
+    ).rejects.toThrow('16 MiB text budget')
     const f = fixture()
     f.transform((key, value) => {
       if (!key.endsWith('?recursive=1')) return value
