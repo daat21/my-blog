@@ -1,5 +1,8 @@
 import { cacheLife, cacheTag } from 'next/cache'
 
+import { readPosts, readAlbums } from '@/lib/content/collection-cache'
+import { isSlug } from '@/lib/content/reader-source'
+import { normalizeTag, photoSlugSchema } from '@/lib/content/schemas'
 import { selectContent } from '@/lib/content/runtime-source'
 import type { PostFilter } from '@/lib/content/source'
 import type {
@@ -25,50 +28,70 @@ export { PLACEHOLDER_PARAM, staticParams } from '@/lib/content/static-params'
 /** Every post, or those with a tag, newest first. */
 export async function listPosts(filter?: PostFilter): Promise<PostSummary[]> {
   'use cache'
-  const { source, degraded } = await selectContent()
+  const { posts, degraded } = await readPosts()
   if (degraded) cacheLife({ stale: 30, revalidate: 30, expire: 300 })
   else cacheLife('max')
   cacheTag('posts')
-  return await source.listPosts(filter)
+  const tag = filter?.tag === undefined ? undefined : normalizeTag(filter.tag)
+  return tag === undefined
+    ? posts
+    : posts.filter(post => post.tags.includes(tag))
 }
 
 /** One rendered post, or null if it does not exist or is a hidden draft. */
 export async function getPost(slug: string): Promise<Post | null> {
   'use cache'
+  cacheTag(`post:${slug}`)
+  const membership = await readPosts()
+  if (!isSlug(slug) || !membership.posts.some(post => post.slug === slug)) {
+    if (membership.degraded)
+      cacheLife({ stale: 30, revalidate: 30, expire: 300 })
+    else cacheLife('max')
+    return null
+  }
   const { source, degraded } = await selectContent()
   if (degraded) cacheLife({ stale: 30, revalidate: 30, expire: 300 })
   else cacheLife('max')
-  cacheTag(`post:${slug}`)
   return await source.getPost(slug)
 }
 
 /** Tags of visible posts with their counts, most used first. */
 export async function listTags(): Promise<TagCount[]> {
   'use cache'
-  const { source, degraded } = await selectContent()
+  const { tags, degraded } = await readPosts()
   if (degraded) cacheLife({ stale: 30, revalidate: 30, expire: 300 })
   else cacheLife('max')
   cacheTag('tags', 'posts')
-  return await source.listTags()
+  return tags
 }
 
 /** Every visible album, newest first. */
 export async function listAlbums(): Promise<AlbumSummary[]> {
   'use cache'
-  const { source, degraded } = await selectContent()
+  const { albums, degraded } = await readAlbums()
   if (degraded) cacheLife({ stale: 30, revalidate: 30, expire: 300 })
   else cacheLife('max')
   cacheTag('albums')
-  return await source.listAlbums()
+  return albums
 }
 
 /** An album with its ordered visible photographs and rendered intro. */
 export async function getAlbum(album: string): Promise<Album | null> {
   'use cache'
+  cacheTag(`album:${album}`)
+  const membership = await readAlbums()
+  if (
+    !photoSlugSchema.safeParse(album).success ||
+    !membership.albums.some(item => item.slug === album)
+  ) {
+    if (membership.degraded)
+      cacheLife({ stale: 30, revalidate: 30, expire: 300 })
+    else cacheLife('max')
+    return null
+  }
   const { source, degraded } = await selectContent()
   if (degraded) cacheLife({ stale: 30, revalidate: 30, expire: 300 })
   else cacheLife('max')
-  cacheTag(`album:${album}`)
   return await source.getAlbum(album)
 }
 
@@ -78,10 +101,22 @@ export async function getPhoto(
   photo: string
 ): Promise<Photo | null> {
   'use cache'
+  cacheTag(`album:${album}`, `photo:${album}/${photo}`)
+  const membership = await readAlbums()
+  if (
+    !photoSlugSchema.safeParse(album).success ||
+    !photoSlugSchema.safeParse(photo).success ||
+    !Object.hasOwn(membership.photos, album) ||
+    !membership.photos[album]?.includes(photo)
+  ) {
+    if (membership.degraded)
+      cacheLife({ stale: 30, revalidate: 30, expire: 300 })
+    else cacheLife('max')
+    return null
+  }
   const { source, degraded } = await selectContent()
   if (degraded) cacheLife({ stale: 30, revalidate: 30, expire: 300 })
   else cacheLife('max')
-  cacheTag(`album:${album}`, `photo:${album}/${photo}`)
   return await source.getPhoto(album, photo)
 }
 
