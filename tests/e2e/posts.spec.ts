@@ -38,6 +38,52 @@ function listedTitles(page: Page) {
 }
 
 test.describe('post lists', () => {
+  for (const path of ['/writing', '/tags/design']) {
+    test(`covers reserve a small right-hand box only for illustrated posts: ${path}`, async ({
+      page,
+      viewport,
+    }) => {
+      await page.goto(path)
+      const rows = page.locator('main article')
+      const illustrated = rows.filter({
+        hasText: 'A tour of the content format',
+      })
+      const plain = rows.filter({ hasText: 'Designing for slow networks' })
+      const image = illustrated.getByRole('img', {
+        name: 'A wireframe of a page with a sidebar on the left and a content column with a heading, text lines and an image placeholder',
+        exact: true,
+      })
+      await expect(image).toHaveAttribute('width', '1200')
+      await expect(image).toHaveAttribute('height', '750')
+      await expect(image).toHaveAttribute('loading', 'eager')
+      await expect(image).toHaveCSS('object-fit', 'cover')
+      const width = (viewport?.width ?? 0) >= 768 ? 112 : 80
+      await expect(image).toHaveCSS('width', `${width}px`)
+      await expect(image).toHaveCSS('height', `${(width * 3) / 4}px`)
+      await expect(plain.locator('picture, img')).toHaveCount(0)
+      const geometry = await illustrated.evaluate(row => {
+        const img = row.querySelector('img')
+        const title = row.querySelector('h2')
+        if (!img || !title) throw new Error('Missing cover or title')
+        return {
+          imageX: img.getBoundingClientRect().x,
+          titleX: title.getBoundingClientRect().x,
+          titleRight: title.getBoundingClientRect().right,
+        }
+      })
+      expect(geometry.imageX).toBeGreaterThanOrEqual(geometry.titleRight)
+      const plainTitle = await plain.locator('h2').boundingBox()
+      expect(plainTitle?.x).toBeCloseTo(geometry.titleX, 0)
+      await expect
+        .poll(() => image.evaluate(img => (img as HTMLImageElement).currentSrc))
+        .toMatch(/\.640\.avif$/)
+      // The reserved crop survives failed or disabled image loading.
+      await page.route('**/_media/**', route => route.abort())
+      await page.reload()
+      await expect(image).toHaveCSS('height', `${(width * 3) / 4}px`)
+    })
+  }
+
   test('writing lists published posts, newest first, without drafts', async ({
     page,
   }) => {

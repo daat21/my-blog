@@ -20,9 +20,9 @@ export function PostList({
 
   return (
     <ul className="divide-y divide-border border-y border-border">
-      {posts.map(post => (
+      {posts.map((post, index) => (
         <li key={post.slug}>
-          <PostRow post={post} />
+          <PostRow post={post} loading={index < 2 ? 'eager' : 'lazy'} />
         </li>
       ))}
     </ul>
