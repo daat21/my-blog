@@ -167,6 +167,32 @@ describe('GitHub content snapshots', () => {
     f.set({ ...changed, revision: 'e'.repeat(40) })
     expect((await source.select()).degraded).toBe(false)
   })
+  it('reports admission issues in fallback logs and authenticated preflight errors', async () => {
+    const f = fixture()
+    const report = vi.fn()
+    f.set({
+      ...baseline,
+      files: {
+        ...baseline.files,
+        'writing/stray.txt': 'private text not to log',
+      },
+    })
+    const source = createGitHubSource({ ...f.options, report })
+    const expected = new InvalidSnapshot(
+      'unsupported_path',
+      'writing/stray.txt'
+    )
+    await expect(source.preflight()).rejects.toMatchObject({
+      issues: expected.issues,
+    })
+    expect((await source.select()).degraded).toBe(true)
+    expect(report).toHaveBeenCalledWith({
+      code: 'invalid_content',
+      issues: expected.issues,
+      fallback: baseline.revision,
+    })
+    expect(JSON.stringify(report.mock.calls)).not.toContain('private text')
+  })
   it('gates media before fetching text and never depends on history', async () => {
     const f = fixture()
     f.set({ ...baseline, revision: 'd'.repeat(40), mediaTree: 'f'.repeat(40) })

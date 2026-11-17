@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { registerHooks } from 'node:module'
 
 import { z } from 'zod'
 
@@ -21,6 +22,29 @@ const built =
       )
     : { revision: '0'.repeat(40), mediaTree: null }
 const files = await collectTextFiles(env.contentDir)
+// Native Node cannot resolve the application's @/ aliases or extensionless TS imports.
+// Keep this hook local to the build script; reuse the actual validator, not a second parser.
+const src = new URL('../../src/', import.meta.url)
+registerHooks({
+  resolve(specifier, context, next) {
+    if (specifier.startsWith('@/'))
+      return next(new URL(`${specifier.slice(2)}.ts`, src).href, context)
+    if (
+      context.parentURL?.startsWith(src.href) &&
+      specifier.startsWith('.') &&
+      !/\.[a-z]+$/.test(specifier)
+    )
+      return next(`${specifier}.ts`, context)
+    return next(specifier, context)
+  },
+})
+const { validateSnapshot } = await import('../../src/lib/content/snapshot.ts')
+const { createLocalMediaResolver } =
+  await import('../../src/lib/media/local-media-resolver.ts')
+await validateSnapshot(
+  { version: 1, ...built, files },
+  createLocalMediaResolver({ manifestPath: '.media/manifest.json' })
+)
 await mkdir('.content-runtime', { recursive: true })
 await writeFile(
   '.content-runtime/baseline.json',

@@ -104,7 +104,11 @@ it.each([
       [path.resolve('scripts/content/build-baseline.mts')],
       {
         cwd: dir,
-        env: { CONTENT_SOURCE: 'filesystem', CONTENT_DIR: dir },
+        env: {
+          NODE_ENV: 'test',
+          CONTENT_SOURCE: 'filesystem',
+          CONTENT_DIR: dir,
+        },
         stdio: 'pipe',
       }
     )

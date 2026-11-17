@@ -40,6 +40,16 @@ export function snapshotIssue(
   code: SnapshotReason,
   path?: string
 ): SnapshotIssue {
+  if (
+    path &&
+    (path.length > 1024 ||
+      path.includes('\\') ||
+      Array.from(path).some(
+        char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127
+      ) ||
+      path.split('/').some(part => !part || part === '.' || part === '..'))
+  )
+    path = undefined
   return {
     code,
     ...(path && { path }),
@@ -50,8 +60,13 @@ export function snapshotIssue(
 /** A rejected snapshot, with safe owner-facing diagnostics shared by build and runtime. */
 export class InvalidSnapshot extends Error {
   readonly issues: SnapshotIssue[]
-  constructor(code: SnapshotReason = 'invalid_snapshot', path?: string) {
+  constructor(
+    code: SnapshotReason = 'invalid_snapshot',
+    path?: string,
+    ref?: string
+  ) {
     const issue = snapshotIssue(code, path)
+    if (ref && /^media:[a-zA-Z0-9/._-]{1,240}$/.test(ref)) issue.ref = ref
     super(issue.message)
     this.issues = [issue]
   }

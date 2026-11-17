@@ -51,6 +51,7 @@ describe('signed revalidation', () => {
     const response = await handleRevalidation(request(), o)
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
+      code: 'revalidated',
       revalidated: true,
       revision: 'd'.repeat(40),
       tags: ['post:example', 'posts', 'tags'],
@@ -144,6 +145,7 @@ describe('signed revalidation', () => {
       new SnapshotRejected('e'.repeat(40), [
         {
           code: 'validation_failed',
+          message: 'Check the photo content.',
           path: 'photos/trip/photo.md',
           ref: 'media:missing/photo.jpg',
         },
@@ -163,6 +165,24 @@ describe('signed revalidation', () => {
       expect(JSON.stringify(await response.json())).not.toContain(secret)
     }
   )
+  it('reports actionable snapshot diagnostics only after authentication', async () => {
+    const o = options()
+    const error = new InvalidSnapshot('unsupported_path', 'writing/stray.txt')
+    o.preflight.mockRejectedValue(error)
+    const rejected = await handleRevalidation(request(), o)
+    expect(rejected.status).toBe(422)
+    expect(await rejected.json()).toEqual({
+      code: 'invalid_content',
+      issues: error.issues,
+    })
+    const unauthenticated = await handleRevalidation(
+      request(body, `sha256=${'0'.repeat(64)}`),
+      o
+    )
+    expect(await unauthenticated.json()).toEqual({ code: 'unauthorized' })
+    expect(o.preflight).toHaveBeenCalledOnce()
+    expect(o.expire).not.toHaveBeenCalled()
+  })
   it('authenticates housekeeping no-ops and fails closed without settings', async () => {
     const o = options()
     expect(

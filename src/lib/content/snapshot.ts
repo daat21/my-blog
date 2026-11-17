@@ -83,24 +83,34 @@ export async function validateSnapshot(
   }
   if (!('profile.yaml' in snapshot.files))
     throw new InvalidSnapshot('missing_profile', 'profile.yaml')
-  const source = createReaderSource({
-    reader: snapshotReader(snapshot),
-    showDrafts: true,
-    media,
-  })
-  await source.getProfile()
-  await source.listProjects()
-  // Empty albums and hidden stories must be checked too, not just visible lists.
-  for (const [file, text] of entries) {
-    if (file.startsWith('writing/') || file.startsWith('photos/')) {
-      await renderMarkdown(splitFrontMatter(text, file).body, { file, media })
+  try {
+    const source = createReaderSource({
+      reader: snapshotReader(snapshot),
+      showDrafts: true,
+      media,
+    })
+    await source.getProfile()
+    await source.listProjects()
+    // Empty albums and hidden stories must be checked too, not just visible lists.
+    for (const [file, text] of entries) {
+      if (file.startsWith('writing/') || file.startsWith('photos/')) {
+        await renderMarkdown(splitFrontMatter(text, file).body, { file, media })
+      }
     }
+    for (const post of await source.listPosts()) await source.getPost(post.slug)
+    for (const album of await source.listAlbums()) {
+      const entry = await source.getAlbum(album.slug)
+      for (const photo of entry?.photos ?? [])
+        await source.getPhoto(album.slug, photo.slug)
+    }
+    return snapshot
+  } catch (error) {
+    if (error instanceof InvalidSnapshot) throw error
+    const message = error instanceof Error ? error.message : ''
+    const file =
+      entries.find(([file]) => message.includes(file))?.[0] ??
+      /^((?:writing|photos|projects)\/[a-zA-Z0-9 /._-]+):/.exec(message)?.[1]
+    const ref = /media:[a-zA-Z0-9/._-]+/.exec(message)?.[0]
+    throw new InvalidSnapshot('validation_failed', file, ref)
   }
-  for (const post of await source.listPosts()) await source.getPost(post.slug)
-  for (const album of await source.listAlbums()) {
-    const entry = await source.getAlbum(album.slug)
-    for (const photo of entry?.photos ?? [])
-      await source.getPhoto(album.slug, photo.slug)
-  }
-  return snapshot
 }
