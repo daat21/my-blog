@@ -2,7 +2,9 @@ import 'server-only'
 
 import { z } from 'zod'
 
-import { classifyPath, isContentPath } from '@/lib/content/publish-paths'
+import { admitEntry } from '@/lib/content/admission'
+import { InvalidSnapshot } from '@/lib/content/snapshot-error'
+export { InvalidSnapshot } from '@/lib/content/snapshot-error'
 import {
   MAX_SNAPSHOT_BYTES,
   MAX_TEXT_BYTES,
@@ -42,11 +44,6 @@ export class GitHubUnavailable extends Error {
 export class MediaChanged extends Error {
   constructor() {
     super('deploy_required')
-  }
-}
-export class InvalidSnapshot extends Error {
-  constructor() {
-    super('invalid_content')
   }
 }
 
@@ -169,19 +166,21 @@ export function createGitHubClient({
       path: string,
       item: z.infer<typeof treeSchema>['tree'][number]
     ) {
-      if (!isContentPath(path) || seen.has(path)) throw new InvalidSnapshot()
-      seen.add(path)
-      if (item.type === 'tree' && item.mode === '040000') return
-      if (
-        item.type !== 'blob' ||
-        !['100644', '100755'].includes(item.mode) ||
-        classifyPath(path).kind !== 'text'
+      const kind = admitEntry(
+        path,
+        item.type === 'tree' && item.mode === '040000'
+          ? 'directory'
+          : item.type === 'blob' && ['100644', '100755'].includes(item.mode)
+            ? 'file'
+            : 'unsupported',
+        item.size
       )
-        throw new InvalidSnapshot()
-      if (item.size !== undefined && item.size > MAX_TEXT_BYTES)
-        throw new InvalidSnapshot()
+      if (seen.has(path)) throw new InvalidSnapshot('duplicate_path', path)
+      seen.add(path)
+      if (kind !== 'text') return
       blobs.push({ path, sha: item.sha, size: item.size })
-      if (blobs.length > MAX_TEXT_FILES) throw new InvalidSnapshot()
+      if (blobs.length > MAX_TEXT_FILES)
+        throw new InvalidSnapshot('too_many_files', path)
     }
     async function visit(
       prefix: string,

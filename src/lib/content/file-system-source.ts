@@ -1,8 +1,9 @@
-import { readdir, readFile, stat } from 'node:fs/promises'
-import path from 'node:path'
+import { stat } from 'node:fs/promises'
 
 import { ContentError } from '@/lib/content/content-error'
+import { collectTextFiles } from '@/lib/content/file-snapshot'
 import { createReaderSource } from '@/lib/content/reader-source'
+import { snapshotReader } from '@/lib/content/snapshot'
 import type { ContentSource } from '@/lib/content/source'
 import type { MediaResolver } from '@/lib/media/types'
 
@@ -12,14 +13,6 @@ export interface FileSystemSourceOptions {
   contentDir: string
   showDrafts: boolean
   media: MediaResolver
-}
-
-function isNotFound(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    'code' in error &&
-    (error.code === 'ENOENT' || error.code === 'ENOTDIR')
-  )
 }
 
 /** Reads validated content from the local content directory. */
@@ -44,32 +37,29 @@ export function createFileSystemSource({
     )
     return checked
   }
+  let pending: ReturnType<typeof loadReader> | undefined
+  async function loadReader() {
+    await ensureRoot()
+    return snapshotReader({
+      version: 1,
+      revision: '0'.repeat(40),
+      mediaTree: null,
+      files: await collectTextFiles(contentDir),
+    })
+  }
+  function reader() {
+    pending ??= loadReader().finally(() => {
+      pending = undefined
+    })
+    return pending
+  }
   return createReaderSource({
     showDrafts,
     media,
     reader: {
       ensureRoot,
-      async readText(file) {
-        try {
-          return await readFile(path.join(contentDir, file), 'utf8')
-        } catch (error) {
-          if (isNotFound(error)) return undefined
-          throw error
-        }
-      },
-      async listFolder(folder) {
-        await ensureRoot()
-        try {
-          return (
-            await readdir(path.join(contentDir, folder), {
-              withFileTypes: true,
-            })
-          ).filter(entry => !entry.name.startsWith('.'))
-        } catch (error) {
-          if (isNotFound(error)) return []
-          throw error
-        }
-      },
+      readText: async file => (await reader()).readText(file),
+      listFolder: async folder => (await reader()).listFolder(folder),
     },
   })
 }

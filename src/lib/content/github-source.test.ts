@@ -281,7 +281,7 @@ describe('GitHub content snapshots', () => {
         { ...baseline, files: { 'profile.yaml': 'x'.repeat(1024 * 1024 + 1) } },
         media
       )
-    ).rejects.toThrow('text too large')
+    ).rejects.toThrow('1 MiB text limit')
     await expect(
       validateSnapshot(
         {
@@ -295,7 +295,7 @@ describe('GitHub content snapshots', () => {
         },
         media
       )
-    ).rejects.toThrow('too many files')
+    ).rejects.toThrow('10,000 text file limit')
     await expect(
       validateSnapshot(
         {
@@ -309,7 +309,7 @@ describe('GitHub content snapshots', () => {
         },
         media
       )
-    ).rejects.toThrow('text budget')
+    ).rejects.toThrow('16 MiB text budget')
     const f = fixture()
     f.transform((key, value) => {
       if (!key.endsWith('?recursive=1')) return value
