@@ -10,13 +10,13 @@
  * leak into error messages or the repository's git config.
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
-const repo = process.env.CONTENT_REPO
-const token = process.env.CONTENT_REPO_TOKEN
-const ref = process.env.CONTENT_REPO_REF ?? 'main'
-const target = path.resolve(process.env.CONTENT_DIR ?? '.content')
+import { env } from '../../src/lib/env.ts'
+
+const { repo, token, ref } = env.content
+const target = env.contentDir
 
 if (!repo || !token) {
   console.log(
@@ -30,8 +30,17 @@ if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) {
   process.exit(1)
 }
 
-if (path.relative(process.cwd(), target).startsWith('..')) {
-  console.error('content:sync: CONTENT_DIR must be inside the project.')
+const relativeTarget = path.relative(process.cwd(), target)
+if (
+  !relativeTarget ||
+  relativeTarget.startsWith('..') ||
+  execFileSync('git', ['ls-files', '--', relativeTarget], {
+    encoding: 'utf8',
+  }).trim()
+) {
+  console.error(
+    'content:sync: CONTENT_DIR must be an untracked directory inside the project.'
+  )
   process.exit(1)
 }
 
@@ -62,5 +71,23 @@ try {
   process.exit(1)
 }
 
+const revision = execFileSync('git', ['-C', target, 'rev-parse', 'HEAD'], {
+  encoding: 'utf8',
+}).trim()
+let mediaTree: string | null = null
+try {
+  mediaTree = execFileSync(
+    'git',
+    ['-C', target, 'rev-parse', '--verify', 'HEAD:media'],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+  ).trim()
+} catch {
+  /* A repository without media has no media tree. */
+}
+mkdirSync('.content-runtime', { recursive: true })
+writeFileSync(
+  '.content-runtime/checkout.json',
+  JSON.stringify({ revision, mediaTree })
+)
 rmSync(path.join(target, '.git'), { recursive: true, force: true })
 console.log(`content:sync: fetched ${repo}@${ref} into ${target}`)

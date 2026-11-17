@@ -16,6 +16,7 @@ next-env.d.ts
 
 # generated content and media
 /.content/
+/.content-runtime/
 /public/_media/
 /.media/
 
