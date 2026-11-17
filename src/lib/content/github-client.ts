@@ -32,7 +32,7 @@ const commitSchema = z.object({
 })
 const blobSchema = z.object({
   encoding: z.literal('base64'),
-  size: z.number().int().nonnegative().max(MAX_TEXT_BYTES),
+  size: z.number().int().nonnegative(),
   content: z.string(),
 })
 
@@ -187,7 +187,7 @@ export function createGitHubClient({
       if (kind !== 'text') return
       blobs.push({ path, sha: item.sha, size: item.size })
       if (blobs.length > MAX_TEXT_FILES)
-        throw new InvalidSnapshot('too_many_files', path)
+        throw new InvalidSnapshot('too_many_files')
     }
     async function visit(
       prefix: string,
@@ -233,7 +233,13 @@ export function createGitHubClient({
             !/^[A-Za-z0-9+/=\r\n]*$/.test(parsed.data.content)
           )
             throw new InvalidSnapshot('invalid_blob', blob.path)
+          admitEntry(blob.path, 'file', parsed.data.size)
           const bytes = Buffer.from(parsed.data.content, 'base64')
+          if (
+            bytes.toString('base64') !==
+            parsed.data.content.replaceAll(/\r|\n/g, '')
+          )
+            throw new InvalidSnapshot('invalid_blob', blob.path)
           if (
             bytes.length !== parsed.data.size ||
             (blob.size !== undefined && bytes.length !== blob.size)
@@ -241,7 +247,7 @@ export function createGitHubClient({
             throw new InvalidSnapshot('blob_size_mismatch', blob.path)
           total += bytes.length
           if (total > MAX_SNAPSHOT_BYTES)
-            throw new InvalidSnapshot('text_budget_exceeded', blob.path)
+            throw new InvalidSnapshot('text_budget_exceeded')
           try {
             files[blob.path] = new TextDecoder('utf-8', { fatal: true }).decode(
               bytes

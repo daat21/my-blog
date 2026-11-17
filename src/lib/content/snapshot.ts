@@ -79,7 +79,7 @@ export async function validateSnapshot(
     if (size > MAX_TEXT_BYTES) throw new InvalidSnapshot('text_too_large', file)
     total += size
     if (total > MAX_SNAPSHOT_BYTES)
-      throw new InvalidSnapshot('text_budget_exceeded', file)
+      throw new InvalidSnapshot('text_budget_exceeded')
   }
   if (!('profile.yaml' in snapshot.files))
     throw new InvalidSnapshot('missing_profile', 'profile.yaml')

@@ -34,14 +34,13 @@ export async function collectTextFiles(
       for (const entry of await readdir(target)) await visit(`${file}/${entry}`)
       return
     }
-    if (++count > MAX_TEXT_FILES)
-      throw new InvalidSnapshot('too_many_files', file)
+    if (++count > MAX_TEXT_FILES) throw new InvalidSnapshot('too_many_files')
     const bytes = await readFile(target)
     // Recheck the actual bytes in case the file grew between stat and read.
     admitEntry(file, 'file', bytes.length)
     total += bytes.length
     if (total > MAX_SNAPSHOT_BYTES)
-      throw new InvalidSnapshot('text_budget_exceeded', file)
+      throw new InvalidSnapshot('text_budget_exceeded')
     try {
       files[file] = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
     } catch {
