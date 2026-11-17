@@ -1,13 +1,17 @@
 import Link from 'next/link'
 
-import { PAGE_GUTTER, WIDE_COLUMN } from '@/components/layout/page-gutter'
+import {
+  PAGE_COLUMN,
+  PAGE_FRAME,
+  WIDE_COLUMN,
+} from '@/components/layout/page-gutter'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { EmptyState } from '@/components/ui/empty-state'
 import { MediaImage } from '@/components/ui/media-image'
 import { PageHeader } from '@/components/ui/page-header'
 import { SeparatedList } from '@/components/ui/separated-list'
 import { listAlbums } from '@/lib/content'
-import { formatCount } from '@/lib/utils'
+import { cn, formatCount } from '@/lib/utils'
 
 import { AlbumMeta } from './album-meta'
 import { PHOTOS_INTRO } from './photos-intro'
@@ -17,8 +21,8 @@ export async function GalleryPage() {
   const albums = await listAlbums()
   const years = [...new Set(albums.map(album => album.date.slice(0, 4)))]
   return (
-    <div className={PAGE_GUTTER}>
-      <div className={WIDE_COLUMN}>
+    <div className={PAGE_FRAME}>
+      <div className={cn(WIDE_COLUMN, PAGE_COLUMN)}>
         <PageHeader
           title={PHOTOS_INTRO.title}
           description={PHOTOS_INTRO.description}

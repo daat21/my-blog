@@ -1,11 +1,15 @@
 import { notFound } from 'next/navigation'
 
-import { PAGE_GUTTER, READING_COLUMN } from '@/components/layout/page-gutter'
+import {
+  PAGE_COLUMN,
+  PAGE_FRAME,
+  READING_COLUMN,
+} from '@/components/layout/page-gutter'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { TableOfContents } from '@/components/layout/table-of-contents'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { getPost, listPosts } from '@/lib/content'
-import { findNeighbours } from '@/lib/utils'
+import { cn, findNeighbours } from '@/lib/utils'
 
 import { ArticleBody } from './article-body'
 import { ArticleFooter } from './article-footer'
@@ -25,9 +29,9 @@ export async function ArticlePage({ slug }: ArticlePageProps) {
   if (!post) notFound()
 
   return (
-    <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_13.125rem]">
-      <div className={PAGE_GUTTER}>
-        <div className={READING_COLUMN}>
+    <div className="flex flex-1 flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_13.125rem]">
+      <div className={PAGE_FRAME}>
+        <div className={cn(READING_COLUMN, PAGE_COLUMN)}>
           <article>
             <Breadcrumb
               items={[

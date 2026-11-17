@@ -26,13 +26,15 @@ export async function SiteFooter({ className }: SiteFooterProps) {
   const [{ name }, year] = await Promise.all([getProfile(), copyrightYear()])
 
   return (
-    <footer
-      className={cn(
-        'mt-20 border-t border-border pt-6 text-sm text-fg-muted',
-        className
-      )}
-    >
-      © {year} {name}
-    </footer>
+    <div className="mt-auto pt-20">
+      <footer
+        className={cn(
+          'border-t border-border pt-6 text-sm text-fg-muted',
+          className
+        )}
+      >
+        © {year} {name}
+      </footer>
+    </div>
   )
 }

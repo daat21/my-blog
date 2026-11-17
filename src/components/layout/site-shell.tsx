@@ -28,7 +28,8 @@ export function SiteShell({ profile, topics, children }: SiteShellProps) {
       >
         Skip to content
       </a>
-      <div className="lg:flex">
+      {/* lvh stays stable while Safari's toolbar expands and collapses. */}
+      <div className="flex min-h-lvh flex-col lg:flex-row">
         <MobileNav name={profile.name}>{sidebar}</MobileNav>
         <aside
           aria-label="Site"
@@ -36,7 +37,7 @@ export function SiteShell({ profile, topics, children }: SiteShellProps) {
         >
           {sidebar}
         </aside>
-        <main id="main" className="min-w-0 flex-1">
+        <main id="main" className="flex min-w-0 flex-1 flex-col">
           {children}
         </main>
       </div>
