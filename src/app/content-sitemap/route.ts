@@ -4,9 +4,10 @@ import { renderSitemap, type SitemapEntry } from '@/lib/feed/sitemap'
 
 const SECTIONS = ['/', '/writing', '/photos', '/projects'] as const
 
-// A route handler like the feed, not the sitemap metadata convention: on
-// Vercel the metadata route's cached response is not refreshed when content
-// tags are revalidated, while this one is.
+// Served at /sitemap.xml through a rewrite in next.config.ts. A route named
+// sitemap.xml counts as a static metadata route, which Vercel keeps in its
+// edge cache until the next deploy; under another name it is refreshed with
+// the content tags, like the feed.
 export async function GET(): Promise<Response> {
   // Previews list drafts too; the sitemap only ever names published posts
   // and photos, and the tags the posts use.
