@@ -240,6 +240,15 @@ describe('GitHub content snapshots', () => {
       const f = fixture()
       f.transform((key, value) => {
         if (kind === 'envelope' && key.startsWith('commits')) return {}
+        if (kind === 'utf8' && key.startsWith('git/trees/')) {
+          const tree = value as { tree: { type: string; size?: number }[] }
+          return {
+            ...tree,
+            tree: tree.tree.map(item =>
+              item.type === 'blob' ? { ...item, size: 1 } : item
+            ),
+          }
+        }
         if (key.endsWith('?recursive=1')) {
           const tree = value as { tree: object[] }
           if (kind === 'symlink')
