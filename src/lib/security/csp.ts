@@ -1,5 +1,5 @@
-/** Change only this name to enforce the policy after the report-only rollout. */
-export const CSP_HEADER_NAME = 'Content-Security-Policy-Report-Only'
+/** Enforced: WebKit ignores report-only policies that name no report-to endpoint. */
+export const CSP_HEADER_NAME = 'Content-Security-Policy'
 
 /** Static policy keeps public pages prerendered and CDN-cacheable. */
 export const CONTENT_SECURITY_POLICY = [

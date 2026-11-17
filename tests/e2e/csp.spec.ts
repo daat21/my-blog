@@ -5,18 +5,12 @@ import { expect, test } from './fixtures'
 const EXPECTED_POLICY =
   "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
-test('page responses carry exactly the selected CSP rollout header', async ({
-  page,
-}) => {
-  const selected = CSP_HEADER_NAME.toLowerCase()
-  const other =
-    selected === 'content-security-policy-report-only'
-      ? 'content-security-policy'
-      : 'content-security-policy-report-only'
+test('page responses enforce the content security policy', async ({ page }) => {
   for (const path of ['/', '/writing/keeping-a-work-log', '/not-a-page']) {
     const response = await page.goto(path)
-    expect(response?.headers()[selected], path).toBe(EXPECTED_POLICY)
-    expect(response?.headers()[other], path).toBeUndefined()
+    const headers = response?.headers() ?? {}
+    expect(headers[CSP_HEADER_NAME.toLowerCase()], path).toBe(EXPECTED_POLICY)
+    expect(headers['content-security-policy-report-only'], path).toBeUndefined()
   }
 })
 

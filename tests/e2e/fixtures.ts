@@ -34,7 +34,7 @@ export const test = base.extend<{ cspGuard: undefined }>({
         })
       })
       await runTest(undefined)
-      // Drain queued violation events before asserting, including report-only events.
+      // Drain queued violation events before asserting.
       for (const page of context.pages()) {
         if (!page.isClosed())
           await page.evaluate(
